@@ -16,12 +16,14 @@ import {
   Users,
   Coins,
   Pencil,
-  X
+  X,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember } from '../actions/family';
 import { getQuests, createQuest, deleteQuest } from '../actions/quests';
+import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
@@ -394,6 +396,147 @@ function QuestsManager() {
   );
 }
 
-function RewardsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Catálogo de Premios 🎁</div> }
+function RewardsManager() {
+  const [rewardsList, setRewardsList] = useState<any[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchRewards = async () => {
+    const data = await getRewards();
+    setRewardsList(data);
+  };
+
+  useEffect(() => {
+    fetchRewards();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await createReward(formData);
+    if (res.success) {
+      setShowForm(false);
+      fetchRewards();
+    } else {
+      alert(res.error);
+    }
+    setLoading(false);
+  };
+
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await updateReward(id, formData);
+    if (res.success) {
+      setEditingId(null);
+      fetchRewards();
+    } else {
+      alert(res.error);
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('¿Eliminar este premio?')) {
+      const res = await deleteReward(id);
+      if (res.success) fetchRewards();
+    }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Catálogo de Premios</h2>
+        <button 
+          onClick={() => setShowForm(!showForm)}
+          className="btn-primary" 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--primary-color)' }}
+        >
+          {showForm ? 'Cancelar' : <><Plus size={18} /> Nuevo Premio</>}
+        </button>
+      </div>
+
+      {showForm && (
+        <motion.div 
+          initial={{ height: 0, opacity: 0 }} 
+          animate={{ height: 'auto', opacity: 1 }}
+          className="glass card" 
+          style={{ marginBottom: '30px', overflow: 'hidden' }}
+        >
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Título del Premio</label>
+              <input name="title" type="text" placeholder="Ej: 30 min de Tablet" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+            </div>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Costo (Tokens)</label>
+              <input name="cost" type="number" placeholder="100" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+            </div>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Tiempo (Minutos)</label>
+              <input name="minutes" type="number" placeholder="30 (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+            </div>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+              <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '10px 40px', background: 'var(--primary-color)' }}>
+                {loading ? 'Guardando...' : 'Crear Premio'}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+        {rewardsList.map((reward) => (
+          <div key={reward.id} className="glass card" style={{ borderTop: '4px solid var(--accent-color)' }}>
+            {editingId === reward.id ? (
+              <form onSubmit={(e) => handleUpdate(e, reward.id)} style={{ display: 'grid', gap: '15px' }}>
+                <input name="title" defaultValue={reward.title} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <input name="cost" type="number" defaultValue={reward.cost} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                  <input name="minutes" type="number" defaultValue={reward.minutes} placeholder="Minutos" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button type="submit" className="btn-primary" style={{ flex: 1, padding: '8px' }}>Guardar</button>
+                  <button type="button" onClick={() => setEditingId(null)} className="glass" style={{ flex: 1, padding: '8px', color: 'white' }}>X</button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '12px' }}>
+                    <Gift color="var(--primary-color)" size={24} />
+                  </div>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button onClick={() => setEditingId(reward.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><Pencil size={16}/></button>
+                    <button onClick={() => handleDelete(reward.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer' }}><Trash2 size={16}/></button>
+                  </div>
+                </div>
+                <h3 style={{ margin: '15px 0 5px 0' }}>{reward.title}</h3>
+                <div style={{ display: 'flex', gap: '15px', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
+                    <Coins size={14} /> {reward.cost}
+                  </div>
+                  {reward.minutes && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Clock size={14} /> {reward.minutes} min
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+        {rewardsList.length === 0 && !showForm && (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+            No hay premios creados. ¡Sorprendelos con algo genial!
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 function ApprovalsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Aprobar Tareas ✅</div> }
 function SuggestionsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Buzón de Sugerencias 💡</div> }

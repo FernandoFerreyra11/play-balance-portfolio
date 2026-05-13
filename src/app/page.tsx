@@ -276,33 +276,48 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Botón Flotante de Sugerencias */}
-      <motion.button 
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setShowSuggestion(true)}
-        style={{
-          position: 'fixed',
-          bottom: '40px',
-          right: '40px',
-          width: '60px',
-          height: '60px',
-          borderRadius: '30px',
-          background: 'var(--primary-color)',
-          border: 'none',
-          color: 'white',
-          boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
-          cursor: 'pointer',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 90
-        }}
-      >
-        <MessageSquarePlus />
-      </motion.button>
+      {/* Nueva Sección: Buzón de Sugerencias Directo */}
+      <section style={{ marginTop: '50px', maxWidth: '800px', margin: '50px auto' }}>
+        <div className="glass card" style={{ padding: '30px', borderTop: '4px solid var(--primary-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ padding: '10px', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '12px' }}>
+              <MessageSquarePlus color="var(--primary-color)" size={24} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.5rem' }}>¿Tenés una idea? 💡</h2>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Proponé una nueva misión o premio a Papá/Mamá.</p>
+            </div>
+          </div>
+          
+          <textarea 
+            value={suggestionText}
+            onChange={(e) => setSuggestionText(e.target.value)}
+            placeholder="Ej: 'Si lavo los platos por una semana, ¿me das 200 tokens?'..."
+            style={{
+              width: '100%',
+              background: 'rgba(0,0,0,0.2)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+              padding: '15px',
+              color: 'white',
+              height: '100px',
+              fontFamily: 'inherit',
+              marginBottom: '20px',
+              resize: 'none'
+            }}
+          />
+          <button 
+            disabled={sending || !suggestionText.trim()}
+            className="btn-primary" 
+            style={{ width: '100%', padding: '15px' }} 
+            onClick={handleSuggestionSubmit}
+          >
+            {sending ? 'Enviando idea...' : 'Enviar Sugerencia'}
+          </button>
+        </div>
+      </section>
 
-      {/* Modal de Sugerencias */}
+      {/* Modal de Sugerencias (Opcional, lo mantenemos por si se activa desde otro lado) */}
       <AnimatePresence>
         {showSuggestion && (
           <motion.div 

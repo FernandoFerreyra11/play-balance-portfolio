@@ -264,20 +264,37 @@ function FamilyManager() {
                   }}>
                     {member.image || '👤'}
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.2rem', marginBottom: '2px' }}>{member.name}</h3>
+                  <div style={{ 
+                    flex: 1, 
+                    minWidth: 0, // Crucial para que el truncado de texto funcione en flexbox
+                    display: 'flex', 
+                    flexDirection: 'column' 
+                  }}>
+                    <h3 style={{ 
+                      fontSize: '1.2rem', 
+                      marginBottom: '2px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      width: '100%'
+                    }}>
+                      {member.name}
+                    </h3>
                     <div style={{ 
-                      fontSize: '0.7rem', color: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)',
-                      textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px'
+                      fontSize: '0.7rem', 
+                      color: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)',
+                      textTransform: 'uppercase', 
+                      fontWeight: 700, 
+                      letterSpacing: '1px'
                     }}>
                       {member.role === 'parent' ? '🛡️ Admin' : '🎮 Jugador'}
                     </div>
                   </div>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '5px' }}>
-                    <button onClick={() => { setEditingId(member.id); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '5px' }}>
+                  <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                    <button onClick={() => { setEditingId(member.id); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '8px' }}>
                       <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDelete(member.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '5px' }}>
+                    <button onClick={() => handleDelete(member.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '8px' }}>
                       <Trash2 size={16} />
                     </button>
                   </div>

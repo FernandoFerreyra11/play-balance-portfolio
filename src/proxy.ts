@@ -1,12 +1,13 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
+// En Next.js 16, la función debe llamarse 'proxy' y el archivo 'proxy.ts'
+const authProxy = withAuth(
+  function proxy(req) {
     const token = req.nextauth.token;
     const isParent = token?.role === "parent";
     
-    // Si intenta acceder a /admin y no es padre, denegar
+    // Si intenta acceder a /admin y no es padre, redirigir al inicio
     if (req.nextUrl.pathname.startsWith("/admin") && !isParent) {
       return NextResponse.redirect(new URL("/", req.url));
     }
@@ -18,6 +19,8 @@ export default withAuth(
   }
 );
 
+export const proxy = authProxy;
+
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/"], // Protegemos también la home para forzar el login
 };

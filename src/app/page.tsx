@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Coins, Book, Gamepad2, Smartphone, Trophy, MessageSquarePlus } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { Coins, Book, Gamepad2, Smartphone, Trophy, MessageSquarePlus, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
+  const { data: session } = useSession();
   const [tokens, setTokens] = useState(150);
   const [showSuggestion, setShowSuggestion] = useState(false);
 
@@ -13,8 +15,18 @@ export default function Home() {
       {/* Header con Saldo */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '40px 0' }}>
         <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 700 }}>Hola, <span style={{ color: 'var(--primary-color)' }}>Mateo</span>! 👋</h1>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 700 }}>Hola, <span style={{ color: 'var(--primary-color)' }}>{session?.user?.name || 'Invitado'}</span>! 👋</h1>
           <p style={{ color: 'var(--text-dim)' }}>¿Qué aventura elegiremos hoy?</p>
+          <button 
+            onClick={() => signOut()}
+            style={{ 
+              background: 'none', border: 'none', color: 'var(--text-dim)', 
+              cursor: 'pointer', fontSize: '0.8rem', marginTop: '10px',
+              display: 'flex', alignItems: 'center', gap: '5px'
+            }}
+          >
+            <LogOut size={14} /> Cerrar sesión
+          </button>
         </div>
         <div className="glass card floating" style={{ textAlign: 'center', minWidth: '200px' }}>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Tus Fichas</p>

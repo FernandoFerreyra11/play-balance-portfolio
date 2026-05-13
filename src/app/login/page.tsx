@@ -1,0 +1,173 @@
+'use client';
+
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+
+export default function LoginPage() {
+  const [role, setRole] = useState<'parent' | 'child' | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const res = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (res?.error) {
+      setError('Credenciales inválidas. Revisa tu email y contraseña.');
+      setLoading(false);
+    } else {
+      router.push(role === 'parent' ? '/admin' : '/');
+      router.refresh();
+    }
+  };
+
+  return (
+    <div className="container" style={{ minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="glass card" style={{ width: '100%', maxWidth: '450px', padding: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Play<span style={{ color: 'var(--primary-color)' }}>Balance</span></h1>
+          <p style={{ color: 'var(--text-dim)' }}>Tu aventura comienza aquí</p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {!role ? (
+            <motion.div 
+              key="role-selection"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              style={{ display: 'grid', gap: '20px' }}
+            >
+              <p style={{ textAlign: 'center', marginBottom: '10px', fontSize: '1.1rem' }}>¿Quién eres hoy?</p>
+              
+              <button 
+                onClick={() => setRole('parent')}
+                className="glass" 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', 
+                  cursor: 'pointer', border: '1px solid var(--border-color)', color: 'white',
+                  textAlign: 'left', transition: 'all 0.2s'
+                }}
+              >
+                <div style={{ padding: '12px', background: 'rgba(6, 182, 212, 0.2)', borderRadius: '12px' }}>
+                  <ShieldCheck color="var(--accent-color)" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0 }}>Panel de Control</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Soy Papá / Mamá</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => setRole('child')}
+                className="glass" 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', 
+                  cursor: 'pointer', border: '1px solid var(--border-color)', color: 'white',
+                  textAlign: 'left', transition: 'all 0.2s'
+                }}
+              >
+                <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '12px' }}>
+                  <User color="var(--primary-color)" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0 }}>Mi Aventura</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Soy un Jugador</p>
+                </div>
+              </button>
+            </motion.div>
+          ) : (
+            <motion.form 
+              key="login-form"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              onSubmit={handleSubmit}
+              style={{ display: 'grid', gap: '20px' }}
+            >
+              <button 
+                type="button" 
+                onClick={() => setRole(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}
+              >
+                ← Volver
+              </button>
+
+              <h2 style={{ fontSize: '1.5rem' }}>
+                Entrar como {role === 'parent' ? 'Papá' : 'Jugador'}
+              </h2>
+
+              <div style={{ display: 'grid', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Email</label>
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ejemplo@email.com"
+                  required
+                  style={{
+                    width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
+                    borderRadius: '12px', padding: '12px', color: 'white', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Contraseña</label>
+                <input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  style={{
+                    width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
+                    borderRadius: '12px', padding: '12px', color: 'white', outline: 'none'
+                  }}
+                />
+              </div>
+
+              {error && (
+                <p style={{ color: 'var(--danger-color)', fontSize: '0.85rem', textAlign: 'center' }}>
+                  {error}
+                </p>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="btn-primary" 
+                style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
+              >
+                {loading ? <Loader2 className="animate-spin" size={20} /> : <>Entrar <ArrowRight size={20} /></>}
+              </button>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <style jsx>{`
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}

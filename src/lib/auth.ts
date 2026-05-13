@@ -7,7 +7,8 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
-  adapter: DrizzleAdapter(db) as any,
+  adapter: DrizzleAdapter(db),
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },

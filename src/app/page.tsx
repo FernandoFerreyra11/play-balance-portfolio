@@ -142,8 +142,26 @@ export default function Home() {
               ¡Hola, <span style={{ color: 'var(--primary-color)' }}>{player?.name}</span>! 👋
             </h1>
             <p style={{ color: 'var(--text-dim)' }}>¿Qué aventura elegiremos hoy?</p>
-            <button onClick={() => signOut()} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '0.8rem', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <LogOut size={14} /> Salir del juego
+            <button 
+              onClick={() => signOut()} 
+              className="glass"
+              style={{ 
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#ef4444',
+                padding: '8px 16px',
+                borderRadius: '50px',
+                fontSize: '0.8rem',
+                marginTop: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontWeight: 600,
+                transition: 'all 0.2s'
+              }}
+            >
+              <LogOut size={16} /> Salir del juego
             </button>
           </div>
         </div>

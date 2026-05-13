@@ -59,9 +59,9 @@ export async function requestQuestCompletion(questId: string) {
 
   try {
     await db.insert(activeQuests).values({
-      userId: (session.user as any).id,
+      childId: (session.user as any).id,
       questId,
-      status: 'pending', // Esperando aprobación del padre
+      status: 'pending_approval', // Usamos el enum del esquema
     });
 
     revalidatePath("/");

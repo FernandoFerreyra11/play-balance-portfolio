@@ -17,7 +17,8 @@ import {
   Coins,
   Pencil,
   X,
-  Clock
+  Clock,
+  MessageSquarePlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';

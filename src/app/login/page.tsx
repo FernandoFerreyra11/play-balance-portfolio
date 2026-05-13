@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { User, ShieldCheck, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [role, setRole] = useState<'parent' | 'child' | null>(null);
@@ -13,6 +14,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +43,20 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Play<span style={{ color: 'var(--primary-color)' }}>Balance</span></h1>
           <p style={{ color: 'var(--text-dim)' }}>Tu aventura comienza aquí</p>
+          
+          {registered && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{ 
+                marginTop: '20px', padding: '10px', background: 'rgba(16, 185, 129, 0.2)', 
+                borderRadius: '12px', color: 'var(--success-color)', display: 'flex', 
+                alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem' 
+              }}
+            >
+              <CheckCircle2 size={18} /> ¡Cuenta creada! Ya puedes entrar.
+            </motion.div>
+          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -157,6 +174,10 @@ export default function LoginPage() {
             </motion.form>
           )}
         </AnimatePresence>
+
+        <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-dim)', marginTop: '30px' }}>
+          ¿No tienes una cuenta? <Link href="/register" style={{ color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 600 }}>Crea una familiar</Link>
+        </p>
       </div>
 
       <style jsx>{`

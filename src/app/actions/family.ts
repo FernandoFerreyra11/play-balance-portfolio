@@ -16,7 +16,7 @@ export async function createFamilyMember(formData: FormData) {
   }
 
   const name = formData.get("name") as string;
-  const email = formData.get("email") as string; // Opcional para niños
+  const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const role = formData.get("role") as 'child' | 'parent';
 
@@ -24,17 +24,13 @@ export async function createFamilyMember(formData: FormData) {
     return { error: "Nombre, contraseña y rol son obligatorios" };
   }
 
-  // Si tiene email, verificar que no exista
   if (email) {
     const [existing] = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
-    
-    if (existing) {
-      return { error: "Este correo ya está registrado" };
-    }
+    if (existing) return { error: "Este correo ya está registrado" };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -51,14 +47,12 @@ export async function createFamilyMember(formData: FormData) {
     revalidatePath("/admin");
     return { success: true };
   } catch (error) {
-    console.error("Error creando miembro familiar:", error);
     return { error: "Error al crear el miembro de la familia" };
   }
 }
 
 export async function getFamilyMembers() {
   const session = await getServerSession(authOptions);
-  
   if (!session) return [];
 
   const members = await db
@@ -72,4 +66,44 @@ export async function getFamilyMembers() {
     .where(eq(users.parentId, (session.user as any).id));
 
   return members;
+}
+
+export async function updateFamilyMember(id: string, formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+
+  const name = formData.get("name") as string;
+  const role = formData.get("role") as 'child' | 'parent';
+  const password = formData.get("password") as string;
+
+  const updateData: any = { name, role };
+  if (password) {
+    updateData.password = await bcrypt.hash(password, 10);
+  }
+
+  try {
+    await db.update(users)
+      .set(updateData)
+      .where(and(eq(users.id, id), eq(users.parentId, (session.user as any).id)));
+    
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al actualizar" };
+  }
+}
+
+export async function deleteFamilyMember(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+
+  try {
+    await db.delete(users)
+      .where(and(eq(users.id, id), eq(users.parentId, (session.user as any).id)));
+    
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al eliminar" };
+  }
 }

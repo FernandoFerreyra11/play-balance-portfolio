@@ -14,15 +14,17 @@ import {
   ArrowLeft,
   LogOut,
   Users,
-  Coins
+  Coins,
+  Pencil,
+  X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { getFamilyMembers, createFamilyMember } from '../actions/family';
+import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember } from '../actions/family';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState('family'); // Empezamos por familia ahora
+  const [activeTab, setActiveTab] = useState('family');
 
   return (
     <div className="container">
@@ -106,6 +108,7 @@ export default function AdminDashboard() {
 function FamilyManager() {
   const [members, setMembers] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchMembers = async () => {
@@ -129,6 +132,28 @@ function FamilyManager() {
       alert(res.error);
     }
     setLoading(false);
+  };
+
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await updateFamilyMember(id, formData);
+    if (res.success) {
+      setEditingId(null);
+      fetchMembers();
+    } else {
+      alert(res.error);
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('¿Estás seguro de eliminar a este miembro?')) {
+      const res = await deleteFamilyMember(id);
+      if (res.success) fetchMembers();
+      else alert(res.error);
+    }
   };
 
   return (
@@ -176,31 +201,56 @@ function FamilyManager() {
         </motion.div>
       )}
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
         {members.map((member) => (
           <div key={member.id} className="glass card" style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div style={{ 
-                width: '50px', height: '50px', 
-                background: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)', 
-                borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                fontSize: '1.2rem'
-              }}>
-                {member.name[0].toUpperCase()}
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.1rem' }}>{member.name}</h3>
-                <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>{member.role === 'parent' ? 'Pareja/Admin' : 'Hijo/Jugador'}</p>
-              </div>
-            </div>
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
-                <Coins size={16} /> {member.balance} Tokens
-              </div>
-              <button style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
-                <Trash2 size={18} />
-              </button>
-            </div>
+            {editingId === member.id ? (
+              <form onSubmit={(e) => handleUpdate(e, member.id)} style={{ display: 'grid', gap: '15px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontSize: '0.9rem' }}>Editando Perfil</h3>
+                  <button type="button" onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
+                </div>
+                <input name="name" defaultValue={member.name} placeholder="Nombre" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <select name="role" defaultValue={member.role} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}>
+                  <option value="child" style={{ color: 'black' }}>Hijo</option>
+                  <option value="parent" style={{ color: 'black' }}>Pareja</option>
+                </select>
+                <input name="password" type="password" placeholder="Nueva contraseña (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '8px' }}>
+                  {loading ? '...' : 'Guardar Cambios'}
+                </button>
+              </form>
+            ) : (
+              <>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                  <div style={{ 
+                    width: '50px', height: '50px', 
+                    background: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)', 
+                    borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    fontSize: '1.2rem'
+                  }}>
+                    {member.name[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem' }}>{member.name}</h3>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>{member.role === 'parent' ? 'Pareja/Admin' : 'Hijo/Jugador'}</p>
+                  </div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '5px' }}>
+                    <button onClick={() => setEditingId(member.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '5px' }}>
+                      <Pencil size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(member.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '5px' }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
+                    <Coins size={16} /> {member.balance} Tokens
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ))}
         {members.length === 0 && !showForm && (
@@ -217,108 +267,20 @@ function TabButton({ active, onClick, icon, label }: any) {
   return (
     <button 
       onClick={onClick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '12px 20px',
-        borderRadius: '12px',
-        border: 'none',
-        background: active ? 'var(--accent-color)' : 'var(--surface-color)',
-        color: active ? 'white' : 'var(--text-dim)',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        fontWeight: 600
+      className={active ? 'btn-primary' : 'glass'}
+      style={{ 
+        display: 'flex', alignItems: 'center', gap: '8px', 
+        padding: '10px 20px', borderRadius: '12px', border: active ? 'none' : '1px solid var(--border-color)',
+        color: active ? 'white' : 'var(--text-dim)', cursor: 'pointer', whiteSpace: 'nowrap'
       }}
     >
-      {icon}
-      {label}
+      {icon} {label}
     </button>
   );
 }
 
-function QuestsManager() {
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Misiones de Valor</h2>
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={18} /> Nueva Misión
-        </button>
-      </div>
-      
-      <div style={{ display: 'grid', gap: '15px' }}>
-        {[1, 2].map((i) => (
-          <div key={i} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ fontSize: '1.1rem' }}>Lectura Diaria {i}</h3>
-              <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Leer un libro durante 15 minutos.</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <span style={{ color: 'var(--gold-color)', fontWeight: 700 }}>+20 Tokens</span>
-              <button style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><Trash2 size={18} /></button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function RewardsManager() {
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Catálogo de Premios</h2>
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={18} /> Nuevo Premio
-        </button>
-      </div>
-      <div className="glass card" style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '40px' }}>
-        No hay premios configurados todavía.
-      </div>
-    </motion.div>
-  );
-}
-
-function ApprovalsManager() {
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <h2 style={{ marginBottom: '20px' }}>Pendientes de Aprobación</h2>
-      <div className="glass card" style={{ borderLeft: '4px solid var(--gold-color)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <div style={{ width: '40px', height: '40px', background: 'var(--primary-color)', borderRadius: '50%' }}></div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem' }}>Mateo completó "Lectura"</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Hace 10 minutos</p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--danger-color)', background: 'none', color: 'var(--danger-color)', cursor: 'pointer' }}><XCircle size={20} /></button>
-            <button style={{ padding: '8px', borderRadius: '8px', background: 'var(--success-color)', border: 'none', color: 'white', cursor: 'pointer' }}><CheckCircle size={20} /></button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function SuggestionsManager() {
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <h2 style={{ marginBottom: '20px' }}>Buzón de Ideas 💡</h2>
-      <div className="glass card">
-        <p style={{ fontStyle: 'italic', marginBottom: '15px' }}>"Papá, ¿podemos poner una misión de lavar el auto por 100 tokens?"</p>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <input 
-            type="text" 
-            placeholder="Responder..." 
-            style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}
-          />
-          <button className="btn-primary">Aceptar y Crear Tarea</button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+// Estos se implementarán después pero mantenemos la estructura
+function QuestsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Gestión de Misiones 🚀</div> }
+function RewardsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Catálogo de Premios 🎁</div> }
+function ApprovalsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Aprobar Tareas ✅</div> }
+function SuggestionsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Buzón de Sugerencias 💡</div> }

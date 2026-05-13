@@ -1,4 +1,4 @@
--- Esquema inicial para TimeQuest
+-- Esquema inicial para PlayBalance
 
 -- Perfiles de usuario (Padres e Hijos)
 CREATE TABLE profiles (

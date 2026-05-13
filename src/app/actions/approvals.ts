@@ -73,7 +73,7 @@ export async function approveQuest(activeQuestId: string) {
     await db.insert(transactions).values({
       userId: aq.childId!,
       amount: aq.questReward,
-      type: 'earn',
+      type: 'quest',
       description: `Misión completada: ${aq.questTitle}`,
     });
 

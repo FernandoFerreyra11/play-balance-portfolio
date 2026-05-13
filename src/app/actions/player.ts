@@ -108,7 +108,7 @@ export async function requestReward(rewardId: string) {
     await db.insert(transactions).values({
       userId: player.id,
       amount: -reward.cost,
-      type: 'reward',
+      type: 'reward', // Tipo estandarizado
       description: `Canje de premio: ${reward.title}`,
     });
 
@@ -117,4 +117,54 @@ export async function requestReward(rewardId: string) {
   } catch (error) {
     return { error: "Error al procesar el canje" };
   }
+}
+
+export async function getFamilyStats(period: '7d' | '30d' | 'all') {
+  const session = await getServerSession(authOptions);
+  const familyId = (session.user as any).parentId || (session.user as any).id;
+  
+  if (!familyId) return null;
+
+  // Calculamos la fecha de inicio
+  let startDate = new Date(0); // Por defecto 'all'
+  if (period === '7d') startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  if (period === '30d') startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  // 1. Obtener todas las transacciones de los hijos de esta familia en el período
+  const data = await db
+    .select({
+      id: transactions.id,
+      amount: transactions.amount,
+      type: transactions.type,
+      description: transactions.description,
+      createdAt: transactions.createdAt,
+      userName: users.name,
+      userImage: users.image,
+    })
+    .from(transactions)
+    .innerJoin(users, eq(transactions.userId, users.id))
+    .where(and(
+      eq(users.parentId, familyId),
+      // gte(transactions.createdAt, startDate) // No todas las versiones de SQL soportan gte directamente en drizzle-orm sin helpers, usaremos un filtro simple
+    ))
+    .orderBy(desc(transactions.createdAt));
+
+  // Filtrado manual por fecha para mayor compatibilidad
+  const filteredData = data.filter(t => new Date(t.createdAt!) >= startDate);
+
+  // 2. Agrupar totales
+  const totalEarned = filteredData.filter(t => t.type === 'quest').reduce((acc, t) => acc + t.amount, 0);
+  const totalSpent = Math.abs(filteredData.filter(t => t.type === 'reward').reduce((acc, t) => acc + t.amount, 0));
+  const questsCount = filteredData.filter(t => t.type === 'quest').length;
+  const rewardsCount = filteredData.filter(t => t.type === 'reward').length;
+
+  return {
+    transactions: filteredData,
+    summary: {
+      totalEarned,
+      totalSpent,
+      questsCount,
+      rewardsCount
+    }
+  };
 }

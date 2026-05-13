@@ -18,7 +18,8 @@ import {
   Pencil,
   X,
   Clock,
-  MessageSquarePlus
+  MessageSquarePlus,
+  BarChart3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -28,6 +29,7 @@ import { getQuests, createQuest, deleteQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
+import { getFamilyStats } from '../actions/player';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -115,6 +117,12 @@ export default function AdminDashboard() {
           icon={<MessageSquare size={18} />}
           label="Sugerencias"
         />
+        <TabButton 
+          active={activeTab === 'stats'} 
+          onClick={() => setActiveTab('stats')}
+          icon={<BarChart3 size={18} />}
+          label="Estadísticas"
+        />
       </nav>
 
       {/* Contenido Dinámico */}
@@ -124,6 +132,7 @@ export default function AdminDashboard() {
         {activeTab === 'rewards' && <RewardsManager />}
         {activeTab === 'approvals' && <ApprovalsManager />}
         {activeTab === 'suggestions' && <SuggestionsManager />}
+        {activeTab === 'stats' && <StatsManager />}
       </main>
     </div>
   );
@@ -778,6 +787,99 @@ function SuggestionsManager() {
             <p>Aún no hay sugerencias. ¡Anima a tu equipo a proponer ideas!</p>
           </div>
         )}
+      </div>
+    </motion.div>
+  );
+}
+
+function StatsManager() {
+  const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('7d');
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    const data = await getFamilyStats(period);
+    setStats(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, [period]);
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '60px' }}>Analizando datos familiares...</div>;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
+        <div>
+          <h2>Estadísticas de la Familia</h2>
+          <p style={{ color: 'var(--text-dim)' }}>Monitorea el esfuerzo y las recompensas de tu equipo.</p>
+        </div>
+        
+        <div className="glass" style={{ display: 'flex', padding: '5px', borderRadius: '12px', gap: '5px' }}>
+          {(['7d', '30d', 'all'] as const).map((p) => (
+            <button 
+              key={p}
+              onClick={() => setPeriod(p)}
+              style={{ 
+                background: period === p ? 'var(--primary-color)' : 'transparent',
+                border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem',
+                transition: 'all 0.2s'
+              }}
+            >
+              {p === '7d' ? '7 días' : p === '30d' ? '30 días' : 'Todo'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+        <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--primary-color)' }}>
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Ganados</p>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+            <Coins size={28} /> {stats.summary.totalEarned}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.questsCount} misiones</p>
+        </div>
+        <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--accent-color)' }}>
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Canjeados</p>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+            <Trophy size={28} /> {stats.summary.totalSpent}
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.rewardsCount} premios</p>
+        </div>
+      </div>
+
+      <div className="glass card">
+        <h3 style={{ marginBottom: '20px' }}>Actividad Reciente</h3>
+        <div style={{ display: 'grid', gap: '15px' }}>
+          {stats.transactions.map((t: any) => (
+            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  {t.userImage || '👤'}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600 }}>{t.userName}</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t.description}</p>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontWeight: 700, color: t.type === 'quest' ? 'var(--success-color)' : 'var(--danger-color)' }}>
+                  {t.type === 'quest' ? '+' : ''}{t.amount}
+                </p>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
+                  {new Date(t.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          ))}
+          {stats.transactions.length === 0 && (
+            <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)' }}>No hay actividad registrada en este período.</p>
+          )}
+        </div>
       </div>
     </motion.div>
   );

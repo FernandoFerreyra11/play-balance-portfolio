@@ -35,7 +35,7 @@ export default function AdminDashboard() {
       <header style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
-        alignItems: 'center', 
+        alignItems: 'flex-start', 
         margin: '40px 0',
         flexWrap: 'wrap',
         gap: '20px'
@@ -51,29 +51,35 @@ export default function AdminDashboard() {
               Configuración y <span style={{ color: 'var(--accent-color)' }}>Monitoreo</span> 🛠️
             </h1>
             <p style={{ color: 'var(--text-dim)' }}>Hola, {session?.user?.name || 'Admin'}</p>
-            <button 
-              onClick={() => signOut()}
-              style={{ 
-                background: 'none', border: 'none', color: 'var(--text-dim)', 
-                cursor: 'pointer', fontSize: '0.8rem', marginTop: '5px',
-                display: 'flex', alignItems: 'center', gap: '5px'
-              }}
-            >
-              <LogOut size={14} /> Cerrar sesión
-            </button>
           </div>
         </div>
-        <div className="glass card admin-badge" style={{ 
-          padding: '10px 20px', 
-          display: 'flex', 
-          gap: '20px', 
-          justifyContent: 'center',
-          textAlign: 'center',
-        }}>
-          <div>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', letterSpacing: '1px' }}>RESUMEN FAMILIAR</p>
-            <p style={{ fontWeight: 600, fontSize: '1.1rem' }}>Miembros de la Familia</p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', flex: '1 1 100%', maxWidth: '100%', order: 2 }}>
+          <div className="glass card admin-badge" style={{ 
+            padding: '12px 24px', 
+            display: 'flex', 
+            justifyContent: 'center',
+            textAlign: 'center',
+            width: '100%'
+          }}>
+            <div>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '1.5px', marginBottom: '2px' }}>RESUMEN FAMILIAR</p>
+              <p style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--accent-color)' }}>Equipo</p>
+            </div>
           </div>
+          <button 
+            onClick={() => signOut()}
+            className="glass"
+            style={{ 
+              border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', 
+              padding: '8px 16px', borderRadius: '12px',
+              cursor: 'pointer', fontSize: '0.8rem',
+              display: 'flex', alignItems: 'center', gap: '8px',
+              alignSelf: 'flex-end'
+            }}
+          >
+            <LogOut size={14} /> Cerrar sesión
+          </button>
         </div>
       </header>
 

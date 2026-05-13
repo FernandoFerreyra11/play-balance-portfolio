@@ -374,7 +374,7 @@ function QuestsManager() {
                 <h3 style={{ marginTop: '5px' }}>{quest.title}</h3>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
-                <Coins size={16} /> {quest.tokens}
+                <Coins size={16} /> {quest.reward}
               </div>
             </div>
             <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'flex-end' }}>

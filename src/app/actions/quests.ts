@@ -22,7 +22,7 @@ export async function createQuest(formData: FormData) {
     await db.insert(quests).values({
       title,
       description,
-      tokens,
+      reward: tokens,
       category,
       createdBy: (session.user as any).id,
     });

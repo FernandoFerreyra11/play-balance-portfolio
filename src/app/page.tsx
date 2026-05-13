@@ -25,13 +25,14 @@ import {
   requestQuestCompletion, 
   requestReward 
 } from './actions/player';
-import { createSuggestion } from './actions/suggestions';
+import { createSuggestion, getMySuggestions } from './actions/suggestions';
 
 export default function Home() {
   const { data: session, status } = useSession();
   const [player, setPlayer] = useState<any>(null);
   const [quests, setQuests] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
+  const [mySuggestions, setMySuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSuggestion, setShowSuggestion] = useState(false);
   const [suggestionText, setSuggestionText] = useState('');
@@ -42,9 +43,11 @@ export default function Home() {
       const stats = await getPlayerStats();
       const q = await getAvailableQuests();
       const r = await getAvailableRewards();
+      const s = await getMySuggestions();
       setPlayer(stats);
       setQuests(q);
       setRewards(r);
+      setMySuggestions(s);
       setLoading(false);
     }
   };
@@ -54,9 +57,9 @@ export default function Home() {
     setSending(true);
     const res = await createSuggestion(suggestionText);
     if (res.success) {
-      alert("¡Idea enviada! Papá/Mamá la revisará pronto.");
       setSuggestionText('');
       setShowSuggestion(false);
+      fetchData(); // Recargar para ver la nueva sugerencia en la lista
     } else {
       alert(res.error);
     }
@@ -314,6 +317,36 @@ export default function Home() {
           >
             {sending ? 'Enviando idea...' : 'Enviar Sugerencia'}
           </button>
+
+          {mySuggestions.length > 0 && (
+            <div style={{ marginTop: '30px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '15px', color: 'var(--text-dim)' }}>Mis ideas anteriores:</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {mySuggestions.map((s) => (
+                  <div key={s.id} className="glass" style={{ padding: '12px', borderRadius: '12px', fontSize: '0.9rem' }}>
+                    <p style={{ marginBottom: '8px' }}>"{s.content}"</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ 
+                        fontSize: '0.7rem', 
+                        fontWeight: 700, 
+                        padding: '4px 10px', 
+                        borderRadius: '20px',
+                        background: s.status === 'approved' ? 'rgba(34, 197, 94, 0.2)' : s.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                        color: s.status === 'approved' ? 'var(--success-color)' : s.status === 'rejected' ? 'var(--danger-color)' : 'var(--text-dim)'
+                      }}>
+                        {s.status === 'approved' ? '¡APROBADA! ✅' : s.status === 'rejected' ? 'NO POR AHORA ❌' : 'EN REVISIÓN ⏳'}
+                      </span>
+                      {s.status === 'approved' && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600 }}>
+                          ¡Pronto habrá novedades! 🚀
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

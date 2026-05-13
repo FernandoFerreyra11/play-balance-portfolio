@@ -29,6 +29,19 @@ export async function createSuggestion(content: string) {
   }
 }
 
+export async function getMySuggestions() {
+  const session = await getServerSession(authOptions);
+  if (!session) return [];
+
+  const data = await db
+    .select()
+    .from(suggestions)
+    .where(eq(suggestions.childId, (session.user as any).id))
+    .orderBy(desc(suggestions.createdAt));
+
+  return data;
+}
+
 export async function getSuggestions() {
   const familyId = await getEffectiveFamilyId();
   if (!familyId) return [];

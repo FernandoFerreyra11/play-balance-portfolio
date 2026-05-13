@@ -32,15 +32,24 @@ export default function AdminDashboard() {
   return (
     <div className="container">
       {/* Header Admin */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '40px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        margin: '40px 0',
+        flexWrap: 'wrap',
+        gap: '20px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: '1 1 300px' }}>
           <Link href="/">
             <button className="glass" style={{ padding: '10px', borderRadius: '50%', cursor: 'pointer', border: '1px solid var(--border-color)', color: 'white' }}>
               <ArrowLeft size={20} />
             </button>
           </Link>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Panel de <span style={{ color: 'var(--accent-color)' }}>Control</span> 🛠️</h1>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 700, lineHeight: 1.2 }}>
+              Configuración y <span style={{ color: 'var(--accent-color)' }}>Monitoreo</span> 🛠️
+            </h1>
             <p style={{ color: 'var(--text-dim)' }}>Hola, {session?.user?.name || 'Admin'}</p>
             <button 
               onClick={() => signOut()}
@@ -54,10 +63,22 @@ export default function AdminDashboard() {
             </button>
           </div>
         </div>
-        <div className="glass card" style={{ padding: '10px 20px', display: 'flex', gap: '20px' }}>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>MIEMBROS</p>
-            <p style={{ fontWeight: 600 }}>Familia</p>
+        <div className="glass card" style={{ 
+          padding: '10px 20px', 
+          display: 'flex', 
+          gap: '20px', 
+          flex: '1 1 100%', // En móvil toma todo el ancho
+          maxWidth: '100%',
+          justifyContent: 'center',
+          textAlign: 'center',
+          '@media (min-width: 768px)': {
+            flex: '0 1 auto',
+            width: 'auto'
+          } as any
+        }}>
+          <div>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', letterSpacing: '1px' }}>RESUMEN FAMILIAR</p>
+            <p style={{ fontWeight: 600, fontSize: '1.1rem' }}>Miembros de la Familia</p>
           </div>
         </div>
       </header>

@@ -1,105 +1,241 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Coins, Book, Gamepad2, Smartphone, Trophy, MessageSquarePlus, LogOut } from 'lucide-react';
+import { 
+  Coins, 
+  Trophy, 
+  Gamepad2, 
+  Smartphone, 
+  MessageSquarePlus, 
+  LogOut, 
+  CheckCircle2, 
+  ArrowRight,
+  Settings,
+  Gift,
+  Clock,
+  Sparkles
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { 
+  getPlayerStats, 
+  getAvailableQuests, 
+  getAvailableRewards, 
+  requestQuestCompletion, 
+  requestReward 
+} from './actions/player';
 
 export default function Home() {
-  const { data: session } = useSession();
-  const [tokens, setTokens] = useState(150);
+  const { data: session, status } = useSession();
+  const [player, setPlayer] = useState<any>(null);
+  const [quests, setQuests] = useState<any[]>([]);
+  const [rewards, setRewards] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showSuggestion, setShowSuggestion] = useState(false);
 
+  const fetchData = async () => {
+    if (session?.user) {
+      const stats = await getPlayerStats();
+      const q = await getAvailableQuests();
+      const r = await getAvailableRewards();
+      setPlayer(stats);
+      setQuests(q);
+      setRewards(r);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchData();
+    }
+  }, [status, session]);
+
+  if (status === 'loading' || loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+          <Sparkles size={40} color="var(--primary-color)" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  // VISTA PARA EL PADRE / ADMIN
+  if (player?.role === 'parent') {
+    return (
+      <div className="container" style={{ textAlign: 'center', paddingTop: '100px' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🛡️</div>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '10px' }}>
+            Hola, <span style={{ color: 'var(--accent-color)' }}>{player.name}</span>
+          </h1>
+          <p style={{ color: 'var(--text-dim)', fontSize: '1.2rem', marginBottom: '40px' }}>
+            Tu equipo está listo. ¿Qué quieres supervisar hoy?
+          </p>
+          
+          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/admin">
+              <button className="btn-primary" style={{ padding: '20px 40px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Settings size={20} /> Ir a Configuración y Monitoreo
+              </button>
+            </Link>
+            <button onClick={() => signOut()} className="glass" style={{ padding: '20px 40px', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <LogOut size={20} /> Cerrar sesión
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // VISTA PARA EL HIJO / JUGADOR
   return (
     <div className="container">
-      {/* Header con Saldo */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '40px 0' }}>
-        <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 700 }}>Hola, <span style={{ color: 'var(--primary-color)' }}>{session?.user?.name || 'Invitado'}</span>! 👋</h1>
-          <p style={{ color: 'var(--text-dim)' }}>¿Qué aventura elegiremos hoy?</p>
-          <button 
-            onClick={() => signOut()}
-            style={{ 
-              background: 'none', border: 'none', color: 'var(--text-dim)', 
-              cursor: 'pointer', fontSize: '0.8rem', marginTop: '10px',
-              display: 'flex', alignItems: 'center', gap: '5px'
-            }}
-          >
-            <LogOut size={14} /> Cerrar sesión
-          </button>
+      {/* Header del Jugador */}
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        margin: '40px 0',
+        flexWrap: 'wrap',
+        gap: '20px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ 
+            width: '80px', height: '80px', 
+            background: 'rgba(255,255,255,0.05)', 
+            border: '2px solid var(--primary-color)',
+            borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
+            fontSize: '3rem', boxShadow: '0 0 20px var(--primary-glow)'
+          }}>
+            {player?.image || '👤'}
+          </div>
+          <div>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 700 }}>¡Hola, <span style={{ color: 'var(--primary-color)' }}>{player?.name}</span>! 👋</h1>
+            <p style={{ color: 'var(--text-dim)' }}>¿Qué aventura elegiremos hoy?</p>
+            <button onClick={() => signOut()} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '0.8rem', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <LogOut size={14} /> Salir del juego
+            </button>
+          </div>
         </div>
-        <div className="glass card floating" style={{ textAlign: 'center', minWidth: '200px' }}>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Tus Fichas</p>
-          <div className="token-balance">
-            <Coins size={32} />
-            {tokens}
+        
+        <div className="glass card floating" style={{ textAlign: 'center', minWidth: '220px', border: '2px solid var(--gold-color)' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Tu Tesoro</p>
+          <div className="token-balance" style={{ fontSize: '3rem' }}>
+            <Coins size={36} />
+            {player?.balance || 0}
           </div>
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px' }}>
         
         {/* Sección de Misiones */}
         <section>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <Trophy color="var(--primary-color)" />
-            <h2 style={{ fontSize: '1.5rem' }}>Misiones Disponibles</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '25px' }}>
+            <div style={{ padding: '10px', background: 'var(--primary-glow)', borderRadius: '12px' }}>
+              <Trophy color="var(--primary-color)" size={24} />
+            </div>
+            <h2 style={{ fontSize: '1.8rem' }}>Misiones de Hoy</h2>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div className="glass card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                  <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '12px' }}>
-                    <Book color="var(--primary-color)" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {quests.length > 0 ? quests.map((quest) => (
+              <motion.div 
+                key={quest.id} 
+                whileHover={{ scale: 1.02 }}
+                className="glass card" 
+                style={{ borderLeft: '6px solid var(--primary-color)' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: 700, textTransform: 'uppercase' }}>{quest.category}</span>
+                    <h3 style={{ fontSize: '1.3rem', margin: '5px 0' }}>{quest.title}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
+                      <Coins size={16} /> +{quest.reward} Tokens
+                    </div>
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.1rem' }}>Lectura de aventura</h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>15 minutos de lectura = 2hs de pantalla</p>
-                  </div>
+                  <button 
+                    onClick={async () => {
+                      const res = await requestQuestCompletion(quest.id);
+                      if (res.success) alert("¡Genial! Papá/Mamá revisará tu misión pronto.");
+                    }}
+                    className="btn-primary" 
+                    style={{ borderRadius: '50px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    ¡Hecho! <CheckCircle2 size={18} />
+                  </button>
                 </div>
-                <button className="btn-primary">+2h</button>
+              </motion.div>
+            )) : (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+                No hay misiones hoy. ¡Descansa o sugiere una!
               </div>
-            </div>
-
-            <div className="glass card" style={{ opacity: 0.8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                  <div style={{ padding: '12px', background: 'rgba(6, 182, 212, 0.2)', borderRadius: '12px' }}>
-                    <Trophy color="var(--accent-color)" />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.1rem' }}>Ordenar cuarto</h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Tu cuarto debe quedar impecable</p>
-                  </div>
-                </div>
-                <div style={{ color: 'var(--gold-color)', fontWeight: 600 }}>+30 Tokens</div>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
         {/* Sección de Canje */}
         <section>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <Gamepad2 color="var(--accent-color)" />
-            <h2 style={{ fontSize: '1.5rem' }}>Canjear Tiempo</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '25px' }}>
+            <div style={{ padding: '10px', background: 'rgba(6, 182, 212, 0.2)', borderRadius: '12px' }}>
+              <Gift color="var(--accent-color)" size={24} />
+            </div>
+            <h2 style={{ fontSize: '1.8rem' }}>Tienda de Premios</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-            <div className="glass card" style={{ textAlign: 'center' }}>
-              <Smartphone size={40} style={{ marginBottom: '15px', color: 'var(--accent-color)' }} />
-              <h3>1 Hora Celular</h3>
-              <p style={{ color: 'var(--gold-color)', margin: '10px 0' }}>50 Tokens</p>
-              <button className="btn-primary" style={{ width: '100%' }}>Usar</button>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            {rewards.length > 0 ? rewards.map((reward) => (
+              <motion.div 
+                key={reward.id} 
+                whileHover={{ scale: 1.05 }}
+                className="glass card" 
+                style={{ textAlign: 'center', borderBottom: '4px solid var(--accent-color)' }}
+              >
+                <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}><Gift size={40} color="var(--accent-color)" style={{ margin: '0 auto' }} /></div>
+                <h3 style={{ fontSize: '1.1rem', height: '2.4em', overflow: 'hidden' }}>{reward.title}</h3>
+                
+                <div style={{ margin: '15px 0', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                  <div style={{ color: 'var(--gold-color)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Coins size={14} /> {reward.cost}
+                  </div>
+                  {reward.minutes && (
+                    <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock size={14} /> {reward.minutes}m
+                    </div>
+                  )}
+                </div>
 
-            <div className="glass card" style={{ textAlign: 'center' }}>
-              <Gamepad2 size={40} style={{ marginBottom: '15px', color: 'var(--primary-color)' }} />
-              <h3>1 Hora Play</h3>
-              <p style={{ color: 'var(--gold-color)', margin: '10px 0' }}>60 Tokens</p>
-              <button className="btn-primary" style={{ width: '100%', filter: tokens < 60 ? 'grayscale(1)' : 'none' }}>Usar</button>
-            </div>
+                <button 
+                  disabled={player?.balance < reward.cost}
+                  onClick={async () => {
+                    if (confirm(`¿Quieres canjear ${reward.title}?`)) {
+                      const res = await requestReward(reward.id);
+                      if (res.success) {
+                        alert("¡Premio canjeado! ¡Disfrútalo!");
+                        fetchData();
+                      } else {
+                        alert(res.error);
+                      }
+                    }
+                  }}
+                  className="btn-primary" 
+                  style={{ 
+                    width: '100%', 
+                    background: player?.balance < reward.cost ? 'rgba(255,255,255,0.1)' : 'var(--accent-color)',
+                    opacity: player?.balance < reward.cost ? 0.5 : 1
+                  }}
+                >
+                  {player?.balance < reward.cost ? `Faltan ${reward.cost - player.balance}` : 'Canjear'}
+                </button>
+              </motion.div>
+            )) : (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+                Próximamente habrá premios geniales.
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -123,7 +259,8 @@ export default function Home() {
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          zIndex: 90
         }}
       >
         <MessageSquarePlus />

@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember } from '../actions/family';
 import { getQuests, createQuest, deleteQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
+import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
@@ -596,5 +597,85 @@ function RewardsManager() {
     </motion.div>
   );
 }
-function ApprovalsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Aprobar Tareas ✅</div> }
+function ApprovalsManager() {
+  const [pending, setPending] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPending = async () => {
+    const data = await getPendingApprovals();
+    setPending(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchPending();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    const res = await approveQuest(id);
+    if (res.success) fetchPending();
+    else alert(res.error);
+  };
+
+  const handleReject = async (id: string) => {
+    if (confirm('¿Quieres rechazar esta solicitud?')) {
+      const res = await rejectQuest(id);
+      if (res.success) fetchPending();
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando solicitudes...</div>;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div style={{ marginBottom: '30px' }}>
+        <h2>Solicitudes de Aprobación</h2>
+        <p style={{ color: 'var(--text-dim)' }}>Revisa las misiones completadas por tu equipo.</p>
+      </div>
+
+      <div style={{ display: 'grid', gap: '20px' }}>
+        {pending.map((item) => (
+          <div key={item.id} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)' }}>
+                {item.childImage || '👤'}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{item.childName}</h3>
+                <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Completó: <span style={{ color: 'white', fontWeight: 600 }}>{item.questTitle}</span></p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontSize: '0.9rem', marginTop: '5px', fontWeight: 700 }}>
+                  <Coins size={14} /> Recompensa: {item.questReward} Tokens
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => handleApprove(item.id)}
+                className="btn-primary" 
+                style={{ background: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+              >
+                <CheckCircle size={18} /> Aprobar
+              </button>
+              <button 
+                onClick={() => handleReject(item.id)}
+                className="glass" 
+                style={{ color: 'var(--danger-color)', border: '1px solid var(--danger-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', cursor: 'pointer' }}
+              >
+                <XCircle size={18} /> Rechazar
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {pending.length === 0 && (
+          <div className="glass card" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-dim)' }}>
+            <CheckCircle size={48} color="var(--success-color)" style={{ marginBottom: '20px', opacity: 0.5 }} />
+            <p style={{ fontSize: '1.1rem' }}>¡Todo al día! No hay misiones pendientes de revisión.</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 function SuggestionsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Buzón de Sugerencias 💡</div> }

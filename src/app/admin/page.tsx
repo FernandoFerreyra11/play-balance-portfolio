@@ -172,31 +172,12 @@ function FamilyManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '30px',
-        flexWrap: 'wrap',
-        gap: '15px'
-      }}>
-        <div className="glass card admin-badge" style={{ 
-          padding: '10px 20px', 
-          display: 'flex', 
-          justifyContent: 'center',
-          textAlign: 'center',
-          flex: '1 1 200px',
-          maxWidth: '300px'
-        }}>
-          <div>
-            <p style={{ fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '1.5px', marginBottom: '2px' }}>RESUMEN FAMILIAR</p>
-            <p style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent-color)' }}>Equipo</p>
-          </div>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Equipo Familiar</h2>
         <button 
           onClick={() => { setShowForm(!showForm); setSelectedAvatar('👤'); }}
           className="btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           {showForm ? 'Cancelar' : <><Plus size={18} /> Añadir Miembro</>}
         </button>

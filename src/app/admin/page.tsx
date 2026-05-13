@@ -63,18 +63,12 @@ export default function AdminDashboard() {
             </button>
           </div>
         </div>
-        <div className="glass card" style={{ 
+        <div className="glass card admin-badge" style={{ 
           padding: '10px 20px', 
           display: 'flex', 
           gap: '20px', 
-          flex: '1 1 100%', // En móvil toma todo el ancho
-          maxWidth: '100%',
           justifyContent: 'center',
           textAlign: 'center',
-          '@media (min-width: 768px)': {
-            flex: '0 1 auto',
-            width: 'auto'
-          } as any
         }}>
           <div>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', letterSpacing: '1px' }}>RESUMEN FAMILIAR</p>

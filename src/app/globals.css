@@ -97,3 +97,16 @@ h1, h2, h3 {
 .floating {
   animation: float 4s ease-in-out infinite;
 }
+
+.admin-badge {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .admin-badge {
+    flex: 0 1 auto;
+    width: auto;
+    max-width: fit-content;
+  }
+}

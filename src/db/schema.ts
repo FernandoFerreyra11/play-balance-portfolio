@@ -12,6 +12,7 @@ export const users = pgTable('users', {
   password: text('password'),
   image: text('image'),
   role: roleEnum('role').default('child'),
+  parentId: uuid('parent_id'), // Referencia al ID del padre/madre
   balance: integer('balance').default(0),
   createdAt: timestamp('created_at').defaultNow(),
 });

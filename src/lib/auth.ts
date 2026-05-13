@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
@@ -30,7 +30,12 @@ export const authOptions: NextAuthOptions = {
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials.email))
+          .where(
+            or(
+              eq(users.email, credentials.email),
+              eq(users.name, credentials.email)
+            )
+          )
           .limit(1);
 
         if (!user || !user.password) {

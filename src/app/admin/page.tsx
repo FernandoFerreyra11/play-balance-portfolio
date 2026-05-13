@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { 
   Plus, 
@@ -12,14 +12,17 @@ import {
   Gift, 
   MessageSquare,
   ArrowLeft,
-  LogOut
+  LogOut,
+  Users,
+  Coins
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { getFamilyMembers, createFamilyMember } from '../actions/family';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState('quests');
+  const [activeTab, setActiveTab] = useState('family'); // Empezamos por familia ahora
 
   return (
     <div className="container">
@@ -48,18 +51,20 @@ export default function AdminDashboard() {
         </div>
         <div className="glass card" style={{ padding: '10px 20px', display: 'flex', gap: '20px' }}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>HIJOS</p>
-            <p style={{ fontWeight: 600 }}>2</p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>PENDIENTES</p>
-            <p style={{ fontWeight: 600, color: 'var(--gold-color)' }}>3</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>MIEMBROS</p>
+            <p style={{ fontWeight: 600 }}>Familia</p>
           </div>
         </div>
       </header>
 
       {/* Tabs */}
-      <nav style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+      <nav style={{ display: 'flex', gap: '10px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px' }}>
+        <TabButton 
+          active={activeTab === 'family'} 
+          onClick={() => setActiveTab('family')}
+          icon={<Users size={18} />}
+          label="Familia"
+        />
         <TabButton 
           active={activeTab === 'quests'} 
           onClick={() => setActiveTab('quests')}
@@ -88,12 +93,123 @@ export default function AdminDashboard() {
 
       {/* Contenido Dinámico */}
       <main>
+        {activeTab === 'family' && <FamilyManager />}
         {activeTab === 'quests' && <QuestsManager />}
         {activeTab === 'rewards' && <RewardsManager />}
         {activeTab === 'approvals' && <ApprovalsManager />}
         {activeTab === 'suggestions' && <SuggestionsManager />}
       </main>
     </div>
+  );
+}
+
+function FamilyManager() {
+  const [members, setMembers] = useState<any[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchMembers = async () => {
+    const data = await getFamilyMembers();
+    setMembers(data);
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await createFamilyMember(formData);
+    if (res.success) {
+      setShowForm(false);
+      fetchMembers();
+    } else {
+      alert(res.error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Miembros de la Familia</h2>
+        <button 
+          onClick={() => setShowForm(!showForm)}
+          className="btn-primary" 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          {showForm ? 'Cancelar' : <><Plus size={18} /> Añadir Miembro</>}
+        </button>
+      </div>
+
+      {showForm && (
+        <motion.div 
+          initial={{ height: 0, opacity: 0 }} 
+          animate={{ height: 'auto', opacity: 1 }}
+          className="glass card" 
+          style={{ marginBottom: '30px', overflow: 'hidden' }}
+        >
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Nombre</label>
+              <input name="name" type="text" placeholder="Ej: Mateo" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+            </div>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Contraseña</label>
+              <input name="password" type="password" placeholder="••••" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+            </div>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Rol</label>
+              <select name="role" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}>
+                <option value="child" style={{ color: 'black' }}>Hijo / Jugador</option>
+                <option value="parent" style={{ color: 'black' }}>Pareja / Admin</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button disabled={loading} type="submit" className="btn-primary" style={{ width: '100%' }}>
+                {loading ? 'Guardando...' : 'Crear Perfil'}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      )}
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+        {members.map((member) => (
+          <div key={member.id} className="glass card" style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div style={{ 
+                width: '50px', height: '50px', 
+                background: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)', 
+                borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                fontSize: '1.2rem'
+              }}>
+                {member.name[0].toUpperCase()}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem' }}>{member.name}</h3>
+                <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>{member.role === 'parent' ? 'Pareja/Admin' : 'Hijo/Jugador'}</p>
+              </div>
+            </div>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
+                <Coins size={16} /> {member.balance} Tokens
+              </div>
+              <button style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        ))}
+        {members.length === 0 && !showForm && (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+            No hay miembros en tu familia todavía. ¡Añade el primero!
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
 

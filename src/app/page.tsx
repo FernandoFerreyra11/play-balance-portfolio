@@ -158,14 +158,33 @@ export default function Home() {
                     </div>
                   </div>
                   <button 
+                    disabled={quest.status === 'pending_approval'}
                     onClick={async () => {
                       const res = await requestQuestCompletion(quest.id);
-                      if (res.success) alert("¡Genial! Papá/Mamá revisará tu misión pronto.");
+                      if (res.success) {
+                        fetchData(); // Recargamos para ver el cambio de estado
+                      } else {
+                        alert(res.error);
+                      }
                     }}
-                    className="btn-primary" 
-                    style={{ borderRadius: '50px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    className={quest.status === 'pending_approval' ? "glass" : "btn-primary"} 
+                    style={{ 
+                      borderRadius: '50px', 
+                      padding: '10px 20px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      opacity: quest.status === 'pending_approval' ? 0.6 : 1,
+                      cursor: quest.status === 'pending_approval' ? 'default' : 'pointer',
+                      border: quest.status === 'pending_approval' ? '1px solid var(--border-color)' : 'none',
+                      color: quest.status === 'pending_approval' ? 'var(--text-dim)' : 'white'
+                    }}
                   >
-                    ¡Hecho! <CheckCircle2 size={18} />
+                    {quest.status === 'pending_approval' ? (
+                      <>En revisión <Clock size={16} /></>
+                    ) : (
+                      <>¡Hecho! <CheckCircle2 size={18} /></>
+                    )}
                   </button>
                 </div>
               </motion.div>

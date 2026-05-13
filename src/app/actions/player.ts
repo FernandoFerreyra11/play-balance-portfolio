@@ -27,10 +27,21 @@ export async function getAvailableQuests() {
   const player = await getPlayerStats();
   if (!player || !player.parentId) return [];
 
-  // Obtenemos las misiones creadas por el padre
+  // Obtenemos todas las misiones del padre
   const parentQuests = await db
-    .select()
+    .select({
+      id: quests.id,
+      title: quests.title,
+      reward: quests.reward,
+      category: quests.category,
+      status: activeQuests.status,
+    })
     .from(quests)
+    .leftJoin(activeQuests, and(
+      eq(quests.id, activeQuests.questId),
+      eq(activeQuests.childId, player.id),
+      eq(activeQuests.status, 'pending_approval')
+    ))
     .where(eq(quests.createdBy, player.parentId))
     .orderBy(desc(quests.createdAt));
 

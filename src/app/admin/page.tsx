@@ -35,12 +35,12 @@ export default function AdminDashboard() {
       <header style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
-        alignItems: 'flex-start', 
+        alignItems: 'center', 
         margin: '40px 0',
         flexWrap: 'wrap',
         gap: '20px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: '1 1 300px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Link href="/">
             <button className="glass" style={{ padding: '10px', borderRadius: '50%', cursor: 'pointer', border: '1px solid var(--border-color)', color: 'white' }}>
               <ArrowLeft size={20} />
@@ -54,33 +54,18 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', flex: '1 1 100%', maxWidth: '100%', order: 2 }}>
-          <div className="glass card admin-badge" style={{ 
-            padding: '12px 24px', 
-            display: 'flex', 
-            justifyContent: 'center',
-            textAlign: 'center',
-            width: '100%'
-          }}>
-            <div>
-              <p style={{ fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '1.5px', marginBottom: '2px' }}>RESUMEN FAMILIAR</p>
-              <p style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--accent-color)' }}>Equipo</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => signOut()}
-            className="glass"
-            style={{ 
-              border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', 
-              padding: '8px 16px', borderRadius: '12px',
-              cursor: 'pointer', fontSize: '0.8rem',
-              display: 'flex', alignItems: 'center', gap: '8px',
-              alignSelf: 'flex-end'
-            }}
-          >
-            <LogOut size={14} /> Cerrar sesión
-          </button>
-        </div>
+        <button 
+          onClick={() => signOut()}
+          className="glass"
+          style={{ 
+            border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', 
+            padding: '8px 16px', borderRadius: '12px',
+            cursor: 'pointer', fontSize: '0.8rem',
+            display: 'flex', alignItems: 'center', gap: '8px'
+          }}
+        >
+          <LogOut size={14} /> Cerrar sesión
+        </button>
       </header>
 
       {/* Tabs */}
@@ -187,12 +172,31 @@ function FamilyManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Miembros de la Familia</h2>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '30px',
+        flexWrap: 'wrap',
+        gap: '15px'
+      }}>
+        <div className="glass card admin-badge" style={{ 
+          padding: '10px 20px', 
+          display: 'flex', 
+          justifyContent: 'center',
+          textAlign: 'center',
+          flex: '1 1 200px',
+          maxWidth: '300px'
+        }}>
+          <div>
+            <p style={{ fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '1.5px', marginBottom: '2px' }}>RESUMEN FAMILIAR</p>
+            <p style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent-color)' }}>Equipo</p>
+          </div>
+        </div>
         <button 
           onClick={() => { setShowForm(!showForm); setSelectedAvatar('👤'); }}
           className="btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
         >
           {showForm ? 'Cancelar' : <><Plus size={18} /> Añadir Miembro</>}
         </button>

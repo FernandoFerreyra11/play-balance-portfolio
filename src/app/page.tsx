@@ -133,7 +133,14 @@ export default function Home() {
             {player?.image || '👤'}
           </div>
           <div>
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 700 }}>¡Hola, <span style={{ color: 'var(--primary-color)' }}>{player?.name}</span>! 👋</h1>
+            <h1 style={{ 
+              fontSize: 'clamp(1.5rem, 5vw, 2.2rem)', 
+              fontWeight: 700, 
+              lineHeight: 1.2,
+              wordBreak: 'break-word'
+            }}>
+              ¡Hola, <span style={{ color: 'var(--primary-color)' }}>{player?.name}</span>! 👋
+            </h1>
             <p style={{ color: 'var(--text-dim)' }}>¿Qué aventura elegiremos hoy?</p>
             <button onClick={() => signOut()} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '0.8rem', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={14} /> Salir del juego
@@ -225,26 +232,39 @@ export default function Home() {
             <h2 style={{ fontSize: '1.8rem' }}>Tienda de Premios</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {rewards.length > 0 ? rewards.map((reward) => (
               <motion.div 
                 key={reward.id} 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
                 className="glass card" 
-                style={{ textAlign: 'center', borderBottom: '4px solid var(--accent-color)' }}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  gap: '20px',
+                  borderBottom: 'none',
+                  borderLeft: '6px solid var(--accent-color)',
+                  flexWrap: 'wrap'
+                }}
               >
-                <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}><Gift size={40} color="var(--accent-color)" style={{ margin: '0 auto' }} /></div>
-                <h3 style={{ fontSize: '1.1rem', height: '2.4em', overflow: 'hidden' }}>{reward.title}</h3>
-                
-                <div style={{ margin: '15px 0', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                  <div style={{ color: 'var(--gold-color)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Coins size={14} /> {reward.cost}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
+                  <div style={{ fontSize: '2rem', minWidth: '50px', height: '50px', background: 'rgba(6, 182, 212, 0.1)', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Gift size={24} color="var(--accent-color)" />
                   </div>
-                  {reward.minutes && (
-                    <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={14} /> {reward.minutes}m
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem' }}>{reward.title}</h3>
+                    <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
+                      <div style={{ color: 'var(--gold-color)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem' }}>
+                        <Coins size={14} /> {reward.cost} tokens
+                      </div>
+                      {reward.minutes && (
+                        <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={14} /> {reward.minutes}m
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 <button 
@@ -262,7 +282,8 @@ export default function Home() {
                   }}
                   className="btn-primary" 
                   style={{ 
-                    width: '100%', 
+                    minWidth: '120px',
+                    padding: '12px 24px',
                     background: player?.balance < reward.cost ? 'rgba(255,255,255,0.1)' : 'var(--accent-color)',
                     opacity: player?.balance < reward.cost ? 0.5 : 1
                   }}

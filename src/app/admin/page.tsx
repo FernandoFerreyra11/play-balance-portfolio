@@ -108,11 +108,14 @@ export default function AdminDashboard() {
   );
 }
 
+const AVATARS = ['🎮', '🚀', '🦖', '🎨', '🦄', '⚡', '🛡️', '👑', '🌟', '🛠️', '🐱', '🦊', '🐼', '🐯', '🦁'];
+
 function FamilyManager() {
   const [members, setMembers] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState('👤');
 
   const fetchMembers = async () => {
     const data = await getFamilyMembers();
@@ -127,6 +130,7 @@ function FamilyManager() {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
+    formData.append('image', selectedAvatar);
     const res = await createFamilyMember(formData);
     if (res.success) {
       setShowForm(false);
@@ -141,6 +145,7 @@ function FamilyManager() {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
+    formData.append('image', selectedAvatar);
     const res = await updateFamilyMember(id, formData);
     if (res.success) {
       setEditingId(null);
@@ -164,7 +169,7 @@ function FamilyManager() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Miembros de la Familia</h2>
         <button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => { setShowForm(!showForm); setSelectedAvatar('👤'); }}
           className="btn-primary" 
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
@@ -188,8 +193,27 @@ function FamilyManager() {
               <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Contraseña</label>
               <input name="password" type="password" placeholder="••••" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
             </div>
+            <div style={{ display: 'grid', gap: '8px', gridColumn: '1 / -1' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Elige un Avatar</label>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {AVATARS.map(av => (
+                  <button 
+                    key={av} 
+                    type="button"
+                    onClick={() => setSelectedAvatar(av)}
+                    style={{ 
+                      fontSize: '1.5rem', padding: '8px', borderRadius: '10px', cursor: 'pointer',
+                      background: selectedAvatar === av ? 'var(--primary-color)' : 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--border-color)', transition: 'all 0.2s'
+                    }}
+                  >
+                    {av}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div style={{ display: 'grid', gap: '8px' }}>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Rol</label>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Función</label>
               <select name="role" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}>
                 <option value="child" style={{ color: 'black' }}>Hijo / Jugador</option>
                 <option value="parent" style={{ color: 'black' }}>Pareja / Admin</option>
@@ -214,11 +238,16 @@ function FamilyManager() {
                   <button type="button" onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
                 </div>
                 <input name="name" defaultValue={member.name} placeholder="Nombre" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                  {AVATARS.map(av => (
+                    <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{ fontSize: '1.2rem', padding: '5px', borderRadius: '8px', background: selectedAvatar === av ? 'var(--primary-color)' : 'transparent', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{av}</button>
+                  ))}
+                </div>
                 <select name="role" defaultValue={member.role} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}>
-                  <option value="child" style={{ color: 'black' }}>Hijo</option>
-                  <option value="parent" style={{ color: 'black' }}>Pareja</option>
+                  <option value="child" style={{ color: 'black' }}>Jugador</option>
+                  <option value="parent" style={{ color: 'black' }}>Admin</option>
                 </select>
-                <input name="password" type="password" placeholder="Nueva contraseña (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <input name="password" type="password" placeholder="Cambiar contraseña (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '8px' }}>
                   {loading ? '...' : 'Guardar Cambios'}
                 </button>
@@ -227,19 +256,25 @@ function FamilyManager() {
               <>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                   <div style={{ 
-                    width: '50px', height: '50px', 
-                    background: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)', 
+                    width: '60px', height: '60px', 
+                    background: 'rgba(255,255,255,0.05)', 
+                    border: '1px solid var(--border-color)',
                     borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    fontSize: '1.2rem'
+                    fontSize: '2rem'
                   }}>
-                    {member.name[0].toUpperCase()}
+                    {member.image || '👤'}
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '1.1rem' }}>{member.name}</h3>
-                    <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>{member.role === 'parent' ? 'Pareja/Admin' : 'Hijo/Jugador'}</p>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '2px' }}>{member.name}</h3>
+                    <div style={{ 
+                      fontSize: '0.7rem', color: member.role === 'parent' ? 'var(--accent-color)' : 'var(--primary-color)',
+                      textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px'
+                    }}>
+                      {member.role === 'parent' ? '🛡️ Admin' : '🎮 Jugador'}
+                    </div>
                   </div>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '5px' }}>
-                    <button onClick={() => setEditingId(member.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '5px' }}>
+                    <button onClick={() => { setEditingId(member.id); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '5px' }}>
                       <Pencil size={16} />
                     </button>
                     <button onClick={() => handleDelete(member.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '5px' }}>

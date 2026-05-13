@@ -10,7 +10,6 @@ import { revalidatePath } from "next/cache";
 
 export async function createFamilyMember(formData: FormData) {
   const session = await getServerSession(authOptions);
-  
   if (!session || (session.user as any).role !== 'parent') {
     return { error: "No tienes permiso para realizar esta acción" };
   }
@@ -19,6 +18,7 @@ export async function createFamilyMember(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const role = formData.get("role") as 'child' | 'parent';
+  const image = formData.get("image") as string;
 
   if (!name || !password || !role) {
     return { error: "Nombre, contraseña y rol son obligatorios" };
@@ -41,6 +41,7 @@ export async function createFamilyMember(formData: FormData) {
       email: email || null,
       password: hashedPassword,
       role,
+      image: image || '👤',
       parentId: (session.user as any).id,
     });
 
@@ -61,6 +62,7 @@ export async function getFamilyMembers() {
       name: users.name,
       role: users.role,
       balance: users.balance,
+      image: users.image,
     })
     .from(users)
     .where(eq(users.parentId, (session.user as any).id));
@@ -75,8 +77,9 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   const name = formData.get("name") as string;
   const role = formData.get("role") as 'child' | 'parent';
   const password = formData.get("password") as string;
+  const image = formData.get("image") as string;
 
-  const updateData: any = { name, role };
+  const updateData: any = { name, role, image };
   if (password) {
     updateData.password = await bcrypt.hash(password, 10);
   }

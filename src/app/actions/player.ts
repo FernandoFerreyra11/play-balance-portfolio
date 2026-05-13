@@ -121,6 +121,8 @@ export async function requestReward(rewardId: string) {
 
 export async function getFamilyStats(period: '7d' | '30d' | 'all') {
   const session = await getServerSession(authOptions);
+  if (!session || !session.user) return null;
+
   const familyId = (session.user as any).parentId || (session.user as any).id;
   
   if (!familyId) return null;

@@ -2,51 +2,56 @@
 
 import { db } from "@/db";
 import { rewards } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-export async function createReward(formData: FormData) {
+async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  if (!session) return null;
+  return (session.user as any).parentId || (session.user as any).id;
+}
+
+export async function createReward(formData: FormData) {
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return { error: "No autorizado" };
 
   const title = formData.get("title") as string;
   const cost = parseInt(formData.get("cost") as string);
   const minutes = formData.get("minutes") ? parseInt(formData.get("minutes") as string) : null;
-
-  if (!title || isNaN(cost)) return { error: "Título y costo son obligatorios" };
 
   try {
     await db.insert(rewards).values({
       title,
       cost,
       minutes,
-      createdBy: (session.user as any).id,
+      createdBy: familyId,
     });
 
     revalidatePath("/admin");
     return { success: true };
   } catch (error) {
-    return { error: "Error al crear el premio" };
+    return { error: "Error al crear premio" };
   }
 }
 
 export async function getRewards() {
-  const session = await getServerSession(authOptions);
-  if (!session) return [];
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return [];
 
   const data = await db
     .select()
     .from(rewards)
-    .where(eq(rewards.createdBy, (session.user as any).id));
+    .where(eq(rewards.createdBy, familyId))
+    .orderBy(desc(rewards.createdAt));
 
   return data;
 }
 
 export async function updateReward(id: string, formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return { error: "No autorizado" };
 
   const title = formData.get("title") as string;
   const cost = parseInt(formData.get("cost") as string);
@@ -55,7 +60,7 @@ export async function updateReward(id: string, formData: FormData) {
   try {
     await db.update(rewards)
       .set({ title, cost, minutes })
-      .where(and(eq(rewards.id, id), eq(rewards.createdBy, (session.user as any).id)));
+      .where(and(eq(rewards.id, id), eq(rewards.createdBy, familyId)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -65,12 +70,12 @@ export async function updateReward(id: string, formData: FormData) {
 }
 
 export async function deleteReward(id: string) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return { error: "No autorizado" };
 
   try {
     await db.delete(rewards)
-      .where(and(eq(rewards.id, id), eq(rewards.createdBy, (session.user as any).id)));
+      .where(and(eq(rewards.id, id), eq(rewards.createdBy, familyId)));
     
     revalidatePath("/admin");
     return { success: true };

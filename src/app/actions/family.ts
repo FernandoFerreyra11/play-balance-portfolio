@@ -8,9 +8,19 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
+async function getEffectiveFamilyId() {
+  const session = await getServerSession(authOptions);
+  if (!session) return null;
+  // Si tiene parentId, es un segundo administrador y usamos ese parentId como ID de familia
+  // Si no, es el administrador principal y usamos su propio ID
+  return (session.user as any).parentId || (session.user as any).id;
+}
+
 export async function createFamilyMember(formData: FormData) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') {
+  const familyId = await getEffectiveFamilyId();
+
+  if (!session || (session.user as any).role !== 'parent' || !familyId) {
     return { error: "No tienes permiso para realizar esta acción" };
   }
 
@@ -42,7 +52,7 @@ export async function createFamilyMember(formData: FormData) {
       password: hashedPassword,
       role,
       image: image || '👤',
-      parentId: (session.user as any).id,
+      parentId: familyId, // Todos los miembros (hijos y padres secundarios) cuelgan del mismo FamilyId
     });
 
     revalidatePath("/admin");
@@ -53,8 +63,8 @@ export async function createFamilyMember(formData: FormData) {
 }
 
 export async function getFamilyMembers() {
-  const session = await getServerSession(authOptions);
-  if (!session) return [];
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return [];
 
   const members = await db
     .select({
@@ -65,14 +75,14 @@ export async function getFamilyMembers() {
       image: users.image,
     })
     .from(users)
-    .where(eq(users.parentId, (session.user as any).id));
+    .where(eq(users.parentId, familyId));
 
   return members;
 }
 
 export async function updateFamilyMember(id: string, formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return { error: "No autorizado" };
 
   const name = formData.get("name") as string;
   const role = formData.get("role") as 'child' | 'parent';
@@ -87,7 +97,7 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   try {
     await db.update(users)
       .set(updateData)
-      .where(and(eq(users.id, id), eq(users.parentId, (session.user as any).id)));
+      .where(and(eq(users.id, id), eq(users.parentId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -97,12 +107,12 @@ export async function updateFamilyMember(id: string, formData: FormData) {
 }
 
 export async function deleteFamilyMember(id: string) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return { error: "No autorizado" };
 
   try {
     await db.delete(users)
-      .where(and(eq(users.id, id), eq(users.parentId, (session.user as any).id)));
+      .where(and(eq(users.id, id), eq(users.parentId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };

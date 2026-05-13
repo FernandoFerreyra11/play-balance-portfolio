@@ -7,6 +7,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
+async function getEffectiveFamilyId() {
+  const session = await getServerSession(authOptions);
+  if (!session) return null;
+  return (session.user as any).parentId || (session.user as any).id;
+}
+
 export async function createSuggestion(content: string) {
   const session = await getServerSession(authOptions);
   if (!session) return { error: "No autorizado" };
@@ -24,10 +30,8 @@ export async function createSuggestion(content: string) {
 }
 
 export async function getSuggestions() {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return [];
-
-  const parentId = (session.user as any).id;
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return [];
 
   const data = await db
     .select({
@@ -40,7 +44,7 @@ export async function getSuggestions() {
     })
     .from(suggestions)
     .innerJoin(users, eq(suggestions.childId, users.id))
-    .where(eq(users.parentId, parentId))
+    .where(eq(users.parentId, familyId))
     .orderBy(desc(suggestions.createdAt));
 
   return data;
@@ -48,7 +52,7 @@ export async function getSuggestions() {
 
 export async function updateSuggestionStatus(id: string, status: 'approved' | 'rejected') {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  if (!session) return { error: "No autorizado" };
 
   try {
     await db.update(suggestions)

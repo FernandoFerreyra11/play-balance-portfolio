@@ -7,11 +7,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-export async function getPendingApprovals() {
+async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return [];
+  if (!session) return null;
+  return (session.user as any).parentId || (session.user as any).id;
+}
 
-  const parentId = (session.user as any).id;
+export async function getPendingApprovals() {
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return [];
 
   const pending = await db
     .select({
@@ -31,7 +35,7 @@ export async function getPendingApprovals() {
     .where(
       and(
         eq(activeQuests.status, 'pending_approval'),
-        eq(users.parentId, parentId)
+        eq(users.parentId, familyId)
       )
     )
     .orderBy(desc(activeQuests.createdAt));

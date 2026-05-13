@@ -346,7 +346,7 @@ export default function Home() {
                 {mySuggestions.map((s) => (
                   <div key={s.id} className="glass" style={{ padding: '12px', borderRadius: '12px', fontSize: '0.9rem' }}>
                     <p style={{ marginBottom: '8px' }}>"{s.content}"</p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
                       <span style={{ 
                         fontSize: '0.7rem', 
                         fontWeight: 700, 
@@ -358,7 +358,7 @@ export default function Home() {
                         {s.status === 'approved' ? '¡APROBADA! ✅' : s.status === 'rejected' ? 'NO POR AHORA ❌' : 'EN REVISIÓN ⏳'}
                       </span>
                       {s.status === 'approved' && (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--accent-color)', fontWeight: 600 }}>
                           ¡Pronto habrá novedades! 🚀
                         </span>
                       )}

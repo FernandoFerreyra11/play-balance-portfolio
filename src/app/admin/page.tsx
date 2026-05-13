@@ -21,6 +21,7 @@ import {
   MessageSquarePlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember } from '../actions/family';
 import { getQuests, createQuest, deleteQuest } from '../actions/quests';
@@ -29,8 +30,19 @@ import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/appro
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
 
 export default function AdminDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('family');
+
+  useEffect(() => {
+    if (status === 'unauthenticated' || (status === 'authenticated' && (session?.user as any).role !== 'parent')) {
+      router.push('/');
+    }
+  }, [status, session, router]);
+
+  if (status === 'loading' || (status === 'authenticated' && (session?.user as any).role !== 'parent')) {
+    return <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Cargando...</div>;
+  }
 
   return (
     <div className="container">

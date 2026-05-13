@@ -25,6 +25,7 @@ import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyM
 import { getQuests, createQuest, deleteQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
+import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
@@ -678,4 +679,93 @@ function ApprovalsManager() {
     </motion.div>
   );
 }
-function SuggestionsManager() { return <div className="glass card" style={{ padding: '40px', textAlign: 'center' }}>Próximamente: Buzón de Sugerencias 💡</div> }
+function SuggestionsManager() {
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSuggestions = async () => {
+    const data = await getSuggestions();
+    setSuggestions(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchSuggestions();
+  }, []);
+
+  const handleAction = async (id: string, status: 'approved' | 'rejected') => {
+    const res = await updateSuggestionStatus(id, status);
+    if (res.success) fetchSuggestions();
+    else alert(res.error);
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando sugerencias...</div>;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div style={{ marginBottom: '30px' }}>
+        <h2>Buzón de Sugerencias</h2>
+        <p style={{ color: 'var(--text-dim)' }}>Ideas enviadas por tu equipo para mejorar la familia.</p>
+      </div>
+
+      <div style={{ display: 'grid', gap: '20px' }}>
+        {suggestions.map((item) => (
+          <div key={item.id} className="glass card" style={{ position: 'relative', borderLeft: item.status === 'approved' ? '4px solid var(--success-color)' : item.status === 'rejected' ? '4px solid var(--danger-color)' : 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <div style={{ fontSize: '2rem', width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  {item.childImage || '👤'}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '5px' }}>{item.childName} sugiere:</h3>
+                  <p style={{ fontSize: '1.05rem', lineHeight: 1.5, color: '#fff' }}>"{item.content}"</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '10px' }}>
+                    Enviado el {new Date(item.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {item.status === 'pending' ? (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button 
+                    onClick={() => handleAction(item.id, 'approved')}
+                    className="btn-primary" 
+                    style={{ background: 'var(--success-color)', padding: '8px 16px', fontSize: '0.85rem' }}
+                  >
+                    Aceptar
+                  </button>
+                  <button 
+                    onClick={() => handleAction(item.id, 'rejected')}
+                    className="glass" 
+                    style={{ color: 'var(--danger-color)', border: '1px solid var(--danger-color)', padding: '8px 16px', fontSize: '0.85rem' }}
+                  >
+                    Rechazar
+                  </button>
+                </div>
+              ) : (
+                <div style={{ 
+                  padding: '5px 12px', 
+                  borderRadius: '20px', 
+                  fontSize: '0.7rem', 
+                  fontWeight: 700, 
+                  textTransform: 'uppercase',
+                  background: item.status === 'approved' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                  color: item.status === 'approved' ? 'var(--success-color)' : 'var(--danger-color)'
+                }}>
+                  {item.status === 'approved' ? '✅ Aceptada' : '❌ Rechazada'}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {suggestions.length === 0 && (
+          <div className="glass card" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-dim)' }}>
+            <MessageSquarePlus size={48} style={{ marginBottom: '20px', opacity: 0.5 }} />
+            <p>Aún no hay sugerencias. ¡Anima a tu equipo a proponer ideas!</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}

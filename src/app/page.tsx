@@ -25,6 +25,7 @@ import {
   requestQuestCompletion, 
   requestReward 
 } from './actions/player';
+import { createSuggestion } from './actions/suggestions';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -33,6 +34,8 @@ export default function Home() {
   const [rewards, setRewards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSuggestion, setShowSuggestion] = useState(false);
+  const [suggestionText, setSuggestionText] = useState('');
+  const [sending, setSending] = useState(false);
 
   const fetchData = async () => {
     if (session?.user) {
@@ -44,6 +47,20 @@ export default function Home() {
       setRewards(r);
       setLoading(false);
     }
+  };
+
+  const handleSuggestionSubmit = async () => {
+    if (!suggestionText.trim()) return;
+    setSending(true);
+    const res = await createSuggestion(suggestionText);
+    if (res.success) {
+      alert("¡Idea enviada! Papá/Mamá la revisará pronto.");
+      setSuggestionText('');
+      setShowSuggestion(false);
+    } else {
+      alert(res.error);
+    }
+    setSending(false);
   };
 
   useEffect(() => {
@@ -314,6 +331,8 @@ export default function Home() {
             >
               <h2 style={{ marginBottom: '20px' }}>Sugerir Idea 💡</h2>
               <textarea 
+                value={suggestionText}
+                onChange={(e) => setSuggestionText(e.target.value)}
                 placeholder="Ej: 'Limpiar el patio por 40 tokens'..."
                 style={{
                   width: '100%',
@@ -327,7 +346,14 @@ export default function Home() {
                   marginBottom: '20px'
                 }}
               />
-              <button className="btn-primary" style={{ width: '100%' }} onClick={() => setShowSuggestion(false)}>Enviar Idea a Papá</button>
+              <button 
+                disabled={sending || !suggestionText.trim()}
+                className="btn-primary" 
+                style={{ width: '100%' }} 
+                onClick={handleSuggestionSubmit}
+              >
+                {sending ? 'Enviando...' : 'Enviar Idea a Papá'}
+              </button>
             </motion.div>
           </motion.div>
         )}

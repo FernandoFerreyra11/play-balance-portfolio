@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,7 +37,15 @@ function LoginForm() {
         : 'Nombre, código de familia o contraseña incorrectos.');
       setLoading(false);
     } else {
-      router.push(role === 'parent' ? '/admin' : '/');
+      // Obtenemos la sesión para ver el rol real
+      const session = await getSession();
+      const userRole = (session?.user as any)?.role;
+
+      if (userRole === 'super_admin') {
+        router.push('/super-admin');
+      } else {
+        router.push(role === 'parent' ? '/admin' : '/');
+      }
       router.refresh();
     }
   };

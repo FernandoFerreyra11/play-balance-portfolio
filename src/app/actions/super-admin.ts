@@ -1,11 +1,10 @@
 'use server';
 
 import { db } from "@/db";
-import { users, families, quests, transactions } from "@/db/schema";
-import { count, eq, sql } from "drizzle-orm";
+import { users, families, quests, rewards, suggestions, activeQuests, transactions } from "@/db/schema";
+import { count, eq, sql, inArray } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
 import { revalidatePath } from "next/cache";
 
 async function checkSuperAdmin() {
@@ -59,15 +58,32 @@ export async function deleteFamily(id: string) {
   if (!(await checkSuperAdmin())) return { error: "No autorizado" };
 
   try {
-    // Primero borramos los usuarios vinculados a esa familia
+    // 1. Obtener IDs de todos los usuarios de la familia
+    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, id));
+    const userIds = familyUsers.map(u => u.id);
+
+    if (userIds.length > 0) {
+      // 2. Limpiar datos vinculados a usuarios
+      await db.delete(transactions).where(inArray(transactions.userId, userIds));
+      await db.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
+      await db.delete(suggestions).where(inArray(suggestions.childId, userIds));
+    }
+
+    // 3. Limpiar datos vinculados a la familia por familyId
+    await db.delete(rewards).where(eq(rewards.familyId, id));
+    await db.delete(quests).where(eq(quests.familyId, id));
+    
+    // 4. Borrar los usuarios
     await db.delete(users).where(eq(users.familyId, id));
-    // Luego borramos la familia
+    
+    // 5. Finalmente borrar la familia
     await db.delete(families).where(eq(families.id, id));
     
     revalidatePath("/super-admin");
     return { success: true };
   } catch (error) {
-    return { error: "Error al eliminar la familia" };
+    console.error("Error al eliminar familia:", error);
+    return { error: "Error al eliminar la familia. Asegúrate de que no haya dependencias circulares." };
   }
 }
 
@@ -102,4 +118,3 @@ export async function updateFamilyName(id: string, newName: string) {
     return { error: "Error al actualizar nombre" };
   }
 }
-

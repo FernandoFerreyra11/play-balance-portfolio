@@ -150,6 +150,7 @@ function FamilyManager() {
   const [selectedAvatar, setSelectedAvatar] = useState('👤');
   const [formRole, setFormRole] = useState<'child' | 'parent'>('child');
   const [editingRole, setEditingRole] = useState<'child' | 'parent' | null>(null);
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const fetchData = async () => {
     const [membersData, familyData] = await Promise.all([
@@ -160,48 +161,61 @@ function FamilyManager() {
     setFamily(familyData);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    formData.append('image', selectedAvatar);
-    const res = await createFamilyMember(formData);
-    if (res.success) {
-      setShowForm(false);
+    useEffect(() => {
       fetchData();
-    } else {
-      alert(res.error);
-    }
-    setLoading(false);
-  };
+    }, []);
 
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
-    e.preventDefault();
-    setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    formData.append('image', selectedAvatar);
-    const res = await updateFamilyMember(id, formData);
-    if (res.success) {
-      setEditingId(null);
-      setEditingRole(null);
-      fetchData();
-    } else {
-      alert(res.error);
-    }
-    setLoading(false);
-  };
+    useEffect(() => {
+      if (notification) {
+        const timer = setTimeout(() => setNotification(null), 3000);
+        return () => clearTimeout(timer);
+      }
+    }, [notification]);
 
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Estás seguro de eliminar a este miembro?')) {
-      const res = await deleteFamilyMember(id);
-      if (res.success) fetchData();
-      else alert(res.error);
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setLoading(true);
+      const formData = new FormData(e.currentTarget);
+      formData.append('image', selectedAvatar);
+      const res = await createFamilyMember(formData);
+      if (res.success) {
+        setShowForm(false);
+        fetchData();
+        setNotification({ message: '¡Miembro creado con éxito! 🎉', type: 'success' });
+      } else {
+        setNotification({ message: res.error || 'Error al crear', type: 'error' });
+      }
+      setLoading(false);
+    };
+
+    const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
+      e.preventDefault();
+      setLoading(true);
+      const formData = new FormData(e.currentTarget);
+      formData.append('image', selectedAvatar);
+      const res = await updateFamilyMember(id, formData);
+      if (res.success) {
+        setEditingId(null);
+        setEditingRole(null);
+        fetchData();
+        setNotification({ message: '¡Perfil actualizado correctamente! ✨', type: 'success' });
+      } else {
+        setNotification({ message: res.error || 'Error al actualizar', type: 'error' });
+      }
+      setLoading(false);
+    };
+
+    const handleDelete = async (id: string) => {
+      if (confirm('¿Estás seguro de eliminar a este miembro?')) {
+        const res = await deleteFamilyMember(id);
+        if (res.success) {
+          fetchData();
+          setNotification({ message: 'Miembro eliminado. 👋', type: 'success' });
+        } else {
+          setNotification({ message: res.error || 'Error al eliminar', type: 'error' });
+        }
+      }
+    };
 
   const handleDeleteFamily = async () => {
     const confirmName = prompt('⚠️ ATENCIÓN: Esta acción eliminará permanentemente a TODA LA FAMILIA, incluyendo misiones, premios y a todos los miembros. Escribe el nombre de tu familia para confirmar:');
@@ -221,6 +235,36 @@ function FamilyManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: '50%',
+              zIndex: 1000,
+              background: notification.type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+              color: 'white',
+              padding: '12px 25px',
+              borderRadius: '15px',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontWeight: 600,
+              pointerEvents: 'none'
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Banner de Código de Familia */}
       {family && (
         <div className="glass" style={{ 

@@ -32,7 +32,7 @@ export async function createQuest(formData: FormData) {
       reward: tokens,
       category,
       familyId: familyId as string,
-      createdBy: session?.user?.id,
+      createdBy: (session?.user as any)?.id,
     });
 
     revalidatePath("/admin");

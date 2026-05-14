@@ -28,7 +28,7 @@ export async function createReward(formData: FormData) {
       cost,
       minutes,
       familyId: familyId as string,
-      createdBy: session?.user?.id,
+      createdBy: (session?.user as any)?.id,
     });
 
     revalidatePath("/admin");

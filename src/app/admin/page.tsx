@@ -19,12 +19,13 @@ import {
   X,
   Clock,
   MessageSquarePlus,
-  BarChart3
+  BarChart3,
+  AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember, getFamilyDetail } from '../actions/family';
+import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember, getFamilyDetail, deleteOwnFamily } from '../actions/family';
 import { getQuests, createQuest, deleteQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
@@ -196,6 +197,22 @@ function FamilyManager() {
       const res = await deleteFamilyMember(id);
       if (res.success) fetchData();
       else alert(res.error);
+    }
+  };
+
+  const handleDeleteFamily = async () => {
+    const confirmName = prompt('⚠️ ATENCIÓN: Esta acción eliminará permanentemente a TODA LA FAMILIA, incluyendo misiones, premios y a todos los miembros. Escribe el nombre de tu familia para confirmar:');
+    
+    if (confirmName === family?.name) {
+      const res = await deleteOwnFamily();
+      if (res.success) {
+        alert('Familia eliminada correctamente. Serás redirigido.');
+        signOut({ callbackUrl: '/goodbye' });
+      } else {
+        alert(res.error);
+      }
+    } else if (confirmName !== null) {
+      alert('El nombre no coincide. No se eliminó la familia.');
     }
   };
 
@@ -371,6 +388,37 @@ function FamilyManager() {
             No hay miembros en tu familia todavía. ¡Añade el primero!
           </div>
         )}
+      </div>
+
+      {/* Danger Zone */}
+      <div style={{ marginTop: '60px', borderTop: '1px solid rgba(239, 68, 68, 0.2)', paddingTop: '40px' }}>
+        <div className="glass" style={{ padding: '30px', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ padding: '15px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '15px', color: 'var(--danger-color)' }}>
+                <AlertTriangle size={32} />
+              </div>
+              <div>
+                <h3 style={{ color: 'var(--danger-color)', marginBottom: '5px' }}>Zona de Peligro</h3>
+                <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', maxWidth: '400px' }}>
+                  Eliminar la cuenta familiar es una acción irreversible. Se borrarán todos los miembros, misiones, premios e historial para siempre.
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={handleDeleteFamily}
+              style={{ 
+                background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', 
+                padding: '12px 24px', borderRadius: '12px', cursor: 'pointer', fontWeight: 700,
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--danger-color)'; }}
+            >
+              Eliminar Familia
+            </button>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

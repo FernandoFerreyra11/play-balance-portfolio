@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from "@/db";
-import { users, families } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { users, families, quests, rewards, suggestions, activeQuests, transactions } from "@/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -51,7 +51,7 @@ export async function createFamilyMember(formData: FormData) {
       role,
       image: image || '👤',
       parentId: (session.user as any).id,
-      familyId: familyId,
+      familyId: familyId as string,
     });
 
     revalidatePath("/admin");
@@ -131,4 +131,41 @@ export async function getFamilyDetail() {
     .limit(1);
   
   return family;
+}
+
+export async function deleteOwnFamily() {
+  const session = await getServerSession(authOptions);
+  const familyId = await getEffectiveFamilyId();
+
+  if (!session || (session.user as any).role !== 'parent' || !familyId) {
+    return { error: "No autorizado" };
+  }
+
+  try {
+    // 1. Obtener IDs de todos los usuarios de la familia para limpiar sus datos
+    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, familyId as string));
+    const userIds = familyUsers.map(u => u.id);
+
+    if (userIds.length > 0) {
+      // 2. Limpiar datos vinculados a usuarios
+      await db.delete(transactions).where(inArray(transactions.userId, userIds));
+      await db.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
+      await db.delete(suggestions).where(inArray(suggestions.childId, userIds));
+    }
+
+    // 3. Limpiar datos vinculados a la familia
+    await db.delete(rewards).where(eq(rewards.familyId, familyId as string));
+    await db.delete(quests).where(eq(quests.familyId, familyId as string));
+    
+    // 4. Borrar todos los usuarios de la familia
+    await db.delete(users).where(eq(users.familyId, familyId as string));
+    
+    // 5. Borrar la familia
+    await db.delete(families).where(eq(families.id, familyId as string));
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error al eliminar propia familia:", error);
+    return { error: "Error al eliminar la cuenta familiar" };
+  }
 }

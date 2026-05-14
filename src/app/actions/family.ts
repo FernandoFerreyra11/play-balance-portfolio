@@ -70,6 +70,7 @@ export async function getFamilyMembers() {
     .select({
       id: users.id,
       name: users.name,
+      email: users.email,
       role: users.role,
       balance: users.balance,
       image: users.image,
@@ -86,10 +87,12 @@ export async function updateFamilyMember(id: string, formData: FormData) {
 
   const name = formData.get("name") as string;
   const role = formData.get("role") as 'child' | 'parent';
+  const emailRaw = formData.get("email") as string;
+  const email = emailRaw ? emailRaw.toLowerCase().trim() : null;
   const password = formData.get("password") as string;
   const image = formData.get("image") as string;
 
-  const updateData: any = { name, role, image };
+  const updateData: any = { name, role, image, email };
   if (password) {
     updateData.password = await bcrypt.hash(password, 10);
   }

@@ -148,6 +148,7 @@ function FamilyManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('👤');
+  const [formRole, setFormRole] = useState<'child' | 'parent'>('child');
 
   const fetchData = async () => {
     const [membersData, familyData] = await Promise.all([
@@ -289,12 +290,25 @@ function FamilyManager() {
             </div>
             <div style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Función</label>
-              <select name="role" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}>
+              <select 
+                name="role" 
+                value={formRole}
+                onChange={(e) => setFormRole(e.target.value as any)}
+                style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}
+              >
                 <option value="child" style={{ color: 'black' }}>Hijo / Jugador</option>
                 <option value="parent" style={{ color: 'black' }}>Pareja / Admin</option>
               </select>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            
+            {formRole === 'parent' && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'grid', gap: '8px', gridColumn: '1 / -1' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Email de acceso</label>
+                <input name="email" type="email" placeholder="ejemplo@email.com" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+              </motion.div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', gridColumn: formRole === 'parent' ? '1 / -1' : 'auto' }}>
               <button disabled={loading} type="submit" className="btn-primary" style={{ width: '100%' }}>
                 {loading ? 'Guardando...' : 'Crear Perfil'}
               </button>
@@ -322,6 +336,9 @@ function FamilyManager() {
                   <option value="child" style={{ color: 'black' }}>Jugador</option>
                   <option value="parent" style={{ color: 'black' }}>Admin</option>
                 </select>
+                {member.role === 'parent' && (
+                  <input name="email" type="email" defaultValue={member.email} placeholder="Email de acceso" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                )}
                 <input name="password" type="password" placeholder="Cambiar contraseña (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '8px' }}>
                   {loading ? '...' : 'Guardar Cambios'}
@@ -364,6 +381,11 @@ function FamilyManager() {
                     }}>
                       {member.role === 'parent' ? '🛡️ Admin' : '🎮 Jugador'}
                     </div>
+                    {member.email && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {member.email}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     <button onClick={() => { setEditingId(member.id); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '8px' }}>

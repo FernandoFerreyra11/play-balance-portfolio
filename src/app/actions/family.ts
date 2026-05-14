@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, families } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";

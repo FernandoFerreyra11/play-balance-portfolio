@@ -1,13 +1,13 @@
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
-import { users, families, quests, rewards } from "../src/db/schema.ts";
+import { users, families, quests, rewards } from "../src/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
 
 async function migrate() {
   console.log("Iniciando migración de familias existentes...");
 
-  const { db } = await import("../src/db/index.ts");
+  const { db } = await import("../src/db/index");
 
   // 1. Obtener todos los padres sin familyId
   const existingParents = await db.select().from(users).where(and(eq(users.role, 'parent'), isNull(users.familyId)));

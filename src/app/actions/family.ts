@@ -23,7 +23,8 @@ export async function createFamilyMember(formData: FormData) {
   }
 
   const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
+  const emailRaw = formData.get("email") as string;
+  const email = emailRaw ? emailRaw.toLowerCase().trim() : null;
   const password = formData.get("password") as string;
   const role = formData.get("role") as 'child' | 'parent';
   const image = formData.get("image") as string;
@@ -46,7 +47,7 @@ export async function createFamilyMember(formData: FormData) {
   try {
     await db.insert(users).values({
       name,
-      email: email || null,
+      email: email,
       password: hashedPassword,
       role,
       image: image || '👤',

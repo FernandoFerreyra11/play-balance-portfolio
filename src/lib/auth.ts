@@ -49,11 +49,12 @@ export const authOptions: NextAuthOptions = {
           
           if (result) user = result.user;
         } else {
-          // Búsqueda por Email (para padres)
+          // Búsqueda por Email (para padres) - Normalizado a minúsculas
+          const normalizedEmail = credentials.email.toLowerCase().trim();
           const [result] = await db
             .select()
             .from(users)
-            .where(eq(users.email, credentials.email))
+            .where(eq(users.email, normalizedEmail))
             .limit(1);
           
           user = result;

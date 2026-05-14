@@ -7,7 +7,8 @@ import bcrypt from "bcryptjs";
 
 export async function registerUser(formData: FormData) {
   const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
+  const emailRaw = formData.get("email") as string;
+  const email = emailRaw.toLowerCase().trim();
   const password = formData.get("password") as string;
 
   if (!name || !email || !password) {
@@ -40,7 +41,7 @@ export async function registerUser(formData: FormData) {
 
     await db.insert(users).values({
       name,
-      email,
+      email: email,
       password: hashedPassword,
       role: "parent",
       familyId: newFamily.id,

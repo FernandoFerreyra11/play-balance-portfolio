@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { signOut } from 'next-auth/react';
 import { 
   ShieldCheck, 
   Users, 
@@ -13,7 +14,8 @@ import {
   Zap,
   Trash2,
   RefreshCw,
-  Edit2
+  Edit2,
+  LogOut
 } from 'lucide-react';
 import { getGlobalStats, getAllFamilies, deleteFamily, resetFamilyCode, updateFamilyName } from '../actions/super-admin';
 
@@ -94,8 +96,24 @@ export default function SuperAdminClient() {
           </div>
           <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>Global Overview</h1>
         </div>
-        <div className="glass" style={{ padding: '10px 20px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <Activity size={24} className="pulse" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="glass" style={{ padding: '10px 20px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <Activity size={24} className="pulse" />
+          </div>
+          <button 
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="glass" 
+            style={{ 
+              padding: '10px 15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)',
+              color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-dim)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+          >
+            <LogOut size={20} />
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Salir</span>
+          </button>
         </div>
       </header>
 

@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
-  return (session.user as any).parentId || (session.user as any).id;
+  return (session.user as any).familyId;
 }
 
 export async function createQuest(formData: FormData) {
@@ -31,7 +31,7 @@ export async function createQuest(formData: FormData) {
       description,
       reward: tokens,
       category,
-      familyId: familyId,
+      familyId: familyId as string,
       createdBy: session?.user?.id,
     });
 
@@ -50,7 +50,7 @@ export async function getQuests() {
   const data = await db
     .select()
     .from(quests)
-    .where(eq(quests.familyId, familyId))
+    .where(eq(quests.familyId, familyId as string))
     .orderBy(desc(quests.createdAt));
 
   return data;
@@ -62,7 +62,7 @@ export async function deleteQuest(id: string) {
 
   try {
     await db.delete(quests)
-      .where(and(eq(quests.id, id), eq(quests.familyId, familyId)));
+      .where(and(eq(quests.id, id), eq(quests.familyId, familyId as string)));
     
     revalidatePath("/admin");
     return { success: true };

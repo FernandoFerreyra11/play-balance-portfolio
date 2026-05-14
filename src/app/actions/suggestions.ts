@@ -57,7 +57,7 @@ export async function getSuggestions() {
     })
     .from(suggestions)
     .innerJoin(users, eq(suggestions.childId, users.id))
-    .where(eq(users.familyId, familyId))
+    .where(eq(users.familyId, familyId as string))
     .orderBy(desc(suggestions.createdAt));
 
   return data;

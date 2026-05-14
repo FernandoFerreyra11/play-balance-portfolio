@@ -25,7 +25,7 @@ export async function getAvailableQuests() {
   if (!session) return [];
 
   const player = await getPlayerStats();
-  if (!player || !player.parentId) return [];
+  if (!player || !player.familyId) return [];
 
   // Obtenemos todas las misiones del padre
   const parentQuests = await db
@@ -42,7 +42,7 @@ export async function getAvailableQuests() {
       eq(activeQuests.childId, player.id),
       eq(activeQuests.status, 'pending_approval')
     ))
-    .where(eq(quests.familyId, player.familyId))
+    .where(eq(quests.familyId, player.familyId as string))
     .orderBy(desc(quests.createdAt));
 
   return parentQuests;
@@ -53,12 +53,12 @@ export async function getAvailableRewards() {
   if (!session) return [];
 
   const player = await getPlayerStats();
-  if (!player || !player.parentId) return [];
+  if (!player || !player.familyId) return [];
 
   const parentRewards = await db
     .select()
     .from(rewards)
-    .where(eq(rewards.familyId, player.familyId))
+    .where(eq(rewards.familyId, player.familyId as string))
     .orderBy(desc(rewards.createdAt));
 
   return parentRewards;

@@ -27,7 +27,7 @@ export async function createReward(formData: FormData) {
       title,
       cost,
       minutes,
-      familyId: familyId,
+      familyId: familyId as string,
       createdBy: session?.user?.id,
     });
 
@@ -45,7 +45,7 @@ export async function getRewards() {
   const data = await db
     .select()
     .from(rewards)
-    .where(eq(rewards.familyId, familyId))
+    .where(eq(rewards.familyId, familyId as string))
     .orderBy(desc(rewards.createdAt));
 
   return data;
@@ -62,7 +62,7 @@ export async function updateReward(id: string, formData: FormData) {
   try {
     await db.update(rewards)
       .set({ title, cost, minutes })
-      .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId)));
+      .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId as string)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -77,7 +77,7 @@ export async function deleteReward(id: string) {
 
   try {
     await db.delete(rewards)
-      .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId)));
+      .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId as string)));
     
     revalidatePath("/admin");
     return { success: true };

@@ -74,7 +74,7 @@ export async function getFamilyMembers() {
       image: users.image,
     })
     .from(users)
-    .where(eq(users.familyId, familyId));
+    .where(eq(users.familyId, familyId as string));
 
   return members;
 }
@@ -96,7 +96,7 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   try {
     await db.update(users)
       .set(updateData)
-      .where(and(eq(users.id, id), eq(users.familyId, familyId)));
+      .where(and(eq(users.id, id), eq(users.familyId, familyId as string)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -111,7 +111,7 @@ export async function deleteFamilyMember(id: string) {
 
   try {
     await db.delete(users)
-      .where(and(eq(users.id, id), eq(users.familyId, familyId)));
+      .where(and(eq(users.id, id), eq(users.familyId, familyId as string)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -127,7 +127,7 @@ export async function getFamilyDetail() {
   const [family] = await db
     .select()
     .from(families)
-    .where(eq(families.id, familyId))
+    .where(eq(families.id, familyId as string))
     .limit(1);
   
   return family;

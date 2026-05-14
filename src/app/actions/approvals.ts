@@ -35,7 +35,7 @@ export async function getPendingApprovals() {
     .where(
       and(
         eq(activeQuests.status, 'pending_approval'),
-        eq(users.familyId, familyId)
+        eq(users.familyId, familyId as string)
       )
     )
     .orderBy(desc(activeQuests.createdAt));

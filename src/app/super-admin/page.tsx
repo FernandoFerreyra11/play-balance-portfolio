@@ -10,9 +10,12 @@ import {
   Search, 
   TrendingUp, 
   Award,
-  Zap
+  Zap,
+  Trash2,
+  RefreshCw,
+  Edit2
 } from 'lucide-react';
-import { getGlobalStats, getAllFamilies } from '../actions/super-admin';
+import { getGlobalStats, getAllFamilies, deleteFamily, resetFamilyCode, updateFamilyName } from '../actions/super-admin';
 
 export default function SuperAdminPage() {
   const [stats, setStats] = useState<any>(null);
@@ -20,18 +23,44 @@ export default function SuperAdminPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const fetchData = async () => {
+    const [statsData, familiesData] = await Promise.all([
+      getGlobalStats(),
+      getAllFamilies()
+    ]);
+    setStats(statsData);
+    setFamilies(familiesData);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    async function fetchData() {
-      const [statsData, familiesData] = await Promise.all([
-        getGlobalStats(),
-        getAllFamilies()
-      ]);
-      setStats(statsData);
-      setFamilies(familiesData);
-      setLoading(false);
-    }
     fetchData();
   }, []);
+
+  const handleResetCode = async (id: string, name: string) => {
+    if (confirm(`¿Estás seguro de resetear el código de la familia ${name}?`)) {
+      const res = await resetFamilyCode(id, name);
+      if (res.success) {
+        alert(`Nuevo código generado: ${res.newCode}`);
+        fetchData();
+      }
+    }
+  };
+
+  const handleDeleteFamily = async (id: string, name: string) => {
+    if (confirm(`⚠️ ¡ATENCIÓN! Estás a punto de borrar a toda la familia ${name} y TODOS sus usuarios. Esta acción no se puede deshacer. ¿Continuar?`)) {
+      const res = await deleteFamily(id);
+      if (res.success) fetchData();
+    }
+  };
+
+  const handleUpdateName = async (id: string, currentName: string) => {
+    const newName = prompt("Nuevo nombre para la familia:", currentName);
+    if (newName && newName !== currentName) {
+      const res = await updateFamilyName(id, newName);
+      if (res.success) fetchData();
+    }
+  };
 
   const filteredFamilies = families.filter(f => 
     f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,17 +143,29 @@ export default function SuperAdminPage() {
                 <th style={{ padding: '20px' }}>Access Code</th>
                 <th style={{ padding: '20px' }}>Members</th>
                 <th style={{ padding: '20px' }}>Created At</th>
-                <th style={{ padding: '20px' }}>Status</th>
+                <th style={{ padding: '20px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredFamilies.map((f) => (
                 <tr key={f.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} className="table-row">
-                  <td style={{ padding: '20px', fontWeight: 600 }}>{f.name}</td>
+                  <td style={{ padding: '20px', fontWeight: 600 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {f.name}
+                      <button onClick={() => handleUpdateName(f.id, f.name)} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
+                        <Edit2 size={14} />
+                      </button>
+                    </div>
+                  </td>
                   <td style={{ padding: '20px' }}>
-                    <code style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', color: 'var(--primary-color)' }}>
-                      {f.code}
-                    </code>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <code style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', color: 'var(--primary-color)' }}>
+                        {f.code}
+                      </code>
+                      <button onClick={() => handleResetCode(f.id, f.name)} title="Resetear Código" style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
+                        <RefreshCw size={14} />
+                      </button>
+                    </div>
                   </td>
                   <td style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -135,12 +176,15 @@ export default function SuperAdminPage() {
                     {new Date(f.createdAt).toLocaleDateString()}
                   </td>
                   <td style={{ padding: '20px' }}>
-                    <span style={{ 
-                      padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700,
-                      background: 'rgba(16, 185, 129, 0.1)', color: '#10b981'
-                    }}>
-                      ACTIVE
-                    </span>
+                    <button 
+                      onClick={() => handleDeleteFamily(f.id, f.name)}
+                      style={{ 
+                        background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', 
+                        padding: '8px', borderRadius: '8px', cursor: 'pointer'
+                      }}
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </td>
                 </tr>
               ))}

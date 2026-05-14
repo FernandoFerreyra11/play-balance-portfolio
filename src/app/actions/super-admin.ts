@@ -6,6 +6,8 @@ import { count, eq, sql } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+import { revalidatePath } from "next/cache";
+
 async function checkSuperAdmin() {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== 'super_admin') {
@@ -52,3 +54,52 @@ export async function getAllFamilies() {
 
   return data;
 }
+
+export async function deleteFamily(id: string) {
+  if (!(await checkSuperAdmin())) return { error: "No autorizado" };
+
+  try {
+    // Primero borramos los usuarios vinculados a esa familia
+    await db.delete(users).where(eq(users.familyId, id));
+    // Luego borramos la familia
+    await db.delete(families).where(eq(families.id, id));
+    
+    revalidatePath("/super-admin");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al eliminar la familia" };
+  }
+}
+
+export async function resetFamilyCode(id: string, familyName: string) {
+  if (!(await checkSuperAdmin())) return { error: "No autorizado" };
+
+  const newCode = `${familyName.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    await db.update(families)
+      .set({ code: newCode })
+      .where(eq(families.id, id));
+    
+    revalidatePath("/super-admin");
+    return { success: true, newCode };
+  } catch (error) {
+    return { error: "Error al resetear código" };
+  }
+}
+
+export async function updateFamilyName(id: string, newName: string) {
+  if (!(await checkSuperAdmin())) return { error: "No autorizado" };
+
+  try {
+    await db.update(families)
+      .set({ name: newName })
+      .where(eq(families.id, id));
+    
+    revalidatePath("/super-admin");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al actualizar nombre" };
+  }
+}
+

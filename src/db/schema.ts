@@ -1,6 +1,6 @@
 import { pgTable, text, integer, timestamp, uuid, pgEnum, primaryKey } from 'drizzle-orm/pg-core';
 
-export const roleEnum = pgEnum('role', ['parent', 'child']);
+export const roleEnum = pgEnum('role', ['parent', 'child', 'super_admin']);
 export const statusEnum = pgEnum('status', ['pending', 'approved', 'rejected']);
 export const questStatusEnum = pgEnum('quest_status', ['in_progress', 'pending_approval', 'completed']);
 

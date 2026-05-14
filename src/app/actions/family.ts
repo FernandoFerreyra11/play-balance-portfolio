@@ -11,9 +11,7 @@ import { revalidatePath } from "next/cache";
 async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
-  // Si tiene parentId, es un segundo administrador y usamos ese parentId como ID de familia
-  // Si no, es el administrador principal y usamos su propio ID
-  return (session.user as any).parentId || (session.user as any).id;
+  return (session.user as any).familyId;
 }
 
 export async function createFamilyMember(formData: FormData) {
@@ -52,7 +50,8 @@ export async function createFamilyMember(formData: FormData) {
       password: hashedPassword,
       role,
       image: image || '👤',
-      parentId: familyId, // Todos los miembros (hijos y padres secundarios) cuelgan del mismo FamilyId
+      parentId: (session.user as any).id,
+      familyId: familyId,
     });
 
     revalidatePath("/admin");
@@ -75,7 +74,7 @@ export async function getFamilyMembers() {
       image: users.image,
     })
     .from(users)
-    .where(eq(users.parentId, familyId));
+    .where(eq(users.familyId, familyId));
 
   return members;
 }
@@ -97,7 +96,7 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   try {
     await db.update(users)
       .set(updateData)
-      .where(and(eq(users.id, id), eq(users.parentId, familyId)));
+      .where(and(eq(users.id, id), eq(users.familyId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -112,11 +111,24 @@ export async function deleteFamilyMember(id: string) {
 
   try {
     await db.delete(users)
-      .where(and(eq(users.id, id), eq(users.parentId, familyId)));
+      .where(and(eq(users.id, id), eq(users.familyId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };
   } catch (error) {
     return { error: "Error al eliminar" };
   }
+}
+
+export async function getFamilyDetail() {
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return null;
+
+  const [family] = await db
+    .select()
+    .from(families)
+    .where(eq(families.id, familyId))
+    .limit(1);
+  
+  return family;
 }

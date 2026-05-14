@@ -10,13 +10,14 @@ import { revalidatePath } from "next/cache";
 async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
-  return (session.user as any).parentId || (session.user as any).id;
+  return (session.user as any).familyId;
 }
 
 export async function createReward(formData: FormData) {
   const familyId = await getEffectiveFamilyId();
   if (!familyId) return { error: "No autorizado" };
 
+  const session = await getServerSession(authOptions);
   const title = formData.get("title") as string;
   const cost = parseInt(formData.get("cost") as string);
   const minutes = formData.get("minutes") ? parseInt(formData.get("minutes") as string) : null;
@@ -26,7 +27,8 @@ export async function createReward(formData: FormData) {
       title,
       cost,
       minutes,
-      createdBy: familyId,
+      familyId: familyId,
+      createdBy: session?.user?.id,
     });
 
     revalidatePath("/admin");
@@ -43,7 +45,7 @@ export async function getRewards() {
   const data = await db
     .select()
     .from(rewards)
-    .where(eq(rewards.createdBy, familyId))
+    .where(eq(rewards.familyId, familyId))
     .orderBy(desc(rewards.createdAt));
 
   return data;
@@ -60,7 +62,7 @@ export async function updateReward(id: string, formData: FormData) {
   try {
     await db.update(rewards)
       .set({ title, cost, minutes })
-      .where(and(eq(rewards.id, id), eq(rewards.createdBy, familyId)));
+      .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };
@@ -75,7 +77,7 @@ export async function deleteReward(id: string) {
 
   try {
     await db.delete(rewards)
-      .where(and(eq(rewards.id, id), eq(rewards.createdBy, familyId)));
+      .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };

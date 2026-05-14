@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
-  return (session.user as any).parentId || (session.user as any).id;
+  return (session.user as any).familyId;
 }
 
 export async function getPendingApprovals() {
@@ -35,7 +35,7 @@ export async function getPendingApprovals() {
     .where(
       and(
         eq(activeQuests.status, 'pending_approval'),
-        eq(users.parentId, familyId)
+        eq(users.familyId, familyId)
       )
     )
     .orderBy(desc(activeQuests.createdAt));

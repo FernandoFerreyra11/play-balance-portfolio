@@ -12,8 +12,16 @@ export const users = pgTable('users', {
   password: text('password'),
   image: text('image'),
   role: roleEnum('role').default('child'),
-  parentId: uuid('parent_id'), // Referencia al ID del padre/madre
+  parentId: uuid('parent_id'), // Referencia al ID del padre/madre (se mantiene por compatibilidad)
+  familyId: uuid('family_id').references(() => families.id), // Nueva referencia a la tabla familias
   balance: integer('balance').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const families = pgTable('families', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  code: text('code').unique().notNull(), // El código que usarán para loguearse
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -53,6 +61,7 @@ export const quests = pgTable('quests', {
   description: text('description'),
   reward: integer('reward').notNull(),
   category: text('category').default('general'),
+  familyId: uuid('family_id').references(() => families.id), // Vinculado a la familia
   createdBy: uuid('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
 });
@@ -63,6 +72,7 @@ export const rewards = pgTable('rewards', {
   cost: integer('cost').notNull(),
   minutes: integer('minutes'),
   icon: text('icon'),
+  familyId: uuid('family_id').references(() => families.id), // Vinculado a la familia
   createdBy: uuid('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
 });

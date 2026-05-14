@@ -24,7 +24,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember } from '../actions/family';
+import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember, getFamilyDetail } from '../actions/family';
 import { getQuests, createQuest, deleteQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
@@ -142,18 +142,23 @@ const AVATARS = ['🎮', '🚀', '🦖', '🎨', '🦄', '⚡', '🛡️', '👑
 
 function FamilyManager() {
   const [members, setMembers] = useState<any[]>([]);
+  const [family, setFamily] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('👤');
 
-  const fetchMembers = async () => {
-    const data = await getFamilyMembers();
-    setMembers(data);
+  const fetchData = async () => {
+    const [membersData, familyData] = await Promise.all([
+      getFamilyMembers(),
+      getFamilyDetail()
+    ]);
+    setMembers(membersData);
+    setFamily(familyData);
   };
 
   useEffect(() => {
-    fetchMembers();
+    fetchData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -164,7 +169,7 @@ function FamilyManager() {
     const res = await createFamilyMember(formData);
     if (res.success) {
       setShowForm(false);
-      fetchMembers();
+      fetchData();
     } else {
       alert(res.error);
     }
@@ -179,7 +184,7 @@ function FamilyManager() {
     const res = await updateFamilyMember(id, formData);
     if (res.success) {
       setEditingId(null);
-      fetchMembers();
+      fetchData();
     } else {
       alert(res.error);
     }
@@ -189,13 +194,36 @@ function FamilyManager() {
   const handleDelete = async (id: string) => {
     if (confirm('¿Estás seguro de eliminar a este miembro?')) {
       const res = await deleteFamilyMember(id);
-      if (res.success) fetchMembers();
+      if (res.success) fetchData();
       else alert(res.error);
     }
   };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      {/* Banner de Código de Familia */}
+      {family && (
+        <div className="glass" style={{ 
+          marginBottom: '30px', 
+          padding: '20px', 
+          borderRadius: '20px', 
+          border: '1px solid var(--accent-color)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: 'linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)'
+        }}>
+          <div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>
+              Código Secreto de la Familia
+            </p>
+            <h2 style={{ fontSize: '1.8rem', color: 'var(--accent-color)', margin: '5px 0' }}>{family.code}</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Dáselo a tus hijos para que puedan entrar a su aventura.</p>
+          </div>
+          <div style={{ fontSize: '3rem', opacity: 0.5 }}>🛡️</div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Equipo Familiar</h2>
         <button 
@@ -794,93 +822,129 @@ function SuggestionsManager() {
 
 function StatsManager() {
   const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('7d');
+  const [selectedChild, setSelectedChild] = useState<string>('all');
+  const [members, setMembers] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
     setLoading(true);
-    const data = await getFamilyStats(period);
+    const data = await getFamilyStats(period, selectedChild === 'all' ? undefined : selectedChild);
     setStats(data);
     setLoading(false);
   };
 
+  const fetchMembers = async () => {
+    const data = await getFamilyMembers();
+    setMembers(data.filter(m => m.role === 'child'));
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
   useEffect(() => {
     fetchStats();
-  }, [period]);
+  }, [period, selectedChild]);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '60px' }}>Analizando datos familiares...</div>;
+  if (loading && !stats) return <div style={{ textAlign: 'center', padding: '60px' }}>Analizando datos familiares...</div>;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
         <div>
-          <h2>Estadísticas de la Familia</h2>
+          <h2>Estadísticas {selectedChild !== 'all' ? `de ${members.find(m => m.id === selectedChild)?.name}` : 'de la Familia'}</h2>
           <p style={{ color: 'var(--text-dim)' }}>Monitorea el esfuerzo y las recompensas de tu equipo.</p>
         </div>
         
-        <div className="glass" style={{ display: 'flex', padding: '5px', borderRadius: '12px', gap: '5px' }}>
-          {(['7d', '30d', 'all'] as const).map((p) => (
-            <button 
-              key={p}
-              onClick={() => setPeriod(p)}
-              style={{ 
-                background: period === p ? 'var(--primary-color)' : 'transparent',
-                border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem',
-                transition: 'all 0.2s'
-              }}
-            >
-              {p === '7d' ? '7 días' : p === '30d' ? '30 días' : 'Todo'}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Selector de Miembro */}
+          <select 
+            value={selectedChild}
+            onChange={(e) => setSelectedChild(e.target.value)}
+            className="glass"
+            style={{ 
+              padding: '8px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', 
+              color: 'white', background: 'rgba(0,0,0,0.3)', outline: 'none', cursor: 'pointer'
+            }}
+          >
+            <option value="all">Toda la Familia</option>
+            {members.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+
+          {/* Selector de Período */}
+          <div className="glass" style={{ display: 'flex', padding: '5px', borderRadius: '12px', gap: '5px' }}>
+            {(['7d', '30d', 'all'] as const).map((p) => (
+              <button 
+                key={p}
+                onClick={() => setPeriod(p)}
+                style={{ 
+                  background: period === p ? 'var(--primary-color)' : 'transparent',
+                  border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {p === '7d' ? '7 días' : p === '30d' ? '30 días' : 'Todo'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-        <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--primary-color)' }}>
-          <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Ganados</p>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-            <Coins size={28} /> {stats.summary.totalEarned}
-          </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.questsCount} misiones</p>
-        </div>
-        <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--accent-color)' }}>
-          <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Canjeados</p>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-            <Trophy size={28} /> {stats.summary.totalSpent}
-          </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.rewardsCount} premios</p>
-        </div>
-      </div>
-
-      <div className="glass card">
-        <h3 style={{ marginBottom: '20px' }}>Actividad Reciente</h3>
-        <div style={{ display: 'grid', gap: '15px' }}>
-          {stats.transactions.map((t: any) => (
-            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  {t.userImage || '👤'}
-                </div>
-                <div>
-                  <p style={{ fontWeight: 600 }}>{t.userName}</p>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t.description}</p>
-                </div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>Actualizando cifras...</div>
+      ) : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+            <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--primary-color)' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Ganados</p>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <Coins size={28} /> {stats.summary.totalEarned}
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontWeight: 700, color: t.type === 'quest' ? 'var(--success-color)' : 'var(--danger-color)' }}>
-                  {t.type === 'quest' ? '+' : ''}{t.amount}
-                </p>
-                <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                  {new Date(t.createdAt).toLocaleDateString()}
-                </p>
-              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.questsCount} misiones</p>
             </div>
-          ))}
-          {stats.transactions.length === 0 && (
-            <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)' }}>No hay actividad registrada en este período.</p>
-          )}
-        </div>
-      </div>
+            <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--accent-color)' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Canjeados</p>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <Trophy size={28} /> {stats.summary.totalSpent}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.rewardsCount} premios</p>
+            </div>
+          </div>
+
+          <div className="glass card">
+            <h3 style={{ marginBottom: '20px' }}>Actividad Reciente</h3>
+            <div style={{ display: 'grid', gap: '15px' }}>
+              {stats.transactions.map((t: any) => (
+                <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      {t.userImage || '👤'}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 600 }}>{t.userName}</p>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{t.description}</p>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontWeight: 700, color: t.type === 'quest' ? 'var(--success-color)' : 'var(--danger-color)' }}>
+                      {t.type === 'quest' ? '+' : ''}{t.amount}
+                    </p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
+                      {new Date(t.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {stats.transactions.length === 0 && (
+                <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)' }}>No hay actividad registrada en este período.</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

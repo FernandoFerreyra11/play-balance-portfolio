@@ -42,7 +42,7 @@ export async function getAvailableQuests() {
       eq(activeQuests.childId, player.id),
       eq(activeQuests.status, 'pending_approval')
     ))
-    .where(eq(quests.createdBy, player.parentId))
+    .where(eq(quests.familyId, player.familyId))
     .orderBy(desc(quests.createdAt));
 
   return parentQuests;
@@ -58,7 +58,7 @@ export async function getAvailableRewards() {
   const parentRewards = await db
     .select()
     .from(rewards)
-    .where(eq(rewards.createdBy, player.parentId))
+    .where(eq(rewards.familyId, player.familyId))
     .orderBy(desc(rewards.createdAt));
 
   return parentRewards;
@@ -119,11 +119,11 @@ export async function requestReward(rewardId: string) {
   }
 }
 
-export async function getFamilyStats(period: '7d' | '30d' | 'all') {
+export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: string) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) return null;
 
-  const familyId = (session.user as any).parentId || (session.user as any).id;
+  const familyId = (session.user as any).familyId;
   
   if (!familyId) return null;
 
@@ -142,12 +142,12 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all') {
       createdAt: transactions.createdAt,
       userName: users.name,
       userImage: users.image,
+      userId: users.id,
     })
     .from(transactions)
     .innerJoin(users, eq(transactions.userId, users.id))
     .where(and(
-      eq(users.parentId, familyId),
-      // gte(transactions.createdAt, startDate) // No todas las versiones de SQL soportan gte directamente en drizzle-orm sin helpers, usaremos un filtro simple
+      childId ? eq(users.id, childId) : eq(users.familyId, familyId),
     ))
     .orderBy(desc(transactions.createdAt));
 

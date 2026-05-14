@@ -25,12 +25,14 @@ export async function createQuest(formData: FormData) {
   if (!title || isNaN(tokens)) return { error: "Título y tokens son obligatorios" };
 
   try {
+    const session = await getServerSession(authOptions);
     await db.insert(quests).values({
       title,
       description,
       reward: tokens,
       category,
-      createdBy: familyId,
+      familyId: familyId,
+      createdBy: session?.user?.id,
     });
 
     revalidatePath("/admin");
@@ -44,11 +46,11 @@ export async function getQuests() {
   const familyId = await getEffectiveFamilyId();
   if (!familyId) return [];
 
-  // Obtenemos las misiones creadas por este padre o familia
+  // Obtenemos las misiones de la familia
   const data = await db
     .select()
     .from(quests)
-    .where(eq(quests.createdBy, familyId))
+    .where(eq(quests.familyId, familyId))
     .orderBy(desc(quests.createdAt));
 
   return data;
@@ -60,7 +62,7 @@ export async function deleteQuest(id: string) {
 
   try {
     await db.delete(quests)
-      .where(and(eq(quests.id, id), eq(quests.createdBy, familyId)));
+      .where(and(eq(quests.id, id), eq(quests.familyId, familyId)));
     
     revalidatePath("/admin");
     return { success: true };

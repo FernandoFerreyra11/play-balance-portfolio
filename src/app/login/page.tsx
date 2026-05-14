@@ -11,6 +11,7 @@ import Link from 'next/link';
 function LoginForm() {
   const [role, setRole] = useState<'parent' | 'child' | null>(null);
   const [email, setEmail] = useState('');
+  const [familyCode, setFamilyCode] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,12 +26,15 @@ function LoginForm() {
 
     const res = await signIn('credentials', {
       email,
+      familyCode,
       password,
       redirect: false,
     });
 
     if (res?.error) {
-      setError('Credenciales inválidas. Revisa tu email y contraseña.');
+      setError(role === 'parent' 
+        ? 'Credenciales inválidas. Revisa tu email y contraseña.' 
+        : 'Nombre, código de familia o contraseña incorrectos.');
       setLoading(false);
     } else {
       router.push(role === 'parent' ? '/admin' : '/');
@@ -117,7 +121,7 @@ function LoginForm() {
           >
             <button 
               type="button" 
-              onClick={() => setRole(null)}
+              onClick={() => { setRole(null); setError(''); }}
               style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}
             >
               ← Volver
@@ -128,12 +132,14 @@ function LoginForm() {
             </h2>
 
             <div style={{ display: 'grid', gap: '8px' }}>
-              <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Email</label>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>
+                {role === 'parent' ? 'Email' : 'Nombre de Usuario'}
+              </label>
               <input 
-                type="email" 
+                type={role === 'parent' ? 'email' : 'text'} 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ejemplo@email.com"
+                placeholder={role === 'parent' ? 'ejemplo@email.com' : 'Tu nombre de pila'}
                 required
                 style={{
                   width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
@@ -141,6 +147,28 @@ function LoginForm() {
                 }}
               />
             </div>
+
+            {role === 'child' && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }} 
+                animate={{ opacity: 1, y: 0 }}
+                style={{ display: 'grid', gap: '8px' }}
+              >
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Código de Familia</label>
+                <input 
+                  type="text" 
+                  value={familyCode}
+                  onChange={(e) => setFamilyCode(e.target.value.toUpperCase())}
+                  placeholder="EJ: PEREZ-1234"
+                  required
+                  style={{
+                    width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
+                    borderRadius: '12px', padding: '12px', color: 'white', outline: 'none',
+                    textTransform: 'uppercase'
+                  }}
+                />
+              </motion.div>
+            )}
 
             <div style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Contraseña</label>

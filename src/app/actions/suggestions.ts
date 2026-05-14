@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 async function getEffectiveFamilyId() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
-  return (session.user as any).parentId || (session.user as any).id;
+  return (session.user as any).familyId;
 }
 
 export async function createSuggestion(content: string) {
@@ -57,7 +57,7 @@ export async function getSuggestions() {
     })
     .from(suggestions)
     .innerJoin(users, eq(suggestions.childId, users.id))
-    .where(eq(users.parentId, familyId))
+    .where(eq(users.familyId, familyId))
     .orderBy(desc(suggestions.createdAt));
 
   return data;

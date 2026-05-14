@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, families } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -28,16 +28,25 @@ export async function registerUser(formData: FormData) {
   // Encriptar contraseña
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Crear usuario
+  // Generar un código de familia único y amigable
+  const familyCode = `${name.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  // Crear usuario y familia en una transacción (o secuencia)
   try {
+    const [newFamily] = await db.insert(families).values({
+      name: `Familia ${name}`,
+      code: familyCode,
+    }).returning();
+
     await db.insert(users).values({
       name,
       email,
       password: hashedPassword,
-      role: "parent", // El registro directo es siempre para padres
+      role: "parent",
+      familyId: newFamily.id,
     });
 
-    return { success: true };
+    return { success: true, familyCode };
   } catch (error) {
     console.error("Error en registro:", error);
     return { error: "Error al crear la cuenta. Inténtalo de nuevo." };

@@ -149,6 +149,7 @@ function FamilyManager() {
   const [loading, setLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('👤');
   const [formRole, setFormRole] = useState<'child' | 'parent'>('child');
+  const [editingRole, setEditingRole] = useState<'child' | 'parent' | null>(null);
 
   const fetchData = async () => {
     const [membersData, familyData] = await Promise.all([
@@ -186,6 +187,7 @@ function FamilyManager() {
     const res = await updateFamilyMember(id, formData);
     if (res.success) {
       setEditingId(null);
+      setEditingRole(null);
       fetchData();
     } else {
       alert(res.error);
@@ -324,7 +326,7 @@ function FamilyManager() {
               <form onSubmit={(e) => handleUpdate(e, member.id)} style={{ display: 'grid', gap: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ fontSize: '0.9rem' }}>Editando Perfil</h3>
-                  <button type="button" onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
+                  <button type="button" onClick={() => { setEditingId(null); setEditingRole(null); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
                 </div>
                 <input name="name" defaultValue={member.name} placeholder="Nombre" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
@@ -332,11 +334,16 @@ function FamilyManager() {
                     <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{ fontSize: '1.2rem', padding: '5px', borderRadius: '8px', background: selectedAvatar === av ? 'var(--primary-color)' : 'transparent', border: '1px solid var(--border-color)', cursor: 'pointer' }}>{av}</button>
                   ))}
                 </div>
-                <select name="role" defaultValue={member.role} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}>
+                <select 
+                  name="role" 
+                  value={editingRole || member.role} 
+                  onChange={(e) => setEditingRole(e.target.value as any)}
+                  style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}
+                >
                   <option value="child" style={{ color: 'black' }}>Jugador</option>
                   <option value="parent" style={{ color: 'black' }}>Admin</option>
                 </select>
-                {member.role === 'parent' && (
+                {(editingRole || member.role) === 'parent' && (
                   <input name="email" type="email" defaultValue={member.email} placeholder="Email de acceso" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 )}
                 <input name="password" type="password" placeholder="Cambiar contraseña (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
@@ -388,7 +395,7 @@ function FamilyManager() {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
-                    <button onClick={() => { setEditingId(member.id); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '8px' }}>
+                    <button onClick={() => { setEditingId(member.id); setEditingRole(member.role); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '8px' }}>
                       <Pencil size={16} />
                     </button>
                     <button onClick={() => handleDelete(member.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '8px' }}>

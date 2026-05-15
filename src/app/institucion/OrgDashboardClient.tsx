@@ -74,8 +74,8 @@ export default function OrgDashboardClient({ initialStats, initialProfessionals 
             <Building2 size={32} color="#06b6d4" />
           </div>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Gestión Institucional</h1>
-            <p style={{ color: '#94a3b8' }}>Director: {session?.user?.name}</p>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{stats.orgName}</h1>
+            <p style={{ color: '#94a3b8' }}>Gestión Institucional • Director: {session?.user?.name}</p>
           </div>
         </div>
         

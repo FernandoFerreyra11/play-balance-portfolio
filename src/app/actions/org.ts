@@ -24,6 +24,12 @@ export async function getOrgStats() {
   if (!orgId) return { error: "Sin organización" };
 
   try {
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, orgId))
+      .limit(1);
+
     const [prosCount] = await db
       .select({ value: count() })
       .from(users)
@@ -35,6 +41,7 @@ export async function getOrgStats() {
       .where(eq(families.organizationId, orgId));
 
     return {
+      orgName: org?.name || "Institución",
       professionalsCount: prosCount.value,
       totalPatients: familiesCount.value,
     };

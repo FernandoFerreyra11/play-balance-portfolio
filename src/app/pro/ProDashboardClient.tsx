@@ -26,7 +26,9 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: an
   const [stats, setStats] = useState(initialStats);
   const [loading, setLoading] = useState(false);
   const [showAddFamily, setShowAddFamily] = useState(false);
-  const [showOrgForm, setShowOrgForm] = useState(!session?.user?.organizationId);
+  const [showOrgForm, setShowOrgForm] = useState(
+    session?.user?.role === 'professional' && !session?.user?.organizationId
+  );
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const handleCreateOrg = async (e: React.FormEvent<HTMLFormElement>) => {

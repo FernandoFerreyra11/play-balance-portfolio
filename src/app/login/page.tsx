@@ -45,6 +45,8 @@ function LoginForm() {
         router.push('/super-admin');
       } else if (userRole === 'professional') {
         router.push('/pro');
+      } else if (userRole === 'org_admin') {
+        router.push('/institucion');
       } else {
         router.push(role === 'parent' ? '/admin' : '/');
       }

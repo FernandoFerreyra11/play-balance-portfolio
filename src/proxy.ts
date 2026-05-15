@@ -22,5 +22,5 @@ const authProxy = withAuth(
 export const proxy = authProxy;
 
 export const config = {
-  matcher: ["/admin/:path*", "/"], // Protegemos también la home para forzar el login
+  matcher: ["/admin/:path*"], // Ya no protegemos la raíz para permitir ver la Landing Page
 };

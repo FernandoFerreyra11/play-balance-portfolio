@@ -10,9 +10,12 @@ import {
 import { getMySuggestions } from "./actions/suggestions";
 
 export default async function Home() {
+  console.log("SERVER: Rendering Home page");
   const session = await getServerSession(authOptions);
+  console.log("SERVER: Session status:", !!session);
 
   if (!session) {
+    console.log("SERVER: No session, showing LandingPage");
     return <LandingPage />;
   }
 

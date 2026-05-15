@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, uuid, pgEnum, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, timestamp, uuid, pgEnum, primaryKey, AnyPgColumn } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['parent', 'child', 'super_admin', 'professional']);
 export const statusEnum = pgEnum('status', ['pending', 'approved', 'rejected']);
@@ -23,7 +23,7 @@ export const users = pgTable('users', {
   image: text('image'),
   role: roleEnum('role').default('child'),
   parentId: uuid('parent_id'), 
-  familyId: uuid('family_id').references(() => families.id),
+  familyId: uuid('family_id').references((): AnyPgColumn => families.id),
   organizationId: uuid('organization_id').references(() => organizations.id), // Vinculado a una clínica/escuela
   balance: integer('balance').default(0),
   createdAt: timestamp('created_at').defaultNow(),
@@ -34,7 +34,7 @@ export const families = pgTable('families', {
   name: text('name').notNull(),
   code: text('code').unique().notNull(),
   organizationId: uuid('organization_id').references(() => organizations.id), // Familia bajo una organización
-  professionalId: uuid('professional_id').references(() => users.id), // Terapeuta asignado
+  professionalId: uuid('professional_id').references((): AnyPgColumn => users.id), // Terapeuta asignado
   createdAt: timestamp('created_at').defaultNow(),
 });
 

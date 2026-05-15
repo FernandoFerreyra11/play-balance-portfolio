@@ -75,8 +75,8 @@ export function LandingPage() {
           />
           <ValueCard 
             icon={<Stethoscope size={40} color="#8b5cf6" />}
-            title="Para Terapeutas"
-            description="Sigue el progreso de tus pacientes fuera de consulta. Asigna tareas terapéuticas y recibe datos precisos."
+            title="Para Profesionales"
+            description="Sigue el progreso de tus pacientes fuera de consulta. Asigna tareas o rutinas, recibe datos precisos y entrega feedback."
           />
           <ValueCard 
             icon={<Building2 size={40} color="#ec4899" />}

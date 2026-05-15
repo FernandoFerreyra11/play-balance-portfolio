@@ -1,0 +1,131 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { signOut } from 'next-auth/react';
+import { 
+  Coins, 
+  Trophy, 
+  LogOut, 
+  CheckCircle2, 
+  Settings,
+  Gift,
+  Clock,
+  Sparkles,
+  MessageSquarePlus
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { 
+  getPlayerStats, 
+  getAvailableQuests, 
+  getAvailableRewards, 
+  requestQuestCompletion, 
+  requestReward 
+} from '@/app/actions/player';
+import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
+
+export function Dashboards({ initialData }: any) {
+  const [player, setPlayer] = useState(initialData.player);
+  const [quests, setQuests] = useState(initialData.quests);
+  const [rewards, setRewards] = useState(initialData.rewards);
+  const [mySuggestions, setMySuggestions] = useState(initialData.mySuggestions);
+  const [suggestionText, setSuggestionText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const fetchData = async () => {
+    const stats = await getPlayerStats();
+    const q = await getAvailableQuests();
+    const r = await getAvailableRewards();
+    const s = await getMySuggestions();
+    setPlayer(stats);
+    setQuests(q);
+    setRewards(r);
+    setMySuggestions(s);
+  };
+
+  const handleSuggestionSubmit = async () => {
+    if (!suggestionText.trim()) return;
+    setSending(true);
+    const res = await createSuggestion(suggestionText);
+    if (res.success) {
+      setSuggestionText('');
+      fetchData();
+    }
+    setSending(false);
+  };
+
+  if (player?.role === 'parent' || player?.role === 'professional' || player?.role === 'org_admin' || player?.role === 'super_admin') {
+    const roleConfig: any = {
+      parent: { icon: '🛡️', title: 'Hola, Papá/Mamá', desc: 'Gestiona tu familia', link: '/admin' },
+      professional: { icon: '🩺', title: 'Panel Profesional', desc: 'Gestiona tus pacientes', link: '/pro' },
+      org_admin: { icon: '🏢', title: 'Panel Institucional', desc: 'Gestiona tu centro', link: '/institucion' },
+      super_admin: { icon: '🌐', title: 'Super Admin', desc: 'Control Global', link: '/super-admin' }
+    };
+    const config = roleConfig[player.role as string] || roleConfig.parent;
+
+    return (
+      <div style={{ textAlign: 'center', paddingTop: '100px', minHeight: '100vh', background: '#020617', color: 'white' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ fontSize: '4rem', marginBottom: '20px' }}>{config.icon}</div>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800 }}>{config.title} <span style={{ color: '#06b6d4' }}>{player.name}</span></h1>
+          <p style={{ color: '#94a3b8', fontSize: '1.2rem', marginBottom: '40px' }}>{config.desc}</p>
+          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+            <Link href={config.link} className="btn-primary">Ir al Panel de Control</Link>
+            <button onClick={() => signOut()} className="glass">Cerrar sesión</button>
+          </div>
+        </motion.div>
+        <style jsx>{`
+          .btn-primary { background: #06b6d4; color: white; border: none; font-weight: 700; padding: 15px 30px; border-radius: 12px; text-decoration: none; }
+          .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 15px 30px; border-radius: 12px; cursor: pointer; }
+        `}</style>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container" style={{ minHeight: '100vh', background: '#020617', color: 'white', paddingBottom: '100px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '40px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', border: '2px solid #06b6d4', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '3rem' }}>{player?.image || '👤'}</div>
+          <div>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 700 }}>¡Hola, {player?.name}!</h1>
+            <button onClick={() => signOut()} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>Salir</button>
+          </div>
+        </div>
+        <div className="glass" style={{ padding: '15px 30px', borderRadius: '25px', border: '2px solid #f59e0b' }}>
+          <div style={{ fontSize: '2.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><Coins size={32} color="#f59e0b" /> {player?.balance || 0}</div>
+        </div>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', padding: '0 20px' }}>
+        <section>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {quests.map((quest: any) => (
+              <div key={quest.id} className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '6px solid #06b6d4', display: 'flex', justifyContent: 'space-between' }}>
+                <div><h3>{quest.title}</h3><div style={{ color: '#f59e0b' }}>+{quest.reward} Tokens</div></div>
+                <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary">{quest.status === 'pending_approval' ? 'Revisando' : '¡Hecho!'}</button>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Gift color="#8b5cf6" /> Premios</h2>
+          {/* ... similar a misiones ... */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {rewards.map((reward: any) => (
+              <div key={reward.id} className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '6px solid #8b5cf6', display: 'flex', justifyContent: 'space-between' }}>
+                <div><h3>{reward.title}</h3><div style={{ color: '#f59e0b' }}>{reward.cost} tokens</div></div>
+                <button disabled={player?.balance < reward.cost} onClick={async () => { await requestReward(reward.id); fetchData(); }} className="btn-primary" style={{ background: '#8b5cf6' }}>Canjear</button>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+      <style jsx>{`
+        .btn-primary { background: #06b6d4; color: white; border: none; font-weight: 700; padding: 10px 20px; border-radius: 50px; cursor: pointer; }
+        .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); }
+      `}</style>
+    </div>
+  );
+}

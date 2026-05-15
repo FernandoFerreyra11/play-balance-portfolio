@@ -9,11 +9,13 @@ async function promoteToPro(email: string) {
   console.log(`🛡️ Promoviendo a ${email} a Profesional...`);
   
   try {
-    const [user] = await db
+    const result = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
+
+    const user = result[0];
 
     if (!user) {
       console.error("❌ Usuario no encontrado.");

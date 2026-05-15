@@ -18,10 +18,12 @@ async function migrate() {
     console.log(`Creando familia para ${parent.name} con código ${familyCode}...`);
 
     // Crear la familia
-    const [newFamily] = await db.insert(families).values({
+    const insertedFamilies = await db.insert(families).values({
       name: `Familia ${parent.name}`,
       code: familyCode,
     }).returning();
+
+    const newFamily = insertedFamilies[0];
 
     // Actualizar al padre
     await db.update(users).set({ familyId: newFamily.id }).where(eq(users.id, parent.id));

@@ -84,7 +84,6 @@ function LoginForm() {
             exit={{ opacity: 0, x: 20 }}
             style={{ display: 'grid', gap: '20px' }}
           >
-            <p style={{ textAlign: 'center', marginBottom: '10px', fontSize: '1.1rem' }}>¿Quién eres hoy?</p>
             
             <button 
               onClick={() => setRole('parent')}
@@ -100,7 +99,6 @@ function LoginForm() {
               </div>
               <div>
                 <h3 style={{ margin: 0 }}>Panel de Control</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Soy Papá / Mamá</p>
               </div>
             </button>
 
@@ -118,7 +116,6 @@ function LoginForm() {
               </div>
               <div>
                 <h3 style={{ margin: 0 }}>Mi Aventura</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Soy un Jugador</p>
               </div>
             </button>
           </motion.div>
@@ -216,7 +213,7 @@ function LoginForm() {
       </AnimatePresence>
 
       <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-dim)', marginTop: '30px' }}>
-        ¿No tienes una cuenta? <Link href="/register" style={{ color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 600 }}>Crea una familiar</Link>
+        ¿No tienes una cuenta? <Link href="/register" style={{ color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 600 }}>Registrarse</Link>
       </p>
     </div>
   );

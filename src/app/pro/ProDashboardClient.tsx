@@ -1,0 +1,242 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Stethoscope, 
+  Users, 
+  TrendingUp, 
+  Plus, 
+  Settings, 
+  LogOut,
+  Search,
+  ChevronRight,
+  ClipboardList,
+  Building2,
+  CheckCircle,
+  XCircle,
+  AlertCircle
+} from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import { createOrganization, createPatientFamily } from '../actions/pro';
+
+export default function ProDashboardClient({ initialStats, initialFamilies }: any) {
+  const { data: session }: any = useSession();
+  const [families, setFamilies] = useState(initialFamilies);
+  const [stats, setStats] = useState(initialStats);
+  const [loading, setLoading] = useState(false);
+  const [showAddFamily, setShowAddFamily] = useState(false);
+  const [showOrgForm, setShowOrgForm] = useState(!session?.user?.organizationId);
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  const handleCreateOrg = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await createOrganization(
+      formData.get('name') as string,
+      formData.get('slug') as string
+    );
+    if (res.success) {
+      setNotification({ message: 'Clínica/Organización configurada con éxito', type: 'success' });
+      setShowOrgForm(false);
+      // Forzar recarga para actualizar el session con el organizationId
+      window.location.reload();
+    } else {
+      setNotification({ message: res.error || 'Error', type: 'error' });
+    }
+    setLoading(false);
+  };
+
+  const handleAddFamily = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await createPatientFamily(formData.get('name') as string);
+    if (res.success) {
+      setNotification({ message: 'Nuevo caso familiar creado', type: 'success' });
+      setShowAddFamily(false);
+      // Aquí normalmente refrescaríamos la lista
+      window.location.reload();
+    } else {
+      setNotification({ message: res.error || 'Error', type: 'error' });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+      
+      {/* Notificación */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed', top: 0, left: '50%', zIndex: 1000,
+              background: notification.type === 'success' ? '#10b981' : '#ef4444',
+              color: 'white', padding: '12px 25px', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ 
+            padding: '15px', background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)', 
+            borderRadius: '20px', boxShadow: '0 10px 20px rgba(6, 182, 212, 0.3)' 
+          }}>
+            <Stethoscope size={32} color="white" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Panel Profesional</h1>
+            <p style={{ color: '#94a3b8' }}>Bienvenido de nuevo, Dr. {session?.user?.name}</p>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="glass" style={{ padding: '10px 20px', borderRadius: '12px', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <LogOut size={18} /> Salir
+          </button>
+        </div>
+      </header>
+
+      {/* Si no tiene organización, mostrar form obligatorio */}
+      {showOrgForm && (
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass" style={{ padding: '40px', borderRadius: '30px', marginBottom: '40px', border: '1px solid #06b6d4' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px', color: '#06b6d4' }}>
+            <Building2 size={24} />
+            <h2 style={{ fontSize: '1.5rem' }}>Configura tu Clínica o Práctica</h2>
+          </div>
+          <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Para empezar a gestionar pacientes, necesitamos los datos de tu centro o consulta profesional.</p>
+          <form onSubmit={handleCreateOrg} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Nombre de la Clínica/Consulta</label>
+              <input name="name" required placeholder="Ej: Centro de Psicología Victoria" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+            </div>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Slug para tu URL (solo letras y guiones)</label>
+              <input name="slug" required placeholder="ej: clinica-victoria" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+            </div>
+            <button disabled={loading} type="submit" className="btn-primary" style={{ gridColumn: '1 / -1', padding: '15px' }}>
+              {loading ? 'Configurando...' : 'Confirmar y Empezar'}
+            </button>
+          </form>
+        </motion.div>
+      )}
+
+      {/* Stats rápidas */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
+        <StatCard icon={<Users color="#06b6d4" />} title="Total Pacientes" value={stats.activePatients || 0} />
+        <StatCard icon={<TrendingUp color="#10b981" />} title="Cumplimiento Global" value="84%" />
+        <StatCard icon={<ClipboardList color="#8b5cf6" />} title="Misiones Activas" value="12" />
+      </div>
+
+      {/* Listado de Familias/Casos */}
+      <div className="glass" style={{ padding: '30px', borderRadius: '30px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Users size={24} /> Casos Bajo Supervisión
+          </h2>
+          <button 
+            onClick={() => setShowAddFamily(!showAddFamily)}
+            className="btn-primary" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+          >
+            <Plus size={18} /> Nuevo Paciente
+          </button>
+        </div>
+
+        {showAddFamily && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{ marginBottom: '30px', overflow: 'hidden' }}>
+            <form onSubmit={handleAddFamily} className="glass" style={{ padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '15px' }}>
+              <input name="name" required placeholder="Nombre de la familia (ej: Familia Pérez)" style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+              <button disabled={loading} type="submit" className="btn-primary">
+                {loading ? 'Creando...' : 'Crear Caso'}
+              </button>
+            </form>
+          </motion.div>
+        )}
+
+        <div style={{ display: 'grid', gap: '15px' }}>
+          {families.map((family: any) => (
+            <motion.div 
+              key={family.id}
+              whileHover={{ x: 10, background: 'rgba(255,255,255,0.05)' }}
+              style={{ 
+                padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem' }}>
+                  👪
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '2px' }}>{family.name}</h3>
+                  <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertCircle size={14} color="#f59e0b" /> 2 misiones pendientes
+                    </span>
+                    <span>Código: {family.code}</span>
+                  </div>
+                </div>
+              </div>
+              <ChevronRight color="#475569" />
+            </motion.div>
+          ))}
+          {families.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#475569' }}>
+              No tienes pacientes asignados todavía. Comienza creando tu primer caso.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .glass {
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(10px);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(6, 182, 212, 0.4);
+        }
+        .btn-primary:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function StatCard({ icon, title, value }: any) {
+  return (
+    <div className="glass" style={{ padding: '25px', borderRadius: '25px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+      <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px' }}>
+        {icon}
+      </div>
+      <div>
+        <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '2px' }}>{title}</p>
+        <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>{value}</p>
+      </div>
+    </div>
+  );
+}

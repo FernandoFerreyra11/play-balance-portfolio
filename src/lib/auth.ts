@@ -80,6 +80,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           parentId: user.parentId,
           familyId: user.familyId,
+          organizationId: user.organizationId,
         };
       },
     }),
@@ -91,6 +92,7 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.parentId = (user as any).parentId;
         token.familyId = (user as any).familyId;
+        token.organizationId = (user as any).organizationId;
       }
       return token;
     },
@@ -100,6 +102,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).parentId = token.parentId;
         (session.user as any).familyId = token.familyId;
+        (session.user as any).organizationId = token.organizationId;
       }
       return session;
     },

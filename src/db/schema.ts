@@ -1,8 +1,18 @@
 import { pgTable, text, integer, timestamp, uuid, pgEnum, primaryKey } from 'drizzle-orm/pg-core';
 
-export const roleEnum = pgEnum('role', ['parent', 'child', 'super_admin']);
+export const roleEnum = pgEnum('role', ['parent', 'child', 'super_admin', 'professional']);
 export const statusEnum = pgEnum('status', ['pending', 'approved', 'rejected']);
 export const questStatusEnum = pgEnum('quest_status', ['in_progress', 'pending_approval', 'completed']);
+
+export const organizations = pgTable('organizations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  slug: text('slug').unique().notNull(),
+  logo: text('logo'),
+  primaryColor: text('primary_color').default('#06b6d4'),
+  config: text('config'), // JSON stringificado para ajustes extra
+  createdAt: timestamp('created_at').defaultNow(),
+});
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -12,8 +22,9 @@ export const users = pgTable('users', {
   password: text('password'),
   image: text('image'),
   role: roleEnum('role').default('child'),
-  parentId: uuid('parent_id'), // Referencia al ID del padre/madre (se mantiene por compatibilidad)
-  familyId: uuid('family_id').references(() => families.id), // Nueva referencia a la tabla familias
+  parentId: uuid('parent_id'), 
+  familyId: uuid('family_id').references(() => families.id),
+  organizationId: uuid('organization_id').references(() => organizations.id), // Vinculado a una clínica/escuela
   balance: integer('balance').default(0),
   createdAt: timestamp('created_at').defaultNow(),
 });
@@ -21,7 +32,9 @@ export const users = pgTable('users', {
 export const families = pgTable('families', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
-  code: text('code').unique().notNull(), // El código que usarán para loguearse
+  code: text('code').unique().notNull(),
+  organizationId: uuid('organization_id').references(() => organizations.id), // Familia bajo una organización
+  professionalId: uuid('professional_id').references(() => users.id), // Terapeuta asignado
   createdAt: timestamp('created_at').defaultNow(),
 });
 

@@ -43,6 +43,8 @@ function LoginForm() {
 
       if (userRole === 'super_admin') {
         router.push('/super-admin');
+      } else if (userRole === 'professional') {
+        router.push('/pro');
       } else {
         router.push(role === 'parent' ? '/admin' : '/');
       }

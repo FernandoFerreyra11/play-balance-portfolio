@@ -1,0 +1,105 @@
+'use server';
+
+import { db } from "@/db";
+import { users, families, organizations, activeQuests } from "@/db/schema";
+import { eq, and, sql, count } from "drizzle-orm";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
+
+async function getProSession() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'professional') {
+    return null;
+  }
+  return session;
+}
+
+export async function getProfessionalStats() {
+  const session = await getProSession();
+  if (!session) return { error: "No autorizado" };
+
+  const proId = (session.user as any).id;
+
+  try {
+    const familiesCount = await db
+      .select({ value: count() })
+      .from(families)
+      .where(eq(families.professionalId, proId));
+
+    // Podríamos añadir más stats como misiones completadas por sus pacientes
+    return {
+      familiesCount: familiesCount[0].value,
+      activePatients: familiesCount[0].value, // Simplificado por ahora
+    };
+  } catch (error) {
+    return { error: "Error al cargar estadísticas" };
+  }
+}
+
+export async function getManagedFamilies() {
+  const session = await getProSession();
+  if (!session) return [];
+
+  const proId = (session.user as any).id;
+
+  try {
+    return await db
+      .select()
+      .from(families)
+      .where(eq(families.professionalId, proId))
+      .orderBy(families.createdAt);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function createOrganization(name: string, slug: string) {
+  const session = await getProSession();
+  if (!session) return { error: "No autorizado" };
+
+  const proId = (session.user as any).id;
+
+  try {
+    const [newOrg] = await db.insert(organizations).values({
+      name,
+      slug: slug.toLowerCase().replace(/\s+/g, '-'),
+    }).returning();
+
+    // Vincular al profesional con su organización
+    await db.update(users)
+      .set({ organizationId: newOrg.id })
+      .where(eq(users.id, proId));
+
+    revalidatePath("/pro");
+    return { success: true, organization: newOrg };
+  } catch (error) {
+    return { error: "Error al crear la organización. El slug podría estar duplicado." };
+  }
+}
+
+export async function createPatientFamily(familyName: string) {
+  const session = await getProSession();
+  if (!session) return { error: "No autorizado" };
+
+  const proId = (session.user as any).id;
+  const orgId = (session.user as any).organizationId;
+
+  // Generar un código único
+  const familyCode = `PRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+  try {
+    const [newFamily] = await db.insert(families).values({
+      name: familyName,
+      code: familyCode,
+      professionalId: proId,
+      organizationId: orgId || null,
+    }).returning();
+
+    revalidatePath("/pro");
+    return { success: true, family: newFamily };
+  } catch (error) {
+    return { error: "Error al crear la familia del paciente" };
+  }
+}

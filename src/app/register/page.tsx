@@ -8,6 +8,9 @@ import { registerUser } from '../actions/auth';
 import Link from 'next/link';
 
 export default function RegisterPage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
   const [role, setRole] = useState<'parent' | 'professional' | 'org_admin'>('parent');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

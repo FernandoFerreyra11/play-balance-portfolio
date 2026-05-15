@@ -8,9 +8,7 @@ import { registerUser } from '../actions/auth';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const [role, setRole] = useState<'parent' | 'professional' | 'org_admin'>('parent');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -18,6 +16,7 @@ export default function RegisterPage() {
     setError('');
 
     const formData = new FormData(e.currentTarget);
+    formData.append('role', role);
     const result = await registerUser(formData);
 
     if (result?.error) {
@@ -29,27 +28,34 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container" style={{ minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div className="container" style={{ minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 0' }}>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass card" 
-        style={{ width: '100%', maxWidth: '450px', padding: '40px' }}
+        style={{ width: '100%', maxWidth: '500px', padding: '40px' }}
       >
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Crear <span style={{ color: 'var(--accent-color)' }}>Cuenta</span></h1>
-          <p style={{ color: 'var(--text-dim)' }}>Comienza tu aventura familiar</p>
+          <p style={{ color: 'var(--text-dim)' }}>Únete a la aventura de Play Balance</p>
+        </div>
+
+        {/* Selector de Rol */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', background: 'rgba(0,0,0,0.2)', padding: '5px', borderRadius: '15px' }}>
+          <RoleButton active={role === 'parent'} onClick={() => setRole('parent')} label="Familia" />
+          <RoleButton active={role === 'professional'} onClick={() => setRole('professional')} label="Profesional" />
+          <RoleButton active={role === 'org_admin'} onClick={() => setRole('org_admin')} label="Institución" />
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
           <div style={{ display: 'grid', gap: '8px' }}>
             <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <User size={16} /> Nombre Completo
+              <User size={16} /> {role === 'org_admin' ? 'Nombre del Director' : 'Nombre Completo'}
             </label>
             <input 
               name="name"
               type="text" 
-              placeholder="Juan Pérez"
+              placeholder={role === 'org_admin' ? 'Ej: Dr. García' : 'Ej: Juan Pérez'}
               required
               style={{
                 width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
@@ -58,14 +64,32 @@ export default function RegisterPage() {
             />
           </div>
 
+          {role === 'org_admin' && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🏢 Nombre de la Institución
+              </label>
+              <input 
+                name="organizationName"
+                type="text" 
+                placeholder="Ej: Centro Terapéutico Sol"
+                required
+                style={{
+                  width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
+                  borderRadius: '12px', padding: '12px', color: 'white', outline: 'none'
+                }}
+              />
+            </motion.div>
+          )}
+
           <div style={{ display: 'grid', gap: '8px' }}>
             <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Mail size={16} /> Email
+              <Mail size={16} /> Email {role === 'org_admin' ? 'Institucional' : ''}
             </label>
             <input 
               name="email"
               type="email" 
-              placeholder="papa@familia.com"
+              placeholder="email@ejemplo.com"
               required
               style={{
                 width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
@@ -103,7 +127,7 @@ export default function RegisterPage() {
             className="btn-primary" 
             style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <>Registrarme <ArrowRight size={20} /></>}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : <>Crear mi cuenta <ArrowRight size={20} /></>}
           </button>
 
           <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-dim)', marginTop: '10px' }}>
@@ -122,5 +146,27 @@ export default function RegisterPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+function RoleButton({ active, onClick, label }: any) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        flex: 1,
+        padding: '10px',
+        border: 'none',
+        borderRadius: '12px',
+        background: active ? 'var(--accent-color)' : 'transparent',
+        color: active ? 'white' : 'var(--text-dim)',
+        fontWeight: 700,
+        cursor: 'pointer',
+        transition: 'all 0.2s'
+      }}
+    >
+      {label}
+    </button>
   );
 }

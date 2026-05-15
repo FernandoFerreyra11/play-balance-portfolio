@@ -62,10 +62,12 @@ export async function createOrganization(name: string, slug: string) {
   const proId = (session.user as any).id;
 
   try {
-    const [newOrg] = await db.insert(organizations).values({
+    const insertedOrgs = await db.insert(organizations).values({
       name,
       slug: slug.toLowerCase().replace(/\s+/g, '-'),
     }).returning();
+
+    const newOrg = insertedOrgs[0];
 
     // Vincular al profesional con su organización
     await db.update(users)
@@ -90,12 +92,14 @@ export async function createPatientFamily(familyName: string) {
   const familyCode = `PRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   try {
-    const [newFamily] = await db.insert(families).values({
+    const insertedFamilies = await db.insert(families).values({
       name: familyName,
       code: familyCode,
       professionalId: proId,
       organizationId: orgId || null,
     }).returning();
+
+    const newFamily = insertedFamilies[0];
 
     revalidatePath("/pro");
     return { success: true, family: newFamily };

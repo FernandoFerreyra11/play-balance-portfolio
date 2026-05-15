@@ -128,13 +128,13 @@ export async function getFamilyDetail() {
   const familyId = await getEffectiveFamilyId();
   if (!familyId) return null;
 
-  const [family] = await db
+  const result = await db
     .select()
     .from(families)
     .where(eq(families.id, familyId as string))
     .limit(1);
   
-  return family;
+  return result[0] || null;
 }
 
 export async function deleteOwnFamily() {

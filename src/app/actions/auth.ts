@@ -34,10 +34,12 @@ export async function registerUser(formData: FormData) {
 
   // Crear usuario y familia en una transacción (o secuencia)
   try {
-    const [newFamily] = await db.insert(families).values({
+    const insertedFamilies = await db.insert(families).values({
       name: `Familia ${name}`,
       code: familyCode,
     }).returning();
+
+    const newFamily = insertedFamilies[0];
 
     await db.insert(users).values({
       name,

@@ -67,7 +67,7 @@ export async function createOrganization(name: string, slug: string) {
       slug: slug.toLowerCase().replace(/\s+/g, '-'),
     }).returning();
 
-    const newOrg = insertedOrgs[0];
+    const newOrg = (insertedOrgs as any)[0];
 
     // Vincular al profesional con su organización
     await db.update(users)
@@ -99,7 +99,7 @@ export async function createPatientFamily(familyName: string) {
       organizationId: orgId || null,
     }).returning();
 
-    const newFamily = insertedFamilies[0];
+    const newFamily = (insertedFamilies as any)[0];
 
     revalidatePath("/pro");
     return { success: true, family: newFamily };

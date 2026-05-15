@@ -23,7 +23,7 @@ async function migrate() {
       code: familyCode,
     }).returning();
 
-    const newFamily = insertedFamilies[0];
+    const newFamily = (insertedFamilies as any)[0];
 
     // Actualizar al padre
     await db.update(users).set({ familyId: newFamily.id }).where(eq(users.id, parent.id));

@@ -39,7 +39,7 @@ export async function registerUser(formData: FormData) {
       code: familyCode,
     }).returning();
 
-    const newFamily = insertedFamilies[0];
+    const newFamily = (insertedFamilies as any)[0];
 
     await db.insert(users).values({
       name,

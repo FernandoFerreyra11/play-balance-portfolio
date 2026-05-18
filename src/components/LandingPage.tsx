@@ -16,11 +16,11 @@ export function LandingPage() {
   return (
     <div style={{ background: '#020617', color: 'white', minHeight: '100vh', overflowX: 'hidden' }}>
       {/* Navbar Minimalista */}
-      <nav style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'fixed', width: '100%', zIndex: 100, backdropFilter: 'blur(10px)', background: 'rgba(2, 6, 23, 0.7)' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Play<span style={{ color: '#06b6d4' }}>Balance</span></h1>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <Link href="/login" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 600 }}>Entrar</Link>
-          <Link href="/register" className="btn-primary" style={{ padding: '10px 25px', borderRadius: '50px', textDecoration: 'none', background: '#06b6d4', color: 'white', fontWeight: 700 }}>Registrarse</Link>
+      <nav className="navbar">
+        <h1 className="nav-logo">Play<span style={{ color: '#06b6d4' }}>Balance</span></h1>
+        <div className="nav-actions">
+          <Link href="/login" className="nav-link">Entrar</Link>
+          <Link href="/register" className="btn-primary nav-btn">Registrarse</Link>
         </div>
       </nav>
 
@@ -44,11 +44,11 @@ export function LandingPage() {
               La plataforma que une a familias y profesionales para potenciar la autonomía y felicidad de los niños a través del juego.
             </p>
             
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '40px', flexWrap: 'wrap' }}>
-              <Link href="/register" className="btn-primary" style={{ padding: '18px 40px', fontSize: '1.1rem', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '10px', background: '#06b6d4', color: 'white', textDecoration: 'none', fontWeight: 700 }}>
+            <div className="hero-buttons">
+              <Link href="/register" className="btn-primary hero-btn">
                 Empezar mi familia <ArrowRight size={20} />
               </Link>
-              <Link href="/login" className="glass" style={{ padding: '18px 40px', fontSize: '1.1rem', borderRadius: '15px', color: 'white', textDecoration: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <Link href="/login" className="glass hero-btn-outline">
                 Ver demostración
               </Link>
             </div>
@@ -89,11 +89,11 @@ export function LandingPage() {
       {/* CTA Final */}
       <section style={{ padding: '100px 0' }}>
         <div className="container">
-          <div className="glass" style={{ padding: '80px 40px', borderRadius: '40px', textAlign: 'center', border: '1px solid rgba(6, 182, 212, 0.3)', background: 'rgba(255,255,255,0.03)' }}>
+          <div className="glass cta-box">
             <Rocket size={60} color="#06b6d4" style={{ marginBottom: '30px', margin: '0 auto' }} />
-            <h2 style={{ fontSize: '3rem', fontWeight: 800 }}>¿Listo para el siguiente nivel?</h2>
-            <p style={{ color: '#94a3b8', fontSize: '1.2rem', margin: '20px 0 40px' }}>Únete a las cientos de familias y profesionales que ya están jugando.</p>
-            <Link href="/register" className="btn-primary" style={{ padding: '20px 50px', fontSize: '1.2rem', borderRadius: '15px', background: '#06b6d4', color: 'white', textDecoration: 'none', fontWeight: 700 }}>
+            <h2 className="cta-title">¿Listo para el siguiente nivel?</h2>
+            <p className="cta-desc">Únete a las cientos de familias y profesionales que ya están jugando.</p>
+            <Link href="/register" className="btn-primary cta-btn">
               Crear mi cuenta gratis
             </Link>
           </div>
@@ -107,6 +107,144 @@ export function LandingPage() {
       <style jsx>{`
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .glass { backdrop-filter: blur(10px); }
+        
+        .navbar {
+          padding: 20px 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: fixed;
+          width: 100%;
+          z-index: 100;
+          backdrop-filter: blur(10px);
+          background: rgba(2, 6, 23, 0.7);
+        }
+        .nav-logo {
+          font-size: 1.5rem;
+          font-weight: 800;
+        }
+        .nav-actions {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+        }
+        .nav-link {
+          color: #94a3b8;
+          text-decoration: none;
+          font-weight: 600;
+        }
+        .nav-btn {
+          padding: 10px 25px;
+          border-radius: 50px;
+          text-decoration: none;
+          background: #06b6d4;
+          color: white;
+          font-weight: 700;
+        }
+
+        .hero-buttons {
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          margin-top: 40px;
+          flex-wrap: wrap;
+        }
+        .hero-btn {
+          padding: 18px 40px;
+          font-size: 1.1rem;
+          border-radius: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          background: #06b6d4;
+          color: white;
+          text-decoration: none;
+          font-weight: 700;
+          width: auto;
+        }
+        .hero-btn-outline {
+          padding: 18px 40px;
+          font-size: 1.1rem;
+          border-radius: 15px;
+          color: white;
+          text-decoration: none;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.1);
+          text-align: center;
+          width: auto;
+        }
+
+        .cta-box {
+          padding: 80px 40px;
+          border-radius: 40px;
+          text-align: center;
+          border: 1px solid rgba(6, 182, 212, 0.3);
+          background: rgba(255,255,255,0.03);
+        }
+        .cta-title {
+          font-size: 3rem;
+          font-weight: 800;
+        }
+        .cta-desc {
+          color: #94a3b8;
+          font-size: 1.2rem;
+          margin: 20px 0 40px;
+        }
+        .cta-btn {
+          padding: 20px 50px;
+          font-size: 1.2rem;
+          border-radius: 15px;
+          background: #06b6d4;
+          color: white;
+          text-decoration: none;
+          font-weight: 700;
+          display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+          .navbar {
+            padding: 15px 20px;
+          }
+          .nav-logo {
+            font-size: 1.2rem;
+          }
+          .nav-actions {
+            gap: 12px;
+          }
+          .nav-link {
+            font-size: 0.9rem;
+          }
+          .nav-btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+          }
+          
+          .hero-buttons {
+            flex-direction: column;
+            gap: 15px;
+          }
+          .hero-btn, .hero-btn-outline {
+            width: 100%;
+            padding: 15px 20px;
+          }
+
+          .cta-box {
+            padding: 40px 20px;
+          }
+          .cta-title {
+            font-size: 2rem;
+          }
+          .cta-desc {
+            font-size: 1rem;
+          }
+          .cta-btn {
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            width: 100%;
+            box-sizing: border-box;
+          }
+        }
       `}</style>
     </div>
   );

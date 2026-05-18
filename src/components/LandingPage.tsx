@@ -128,14 +128,6 @@ export function LandingPage() {
           gap: 20px;
           align-items: center;
         }
-        .nav-btn-secondary {
-          padding: 10px 25px;
-          border-radius: 50px;
-          text-decoration: none;
-          background: #8b5cf6;
-          color: white;
-          font-weight: 700;
-        }
         .nav-btn {
           padding: 10px 25px;
           border-radius: 50px;
@@ -179,20 +171,7 @@ export function LandingPage() {
           font-weight: 700;
           width: auto;
         }
-        .hero-btn-secondary {
-          padding: 18px 40px;
-          font-size: 1.1rem;
-          border-radius: 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          background: #8b5cf6;
-          color: white;
-          text-decoration: none;
-          font-weight: 700;
-          width: auto;
-        }
+
 
         .cta-box {
           padding: 80px 40px;
@@ -231,10 +210,6 @@ export function LandingPage() {
           .nav-actions {
             gap: 12px;
           }
-          .nav-btn-secondary {
-            padding: 8px 16px;
-            font-size: 0.9rem;
-          }
           .nav-btn {
             padding: 8px 16px;
             font-size: 0.9rem;
@@ -252,7 +227,7 @@ export function LandingPage() {
             flex-direction: column;
             gap: 15px;
           }
-          .hero-btn, .hero-btn-secondary {
+          .hero-btn {
             width: 100%;
             padding: 15px 20px;
           }

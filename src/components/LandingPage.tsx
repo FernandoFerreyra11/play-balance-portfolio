@@ -34,7 +34,7 @@ export function LandingPage() {
         
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <span style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4', padding: '8px 20px', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <span className="hero-subtitle">
               La aventura de crecer, gamificada
             </span>
             <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 900, marginTop: '20px', lineHeight: 1.1 }}>
@@ -142,6 +142,19 @@ export function LandingPage() {
           font-weight: 700;
         }
 
+        .hero-subtitle {
+          background: rgba(6, 182, 212, 0.1);
+          color: #06b6d4;
+          padding: 8px 20px;
+          border-radius: 50px;
+          font-size: 0.9rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          display: inline-block;
+          line-height: 1.4;
+        }
+
         .hero-buttons {
           display: flex;
           gap: 20px;
@@ -220,6 +233,14 @@ export function LandingPage() {
             font-size: 0.9rem;
           }
           
+          .hero-subtitle {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            white-space: normal;
+          }
+
           .hero-buttons {
             flex-direction: column;
             gap: 15px;

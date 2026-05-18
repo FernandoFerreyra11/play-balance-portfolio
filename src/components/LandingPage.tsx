@@ -41,7 +41,7 @@ export function LandingPage() {
               Convierte la rutina <br /> en una <span style={{ color: '#06b6d4' }}>Aventura Épica</span>
             </h1>
             <p style={{ color: '#94a3b8', fontSize: '1.25rem', maxWidth: '700px', margin: '30px auto', lineHeight: 1.6 }}>
-              La plataforma que une a familias y profesionales para potenciar la autonomía y felicidad de los niños a través del juego.
+              La plataforma que permite a familias y profesionales, potenciar a los niños en su autonomía y equilibrio entre tareas reales y tecnología a través del juego.
             </p>
             
             <div className="hero-buttons">

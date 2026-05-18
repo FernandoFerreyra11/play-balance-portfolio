@@ -19,7 +19,7 @@ export function LandingPage() {
       <nav className="navbar">
         <h1 className="nav-logo">Play<span style={{ color: '#06b6d4' }}>Balance</span></h1>
         <div className="nav-actions">
-          <Link href="/login" className="nav-link">Entrar</Link>
+          <Link href="/login" className="nav-btn-secondary">Entrar</Link>
           <Link href="/register" className="btn-primary nav-btn">Registrarse</Link>
         </div>
       </nav>
@@ -48,7 +48,7 @@ export function LandingPage() {
               <Link href="/register" className="btn-primary hero-btn">
                 Empezar mi familia <ArrowRight size={20} />
               </Link>
-              <Link href="/login" className="glass hero-btn-outline">
+              <Link href="/login" className="hero-btn-secondary">
                 Ver demostración
               </Link>
             </div>
@@ -128,10 +128,13 @@ export function LandingPage() {
           gap: 20px;
           align-items: center;
         }
-        .nav-link {
-          color: #94a3b8;
+        .nav-btn-secondary {
+          padding: 10px 25px;
+          border-radius: 50px;
           text-decoration: none;
-          font-weight: 600;
+          background: #8b5cf6;
+          color: white;
+          font-weight: 700;
         }
         .nav-btn {
           padding: 10px 25px;
@@ -176,15 +179,18 @@ export function LandingPage() {
           font-weight: 700;
           width: auto;
         }
-        .hero-btn-outline {
+        .hero-btn-secondary {
           padding: 18px 40px;
           font-size: 1.1rem;
           border-radius: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          background: #8b5cf6;
           color: white;
           text-decoration: none;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.1);
-          text-align: center;
+          font-weight: 700;
           width: auto;
         }
 
@@ -225,7 +231,8 @@ export function LandingPage() {
           .nav-actions {
             gap: 12px;
           }
-          .nav-link {
+          .nav-btn-secondary {
+            padding: 8px 16px;
             font-size: 0.9rem;
           }
           .nav-btn {
@@ -245,7 +252,7 @@ export function LandingPage() {
             flex-direction: column;
             gap: 15px;
           }
-          .hero-btn, .hero-btn-outline {
+          .hero-btn, .hero-btn-secondary {
             width: 100%;
             padding: 15px 20px;
           }

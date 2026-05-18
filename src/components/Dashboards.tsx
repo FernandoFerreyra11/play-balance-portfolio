@@ -84,20 +84,20 @@ export function Dashboards({ initialData }: any) {
 
   return (
     <div className="container" style={{ minHeight: '100vh', background: '#020617', color: 'white', paddingBottom: '100px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '40px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.05)', border: '2px solid #06b6d4', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '3rem' }}>{player?.image || '👤'}</div>
+      <header className="dashboard-header">
+        <div className="user-profile">
+          <div className="user-avatar">{player?.image || '👤'}</div>
           <div>
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 700 }}>¡Hola, {player?.name}!</h1>
-            <button onClick={() => signOut()} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>Salir</button>
+            <h1 className="user-name">¡Hola, {player?.name}!</h1>
+            <button onClick={() => signOut()} className="logout-btn">Salir</button>
           </div>
         </div>
-        <div className="glass" style={{ padding: '15px 30px', borderRadius: '25px', border: '2px solid #f59e0b' }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><Coins size={32} color="#f59e0b" /> {player?.balance || 0}</div>
+        <div className="glass token-card">
+          <div className="token-display"><Coins size={32} color="#f59e0b" /> {player?.balance || 0}</div>
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', padding: '0 20px' }}>
+      <div className="dashboard-grid">
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -154,6 +154,90 @@ export function Dashboards({ initialData }: any) {
       <style jsx>{`
         .btn-primary { background: #06b6d4; color: white; border: none; font-weight: 700; padding: 10px 20px; border-radius: 50px; cursor: pointer; }
         .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); }
+        
+        .dashboard-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 40px 20px;
+          gap: 20px;
+        }
+        .user-profile {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+        .user-avatar {
+          width: 80px;
+          height: 80px;
+          background: rgba(255,255,255,0.05);
+          border: 2px solid #06b6d4;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 3rem;
+        }
+        .user-name {
+          font-size: 2.2rem;
+          font-weight: 700;
+        }
+        .logout-btn {
+          background: none;
+          border: none;
+          color: #ef4444;
+          cursor: pointer;
+          font-size: 1rem;
+          text-align: left;
+        }
+        .token-card {
+          padding: 15px 30px;
+          border-radius: 25px;
+          border: 2px solid #f59e0b;
+        }
+        .token-display {
+          font-size: 2.5rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .dashboard-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 40px;
+          padding: 0 20px;
+        }
+
+        @media (max-width: 768px) {
+          .dashboard-header {
+            flex-direction: column;
+            padding: 30px 15px;
+            text-align: center;
+          }
+          .user-profile {
+            flex-direction: column;
+            gap: 10px;
+          }
+          .user-name {
+            font-size: 1.8rem;
+          }
+          .logout-btn {
+            text-align: center;
+            width: 100%;
+          }
+          .token-card {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+          }
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 25px;
+            padding: 0 15px;
+          }
+        }
       `}</style>
     </div>
   );

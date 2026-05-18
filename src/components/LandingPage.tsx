@@ -203,6 +203,8 @@ export function LandingPage() {
         @media (max-width: 768px) {
           .navbar {
             padding: 15px 20px;
+            flex-direction: column;
+            gap: 15px;
           }
           .nav-logo {
             font-size: 1.2rem;

@@ -121,6 +121,35 @@ export function Dashboards({ initialData }: any) {
             ))}
           </div>
         </section>
+        
+        <section>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <MessageSquarePlus color="#ec4899" /> Mis Ideas
+          </h2>
+          <div className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '6px solid #ec4899', marginBottom: '20px' }}>
+            <textarea 
+              value={suggestionText}
+              onChange={(e) => setSuggestionText(e.target.value)}
+              placeholder="¿Qué te gustaría ganar o hacer? Escribe tu idea aquí..."
+              style={{ width: '100%', padding: '15px', borderRadius: '10px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', minHeight: '100px', marginBottom: '15px', resize: 'vertical' }}
+            />
+            <button disabled={sending || !suggestionText.trim()} onClick={handleSuggestionSubmit} className="btn-primary" style={{ background: '#ec4899', width: '100%' }}>
+              {sending ? 'Enviando...' : 'Enviar Idea'}
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {mySuggestions?.map((sugg: any) => (
+              <div key={sugg.id} className="glass" style={{ padding: '15px', borderRadius: '15px', borderLeft: '4px solid rgba(255,255,255,0.1)' }}>
+                <p style={{ margin: '0 0 10px 0', fontWeight: 600 }}>{sugg.content}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#94a3b8' }}>
+                  <span>Estado: {sugg.status === 'pending' ? '⏳ En revisión' : sugg.status === 'approved' ? '✅ Aprobada' : '❌ Rechazada'}</span>
+                  <span>{new Date(sugg.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
       <style jsx>{`
         .btn-primary { background: #06b6d4; color: white; border: none; font-weight: 700; padding: 10px 20px; border-radius: 50px; cursor: pointer; }

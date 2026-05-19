@@ -125,7 +125,7 @@ export function LandingPage() {
         .brand-container {
           display: flex;
           flex-direction: column;
-          align-items: flex-end;
+          align-items: center;
         }
         .brand-logo {
           width: 65px;
@@ -133,7 +133,8 @@ export function LandingPage() {
           margin-bottom: -12px;
           z-index: 1;
           border-radius: 50%;
-          mix-blend-mode: lighten;
+          mix-blend-mode: screen;
+          filter: contrast(1.2);
         }
         .nav-logo {
           font-size: 1.5rem;

@@ -86,8 +86,8 @@ body {
 }
 
 .hero-btn-secondary {
-  padding: 18px 40px;
-  font-size: 1.1rem;
+  padding: 20px 50px;
+  font-size: 1.2rem;
   border-radius: 15px;
   display: flex;
   align-items: center;
@@ -114,6 +114,8 @@ body {
   .hero-btn-secondary {
     width: 100%;
     padding: 15px 20px;
+    font-size: 1.1rem;
+    box-sizing: border-box;
   }
 }
 

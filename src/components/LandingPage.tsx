@@ -158,8 +158,8 @@ export function LandingPage() {
           flex-wrap: wrap;
         }
         .hero-btn {
-          padding: 18px 40px;
-          font-size: 1.1rem;
+          padding: 20px 50px;
+          font-size: 1.2rem;
           border-radius: 15px;
           display: flex;
           align-items: center;
@@ -232,6 +232,8 @@ export function LandingPage() {
           .hero-btn {
             width: 100%;
             padding: 15px 20px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
           }
 
           .cta-box {

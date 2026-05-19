@@ -137,7 +137,7 @@ function LoginForm() {
             </button>
 
             <h2 style={{ fontSize: '1.5rem' }}>
-              Entrar como {role === 'parent' ? 'Papá' : 'Jugador'}
+              Entrar como {role === 'parent' ? 'Capitán' : 'Aventurero'}
             </h2>
 
             <div style={{ display: 'grid', gap: '8px' }}>
@@ -163,7 +163,7 @@ function LoginForm() {
                 animate={{ opacity: 1, y: 0 }}
                 style={{ display: 'grid', gap: '8px' }}
               >
-                <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Código de Familia</label>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Código de Equipo</label>
                 <input 
                   type="text" 
                   value={familyCode}

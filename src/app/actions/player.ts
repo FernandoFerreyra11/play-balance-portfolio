@@ -27,7 +27,7 @@ export async function getAvailableQuests() {
   const player = await getPlayerStats();
   if (!player || !player.familyId) return [];
 
-  // Obtenemos todas las misiones del padre
+  // Obtenemos todas las misiones del capitán
   const parentQuests = await db
     .select({
       id: quests.id,
@@ -132,7 +132,7 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
   if (period === '7d') startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   if (period === '30d') startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  // 1. Obtener todas las transacciones de los hijos de esta familia en el período
+  // 1. Obtener todas las transacciones de los aventureros de este equipo en el período
   const data = await db
     .select({
       id: transactions.id,

@@ -48,7 +48,7 @@ export function LandingPage() {
               Rediseñá la estrategia y transformá la rutina <br /> en una <span style={{ color: '#06b6d4' }}>Aventura Épica</span>
             </h1>
             <p style={{ color: '#94a3b8', fontSize: '1.25rem', maxWidth: '700px', margin: '30px auto', lineHeight: 1.6 }}>
-              La plataforma que permite a familias y profesionales, potenciar a los niños en su autonomía y equilibrio entre tareas reales y tecnología a través del juego.
+              La plataforma que permite a equipos y profesionales, potenciar a los aventureros en su autonomía y equilibrio entre tareas reales y tecnología a través del juego.
             </p>
             
             <div className="hero-buttons">
@@ -77,8 +77,8 @@ export function LandingPage() {
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
           <ValueCard 
             icon={<Trophy size={40} color="#06b6d4" />}
-            title="Para Familias"
-            description="Misiones personalizadas, recompensas reales y una convivencia más armoniosa. Motiva a tus hijos sin conflictos."
+            title="Para Equipos"
+            description="Misiones personalizadas, recompensas reales y una convivencia más armoniosa. Motiva a los aventureros sin conflictos."
           />
           <ValueCard 
             icon={<Stethoscope size={40} color="#8b5cf6" />}
@@ -140,8 +140,8 @@ export function LandingPage() {
         <div className="container">
           <div className="glass cta-box">
             <Rocket size={60} color="#06b6d4" style={{ marginBottom: '30px', margin: '0 auto' }} />
-            <h2 className="cta-title">Comencemos a compartir recomendaciones y gratificaciones con nuestros niños</h2>
-            <p className="cta-desc">Cientos de familias y profesionales ya están viendo resultados en este momento</p>
+            <h2 className="cta-title">Comencemos a compartir misiones y gratificaciones con nuestros aventureros</h2>
+            <p className="cta-desc">Cientos de equipos y profesionales ya están viendo resultados en este momento</p>
             <Link href="/register" className="btn-primary cta-btn">
               Crear mi cuenta gratis
             </Link>
@@ -150,7 +150,7 @@ export function LandingPage() {
       </section>
 
       <footer style={{ padding: '60px 0', borderTop: '1px solid rgba(255,255,255,0.05)', color: '#475569', textAlign: 'center' }}>
-        <p>© 2026 Play Balance. Diseñado para familias del futuro.</p>
+        <p>© 2026 Play Balance. Diseñado para equipos del futuro.</p>
       </footer>
 
       <style jsx>{`

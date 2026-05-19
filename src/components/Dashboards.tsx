@@ -56,7 +56,7 @@ export function Dashboards({ initialData }: any) {
 
   if (player?.role === 'parent' || player?.role === 'professional' || player?.role === 'org_admin' || player?.role === 'super_admin') {
     const roleConfig: any = {
-      parent: { icon: '🛡️', title: 'Hola, Papá/Mamá', desc: 'Gestiona tu familia', link: '/admin' },
+      parent: { icon: '🛡️', title: 'Hola, Capitán', desc: 'Gestiona tu equipo', link: '/admin' },
       professional: { icon: '🩺', title: 'Panel Profesional', desc: 'Gestiona tus pacientes', link: '/pro' },
       org_admin: { icon: '🏢', title: 'Panel Institucional', desc: 'Gestiona tu centro', link: '/institucion' },
       super_admin: { icon: '🌐', title: 'Super Admin', desc: 'Control Global', link: '/super-admin' }

@@ -218,7 +218,7 @@ function FamilyManager() {
     };
 
   const handleDeleteFamily = async () => {
-    const confirmName = prompt('⚠️ ATENCIÓN: Esta acción eliminará permanentemente a TODA LA FAMILIA, incluyendo misiones, premios y a todos los miembros. Escribe el nombre de tu familia para confirmar:');
+    const confirmName = prompt('⚠️ ATENCIÓN: Esta acción eliminará permanentemente a TODO EL EQUIPO, incluyendo misiones, premios y a todos los miembros. Escribe el nombre de tu equipo para confirmar:');
     
     if (confirmName === family?.name) {
       const res = await deleteOwnFamily();
@@ -229,7 +229,7 @@ function FamilyManager() {
         alert(res.error);
       }
     } else if (confirmName !== null) {
-      alert('El nombre no coincide. No se eliminó la familia.');
+      alert('El nombre no coincide. No se eliminó el equipo.');
     }
   };
 
@@ -279,17 +279,17 @@ function FamilyManager() {
         }}>
           <div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>
-              Código Secreto de la Familia
+              Código Secreto del Equipo
             </p>
             <h2 style={{ fontSize: '1.8rem', color: 'var(--accent-color)', margin: '5px 0' }}>{family.code}</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Dáselo a tus hijos para que puedan entrar a su aventura.</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Dáselo a los aventureros del equipo para que puedan entrar a su aventura.</p>
           </div>
           <div style={{ fontSize: '3rem', opacity: 0.5 }}>🛡️</div>
         </div>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Equipo Familiar</h2>
+        <h2>Miembros del Equipo</h2>
         <button 
           onClick={() => { setShowForm(!showForm); setSelectedAvatar('👤'); }}
           className="btn-primary" 
@@ -342,8 +342,8 @@ function FamilyManager() {
                 onChange={(e) => setFormRole(e.target.value as any)}
                 style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}
               >
-                <option value="child" style={{ color: 'black' }}>Hijo / Jugador</option>
-                <option value="parent" style={{ color: 'black' }}>Pareja / Admin</option>
+                <option value="child" style={{ color: 'black' }}>Aventurero</option>
+                <option value="parent" style={{ color: 'black' }}>Capitán</option>
               </select>
             </div>
             
@@ -458,7 +458,7 @@ function FamilyManager() {
         ))}
         {members.length === 0 && !showForm && (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
-            No hay miembros en tu familia todavía. ¡Añade el primero!
+            No hay miembros en tu equipo todavía. ¡Añade el primero!
           </div>
         )}
       </div>
@@ -474,7 +474,7 @@ function FamilyManager() {
               <div>
                 <h3 style={{ color: 'var(--danger-color)', marginBottom: '5px' }}>Zona de Peligro</h3>
                 <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', maxWidth: '400px' }}>
-                  Eliminar la cuenta familiar es una acción irreversible. Se borrarán todos los miembros, misiones, premios e historial para siempre.
+                  Eliminar la cuenta del equipo es una acción irreversible. Se borrarán todos los miembros, misiones, premios e historial para siempre.
                 </p>
               </div>
             </div>
@@ -488,7 +488,7 @@ function FamilyManager() {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--danger-color)'; e.currentTarget.style.color = 'white'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--danger-color)'; }}
             >
-              Eliminar Familia
+              Eliminar Equipo
             </button>
           </div>
         </div>

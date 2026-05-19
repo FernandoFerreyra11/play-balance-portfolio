@@ -42,6 +42,24 @@ export async function createFamilyMember(formData: FormData) {
     if (existing) return { error: "Este correo ya está registrado" };
   }
 
+  // --- Límites del Plan Gratuito ---
+  const existingMembers = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.familyId, familyId as string));
+
+  const childCount = existingMembers.filter(m => m.role === 'child').length;
+  const parentCount = existingMembers.filter(m => m.role === 'parent').length;
+
+  if (role === 'child' && childCount >= 1) {
+    return { error: "El plan gratuito solo permite 1 Aventurero. Actualiza tu plan para agregar más." };
+  }
+  
+  if (role === 'parent' && parentCount >= 2) {
+    return { error: "El plan gratuito solo permite un máximo de 2 Capitanes por equipo." };
+  }
+  // ---------------------------------
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {

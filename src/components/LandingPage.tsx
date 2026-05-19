@@ -46,7 +46,7 @@ export function LandingPage() {
             
             <div className="hero-buttons">
               <Link href="/register" className="btn-primary hero-btn">
-                Crear mi cuenta gratis <ArrowRight size={20} />
+                Crear mi cuenta gratis
               </Link>
               <Link href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hero-btn-secondary">
                 Ver demostración

@@ -41,7 +41,7 @@ export function LandingPage() {
               La aventura de crecer, gamificada
             </span>
             <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 900, marginTop: '20px', lineHeight: 1.1 }}>
-              Convierte la rutina <br /> en una <span style={{ color: '#06b6d4' }}>Aventura Épica</span>
+              Rediseñá la estrategia y transformá la rutina <br /> en una <span style={{ color: '#06b6d4' }}>Aventura Épica</span>
             </h1>
             <p style={{ color: '#94a3b8', fontSize: '1.25rem', maxWidth: '700px', margin: '30px auto', lineHeight: 1.6 }}>
               La plataforma que permite a familias y profesionales, potenciar a los niños en su autonomía y equilibrio entre tareas reales y tecnología a través del juego.

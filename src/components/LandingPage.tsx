@@ -8,7 +8,11 @@ import {
   Stethoscope,
   Building2,
   Star,
-  Rocket
+  Rocket,
+  Brain,
+  HeartHandshake,
+  Target,
+  Dna
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -88,6 +92,48 @@ export function LandingPage() {
           />
         </div>
       </section>
+
+      {/* Sección Científica */}
+      <section style={{ padding: '100px 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, marginBottom: '20px' }}>
+              Respaldado por la <span style={{ color: '#8b5cf6' }}>ciencia</span>, diseñado para la diversión
+            </h2>
+            <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
+              PlayBalance no es solo un juego. Se basa en principios clínicos de modificación de conducta y psicología evolutiva.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
+            <ValueCard 
+              icon={<Target size={32} color="#06b6d4" />}
+              title="Economía de Fichas"
+              description="Método que reemplaza los castigos por motivación estructurada, facilitando la adopción de hábitos a largo plazo."
+              reference="Terapia Cognitivo-Conductual (TCC)"
+            />
+            <ValueCard 
+              icon={<Brain size={32} color="#8b5cf6" />}
+              title="Refuerzo Positivo"
+              description="Al premiar el esfuerzo, el cerebro libera dopamina, asociando las responsabilidades diarias con emociones positivas y logro."
+              reference="Condicionamiento Operante (B.F. Skinner)"
+            />
+            <ValueCard 
+              icon={<HeartHandshake size={32} color="#ec4899" />}
+              title="Autodeterminación"
+              description="Fomentamos la autonomía. Los niños pueden sugerir ideas y negociar sus metas, sintiéndose protagonistas de su desarrollo."
+              reference="Teoría de la Autodeterminación (Deci & Ryan)"
+            />
+            <ValueCard 
+              icon={<Dna size={32} color="#10b981" />}
+              title="Neuroplasticidad"
+              description="El entorno gamificado reduce el estrés y la resistencia, creando el estado cerebral ideal para aprender nuevas habilidades."
+              reference="Aprendizaje Basado en el Juego"
+            />
+          </div>
+        </div>
+      </section>
+
 
       {/* CTA Final */}
       <section style={{ padding: '100px 0' }}>
@@ -284,12 +330,17 @@ export function LandingPage() {
   );
 }
 
-function ValueCard({ icon, title, description }: any) {
+function ValueCard({ icon, title, description, reference }: any) {
   return (
-    <motion.div whileHover={{ y: -10 }} className="glass" style={{ padding: '40px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)' }}>
+    <motion.div whileHover={{ y: -10 }} className="glass" style={{ padding: '40px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ marginBottom: '20px' }}>{icon}</div>
       <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>{title}</h3>
-      <p style={{ color: '#94a3b8', lineHeight: 1.6 }}>{description}</p>
+      <p style={{ color: '#94a3b8', lineHeight: 1.6, flexGrow: 1 }}>{description}</p>
+      {reference && (
+        <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic' }}>
+          Ref: {reference}
+        </div>
+      )}
     </motion.div>
   );
 }

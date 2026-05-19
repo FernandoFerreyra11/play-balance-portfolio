@@ -17,7 +17,10 @@ export function LandingPage() {
     <div style={{ background: '#020617', color: 'white', minHeight: '100vh', overflowX: 'hidden' }}>
       {/* Navbar Minimalista */}
       <nav className="navbar">
-        <h1 className="nav-logo">Play<span style={{ color: '#06b6d4' }}>Balance</span></h1>
+        <div className="brand-container">
+          <img src="/icon.png" alt="PlayBalance Logo" className="brand-logo" />
+          <h1 className="nav-logo">Play<span style={{ color: '#06b6d4' }}>Balance</span></h1>
+        </div>
         <div className="nav-actions">
           <Link href="/login" className="nav-btn-secondary">Entrar</Link>
           <Link href="/register" className="btn-primary nav-btn">Registrarse</Link>
@@ -119,9 +122,22 @@ export function LandingPage() {
           backdrop-filter: blur(10px);
           background: rgba(2, 6, 23, 0.7);
         }
+        .brand-container {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+        .brand-logo {
+          width: 45px;
+          height: 45px;
+          margin-bottom: -10px;
+          z-index: 1;
+        }
         .nav-logo {
           font-size: 1.5rem;
           font-weight: 800;
+          position: relative;
+          z-index: 2;
         }
         .nav-actions {
           display: flex;
@@ -204,6 +220,14 @@ export function LandingPage() {
             padding: 15px 20px;
             flex-direction: column;
             gap: 15px;
+          }
+          .brand-container {
+            align-items: center;
+          }
+          .brand-logo {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 5px;
           }
           .nav-logo {
             font-size: 1.2rem;

@@ -130,11 +130,13 @@ export function LandingPage() {
         .brand-logo {
           width: 65px;
           height: 65px;
-          margin-bottom: -12px;
+          margin-bottom: 5px;
           z-index: 1;
           border-radius: 50%;
           mix-blend-mode: screen;
-          filter: contrast(1.2);
+          filter: contrast(1.3) brightness(1.1);
+          -webkit-mask-image: radial-gradient(circle, black 50%, transparent 75%);
+          mask-image: radial-gradient(circle, black 50%, transparent 75%);
         }
         .nav-logo {
           font-size: 1.5rem;

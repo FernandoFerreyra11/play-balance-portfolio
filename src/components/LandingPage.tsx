@@ -91,8 +91,8 @@ export function LandingPage() {
         <div className="container">
           <div className="glass cta-box">
             <Rocket size={60} color="#06b6d4" style={{ marginBottom: '30px', margin: '0 auto' }} />
-            <h2 className="cta-title">¿Listo para el siguiente nivel?</h2>
-            <p className="cta-desc">Únete a las cientos de familias y profesionales que ya están jugando.</p>
+            <h2 className="cta-title">Comencemos a compartir recomendaciones y gratificaciones con nuestros niños</h2>
+            <p className="cta-desc">Cientos de familias y profesionales ya están viendo resultados en este momento</p>
             <Link href="/register" className="btn-primary cta-btn">
               Crear mi cuenta gratis
             </Link>

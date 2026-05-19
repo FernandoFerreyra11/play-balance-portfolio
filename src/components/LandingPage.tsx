@@ -132,6 +132,7 @@ export function LandingPage() {
           height: 65px;
           margin-bottom: 5px;
           z-index: 1;
+          border-radius: 12px;
         }
         .nav-logo {
           font-size: 1.5rem;

@@ -170,3 +170,40 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
     }
   };
 }
+
+export async function awardSpontaneousTokens(childId: string, amount: number, description: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+
+  const familyId = (session.user as any).familyId;
+  
+  // Verificamos que el aventurero pertenece al mismo equipo
+  const [child] = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.id, childId), eq(users.familyId, familyId)))
+    .limit(1);
+
+  if (!child) return { error: "Aventurero no encontrado o no pertenece al equipo" };
+  if (amount <= 0) return { error: "La cantidad debe ser mayor a 0" };
+
+  try {
+    // 1. Sumar balance
+    await db.update(users)
+      .set({ balance: (child.balance || 0) + amount })
+      .where(eq(users.id, childId));
+
+    // 2. Registrar transacción
+    await db.insert(transactions).values({
+      userId: childId,
+      amount: amount,
+      type: 'bonus',
+      description: `Bonus: ${description}`,
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al otorgar el bonus" };
+  }
+}

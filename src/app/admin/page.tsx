@@ -30,7 +30,7 @@ import { getQuests, createQuest, deleteQuest, updateQuest } from '../actions/que
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
-import { getFamilyStats } from '../actions/player';
+import { getFamilyStats, awardSpontaneousTokens } from '../actions/player';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -146,6 +146,7 @@ function FamilyManager() {
   const [family, setFamily] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [bonusId, setBonusId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('👤');
   const [formRole, setFormRole] = useState<'child' | 'parent'>('child');
@@ -201,6 +202,24 @@ function FamilyManager() {
         setNotification({ message: '¡Perfil actualizado correctamente! ✨', type: 'success' });
       } else {
         setNotification({ message: res.error || 'Error al actualizar', type: 'error' });
+      }
+      setLoading(false);
+    };
+
+    const handleBonus = async (e: React.FormEvent<HTMLFormElement>, childId: string) => {
+      e.preventDefault();
+      setLoading(true);
+      const formData = new FormData(e.currentTarget);
+      const amount = parseInt(formData.get("amount") as string);
+      const description = formData.get("description") as string;
+      
+      const res = await awardSpontaneousTokens(childId, amount, description);
+      if (res.success) {
+        setBonusId(null);
+        fetchData();
+        setNotification({ message: '¡Bonus otorgado con éxito! 🎁', type: 'success' });
+      } else {
+        setNotification({ message: res.error || 'Error al otorgar bonus', type: 'error' });
       }
       setLoading(false);
     };
@@ -395,6 +414,24 @@ function FamilyManager() {
                   {loading ? '...' : 'Guardar Cambios'}
                 </button>
               </form>
+            ) : bonusId === member.id && member.role === 'child' ? (
+              <form onSubmit={(e) => handleBonus(e, member.id)} style={{ display: 'grid', gap: '15px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gold-color)' }}>
+                    <Gift size={16} /> Regalar Bonus
+                  </h3>
+                  <button type="button" onClick={() => setBonusId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ fontSize: '2rem' }}>{member.image || '👤'}</div>
+                  <div style={{ fontWeight: 700 }}>{member.name}</div>
+                </div>
+                <input name="amount" type="number" placeholder="Cantidad de Tokens (ej: 50)" required min="1" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <input name="description" type="text" placeholder="Motivo (ej: Por ayudar sin pedirlo)" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '8px', background: 'var(--gold-color)', color: '#000' }}>
+                  {loading ? '...' : 'Enviar Tokens'}
+                </button>
+              </form>
             ) : (
               <>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -439,6 +476,11 @@ function FamilyManager() {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                    {member.role === 'child' && (
+                      <button onClick={() => setBonusId(member.id)} style={{ background: 'none', border: 'none', color: 'var(--gold-color)', cursor: 'pointer', padding: '8px' }} title="Regalar Bonus">
+                        <Gift size={16} />
+                      </button>
+                    )}
                     <button onClick={() => { setEditingId(member.id); setEditingRole(member.role); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '8px' }}>
                       <Pencil size={16} />
                     </button>

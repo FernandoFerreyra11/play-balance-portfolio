@@ -22,7 +22,7 @@ export function LandingPage() {
       {/* Navbar Minimalista */}
       <nav className="navbar">
         <div className="brand-container">
-          <img src="/icon.png" alt="PlayBalance Logo" className="brand-logo" />
+          <img src="/icon.png" alt="PlayBalance Logo" className="brand-logo" width={40} height={40} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
           <h1 className="nav-logo">Play<span style={{ color: '#06b6d4' }}>Balance</span></h1>
         </div>
         <div className="nav-actions">

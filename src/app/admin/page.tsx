@@ -306,7 +306,7 @@ function FamilyManager() {
           className="glass card" 
           style={{ marginBottom: '30px', overflow: 'hidden' }}
         >
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Nombre</label>
               <input name="name" type="text" placeholder="Ej: Mateo" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
@@ -569,7 +569,7 @@ function QuestsManager() {
           className="glass card" 
           style={{ marginBottom: '30px', overflow: 'hidden' }}
         >
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>¿Qué hay que hacer?</label>
               <input name="title" type="text" placeholder="Ej: Ordenar el cuarto" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
@@ -697,7 +697,7 @@ function RewardsManager() {
           className="glass card" 
           style={{ marginBottom: '30px', overflow: 'hidden' }}
         >
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Título del Premio</label>
               <input name="title" type="text" placeholder="Ej: 30 min de Tablet" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />

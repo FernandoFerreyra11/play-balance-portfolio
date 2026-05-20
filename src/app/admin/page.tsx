@@ -92,7 +92,7 @@ export default function AdminDashboard() {
           active={activeTab === 'family'} 
           onClick={() => setActiveTab('family')}
           icon={<Users size={18} />}
-          label="Familia"
+          label="Equipo"
         />
         <TabButton 
           active={activeTab === 'quests'} 
@@ -957,7 +957,7 @@ function SuggestionsManager() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <div style={{ marginBottom: '30px' }}>
         <h2>Buzón de Sugerencias</h2>
-        <p style={{ color: 'var(--text-dim)' }}>Ideas enviadas por tu equipo para mejorar la familia.</p>
+        <p style={{ color: 'var(--text-dim)' }}>Ideas enviadas por tu equipo para mejorar el juego.</p>
       </div>
 
       <div style={{ display: 'grid', gap: '20px' }}>
@@ -1055,7 +1055,7 @@ function StatsManager() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
         <div>
-          <h2>Estadísticas {selectedChild !== 'all' ? `de ${members.find(m => m.id === selectedChild)?.name}` : 'de la Familia'}</h2>
+          <h2>Estadísticas {selectedChild !== 'all' ? `de ${members.find(m => m.id === selectedChild)?.name}` : 'del Equipo'}</h2>
           <p style={{ color: 'var(--text-dim)' }}>Monitorea el esfuerzo y las recompensas de tu equipo.</p>
         </div>
         
@@ -1070,7 +1070,7 @@ function StatsManager() {
               color: 'white', background: 'rgba(0,0,0,0.3)', outline: 'none', cursor: 'pointer'
             }}
           >
-            <option value="all">Toda la Familia</option>
+            <option value="all">Todo el Equipo</option>
             {members.map(m => (
               <option key={m.id} value={m.id}>{m.name}</option>
             ))}

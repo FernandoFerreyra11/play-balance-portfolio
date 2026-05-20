@@ -76,7 +76,7 @@ export async function registerUser(formData: FormData) {
     // Default: Familia (Parent)
     const familyCode = `${name.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const insertedFamilies = await db.insert(families).values({
-      name: `Familia ${name}`,
+      name: `Equipo de ${name}`,
       code: familyCode,
     }).returning();
     

@@ -237,18 +237,18 @@ function FamilyManager() {
     };
 
   const handleDeleteFamily = async () => {
-    const confirmName = prompt('⚠️ ATENCIÓN: Esta acción eliminará permanentemente a TODO EL EQUIPO, incluyendo misiones, premios y a todos los miembros. Escribe el nombre de tu equipo para confirmar:');
+    const confirmText = prompt('⚠️ ATENCIÓN: Esta acción eliminará permanentemente a TODO EL EQUIPO, incluyendo misiones, premios y a todos los miembros.\n\nPara confirmar, escribe exactamente la palabra: ELIMINAR');
     
-    if (confirmName === family?.name) {
+    if (confirmText === 'ELIMINAR') {
       const res = await deleteOwnFamily();
       if (res.success) {
-        alert('Familia eliminada correctamente. Serás redirigido.');
+        alert('Equipo eliminado correctamente. Serás redirigido.');
         signOut({ callbackUrl: '/goodbye' });
       } else {
         alert(res.error);
       }
-    } else if (confirmName !== null) {
-      alert('El nombre no coincide. No se eliminó el equipo.');
+    } else if (confirmText !== null) {
+      alert('Texto incorrecto. No se eliminó el equipo.');
     }
   };
 

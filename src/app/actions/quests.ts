@@ -70,3 +70,32 @@ export async function deleteQuest(id: string) {
     return { error: "Error al eliminar la misión" };
   }
 }
+
+export async function updateQuest(id: string, formData: FormData) {
+  const familyId = await getEffectiveFamilyId();
+  if (!familyId) return { error: "No autorizado" };
+
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  const tokens = parseInt(formData.get("tokens") as string);
+  const category = formData.get("category") as string;
+
+  if (!title || isNaN(tokens)) return { error: "Título y tokens son obligatorios" };
+
+  try {
+    await db.update(quests)
+      .set({
+        title,
+        description,
+        reward: tokens,
+        category,
+      })
+      .where(and(eq(quests.id, id), eq(quests.familyId, familyId as string)));
+    
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al actualizar la misión" };
+  }
+}
+

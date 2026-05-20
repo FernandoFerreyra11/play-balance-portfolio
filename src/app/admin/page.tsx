@@ -26,7 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember, getFamilyDetail, deleteOwnFamily } from '../actions/family';
-import { getQuests, createQuest, deleteQuest } from '../actions/quests';
+import { getQuests, createQuest, deleteQuest, updateQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
@@ -517,6 +517,7 @@ function TabButton({ active, onClick, icon, label }: any) {
 function QuestsManager() {
   const [questsList, setQuestsList] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchQuests = async () => {
@@ -535,6 +536,20 @@ function QuestsManager() {
     const res = await createQuest(formData);
     if (res.success) {
       setShowForm(false);
+      fetchQuests();
+    } else {
+      alert(res.error);
+    }
+    setLoading(false);
+  };
+
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const res = await updateQuest(id, formData);
+    if (res.success) {
+      setEditingId(null);
       fetchQuests();
     } else {
       alert(res.error);
@@ -599,22 +614,46 @@ function QuestsManager() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
         {questsList.map((quest) => (
           <div key={quest.id} className="glass card" style={{ borderLeft: '4px solid var(--primary-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', color: 'var(--text-dim)' }}>
-                  {quest.category}
-                </span>
-                <h3 style={{ marginTop: '5px' }}>{quest.title}</h3>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
-                <Coins size={16} /> {quest.reward}
-              </div>
-            </div>
-            <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => handleDelete(quest.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
-                <Trash2 size={18} />
-              </button>
-            </div>
+            {editingId === quest.id ? (
+              <form onSubmit={(e) => handleUpdate(e, quest.id)} style={{ display: 'grid', gap: '15px' }}>
+                <input name="title" defaultValue={quest.title} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <input name="tokens" type="number" defaultValue={quest.reward} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                  <select name="category" defaultValue={quest.category} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}>
+                    <option value="Hogar" style={{ color: 'black' }}>🏠 Hogar</option>
+                    <option value="Estudio" style={{ color: 'black' }}>📚 Estudio</option>
+                    <option value="Higiene" style={{ color: 'black' }}>🚿 Higiene</option>
+                    <option value="Deporte" style={{ color: 'black' }}>⚽ Deporte</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button type="submit" className="btn-primary" style={{ flex: 1, padding: '8px' }}>Guardar</button>
+                  <button type="button" onClick={() => setEditingId(null)} className="glass" style={{ flex: 1, padding: '8px', color: 'white' }}>X</button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px', color: 'var(--text-dim)' }}>
+                      {quest.category}
+                    </span>
+                    <h3 style={{ marginTop: '5px' }}>{quest.title}</h3>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
+                    <Coins size={16} /> {quest.reward}
+                  </div>
+                </div>
+                <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button onClick={() => setEditingId(quest.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
+                    <Pencil size={18} />
+                  </button>
+                  <button onClick={() => handleDelete(quest.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer' }}>
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
         {questsList.length === 0 && !showForm && (

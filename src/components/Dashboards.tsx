@@ -102,9 +102,11 @@ export function Dashboards({ initialData }: any) {
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {quests.map((quest: any) => (
-              <div key={quest.id} className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '6px solid #06b6d4', display: 'flex', justifyContent: 'space-between' }}>
-                <div><h3>{quest.title}</h3><div style={{ color: '#f59e0b' }}>+{quest.reward} Tokens</div></div>
-                <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary">{quest.status === 'pending_approval' ? 'Revisando' : '¡Hecho!'}</button>
+              <div key={quest.id} className="glass action-card" style={{ borderLeft: '6px solid #06b6d4' }}>
+                <div><h3 style={{ margin: '0 0 5px 0' }}>{quest.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>+{quest.reward} Tokens</div></div>
+                <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary action-btn">
+                  {quest.status === 'pending_approval' ? 'Revisando...' : '¡Hecho!'}
+                </button>
               </div>
             ))}
           </div>
@@ -114,9 +116,11 @@ export function Dashboards({ initialData }: any) {
           {/* ... similar a misiones ... */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {rewards.map((reward: any) => (
-              <div key={reward.id} className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '6px solid #8b5cf6', display: 'flex', justifyContent: 'space-between' }}>
-                <div><h3>{reward.title}</h3><div style={{ color: '#f59e0b' }}>{reward.cost} tokens</div></div>
-                <button disabled={player?.balance < reward.cost} onClick={async () => { await requestReward(reward.id); fetchData(); }} className="btn-primary" style={{ background: '#8b5cf6' }}>Canjear</button>
+              <div key={reward.id} className="glass action-card" style={{ borderLeft: '6px solid #8b5cf6' }}>
+                <div><h3 style={{ margin: '0 0 5px 0' }}>{reward.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>{reward.cost} Tokens</div></div>
+                <button disabled={player?.balance < reward.cost} onClick={async () => { await requestReward(reward.id); fetchData(); }} className="btn-primary action-btn" style={{ background: '#8b5cf6' }}>
+                  Canjear
+                </button>
               </div>
             ))}
           </div>
@@ -208,6 +212,19 @@ export function Dashboards({ initialData }: any) {
           gap: 40px;
           padding: 0 20px;
         }
+        .action-card {
+          padding: 20px;
+          border-radius: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 15px;
+        }
+        .action-btn {
+          padding: 8px 24px;
+          border-radius: 12px;
+          white-space: nowrap;
+        }
 
         @media (max-width: 768px) {
           .dashboard-header {
@@ -236,6 +253,14 @@ export function Dashboards({ initialData }: any) {
             grid-template-columns: 1fr;
             gap: 25px;
             padding: 0 15px;
+          }
+          .action-card {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+          }
+          .action-btn {
+            width: 100%;
           }
         }
       `}</style>

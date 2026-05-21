@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
-import { createOrganization, createPatientFamily } from '../actions/pro';
+import { createOrganization, createPatientFamily, linkExistingFamily } from '../actions/pro';
 
 interface PatientFamilyItem {
   id: string;
@@ -71,7 +71,22 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
     if (res.success) {
       setNotification({ message: 'Nuevo caso familiar creado', type: 'success' });
       setShowAddFamily(false);
-      // Aquí normalmente refrescaríamos la lista
+      window.location.reload();
+    } else {
+      setNotification({ message: res.error || 'Error', type: 'error' });
+    }
+    setLoading(false);
+  };
+
+  const handleLinkFamily = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const code = (formData.get('code') as string).trim();
+    const res = await linkExistingFamily(code);
+    if (res.success) {
+      setNotification({ message: 'Familia vinculada con éxito', type: 'success' });
+      setShowAddFamily(false);
       window.location.reload();
     } else {
       setNotification({ message: res.error || 'Error', type: 'error' });
@@ -171,12 +186,31 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
 
         {showAddFamily && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{ marginBottom: '30px', overflow: 'hidden' }}>
-            <form onSubmit={handleAddFamily} className="glass" style={{ padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '15px' }}>
-              <input name="name" required placeholder="Nombre de la familia (ej: Familia Pérez)" style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
-              <button disabled={loading} type="submit" className="btn-primary">
-                {loading ? 'Creando...' : 'Crear Caso'}
-              </button>
-            </form>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+              {/* Opción A: Crear Nuevo */}
+              <div className="glass" style={{ padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>Opción A: Crear Nuevo Caso</h3>
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '15px' }}>Si la familia aún no usa PlayBalance, crea un perfil y dales su nuevo Código.</p>
+                <form onSubmit={handleAddFamily} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <input name="name" required placeholder="Nombre de familia (ej: Familia Pérez)" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                  <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '12px' }}>
+                    {loading ? 'Procesando...' : 'Crear y Generar Código'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Opción B: Vincular Existente */}
+              <div className="glass" style={{ padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>Opción B: Vincular Existente</h3>
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '15px' }}>Si la familia ya usa la app, pídeles su "Código de Equipo" para supervisarlos.</p>
+                <form onSubmit={handleLinkFamily} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <input name="code" required placeholder="Ej: F-ABCDEF" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                  <button disabled={loading} type="submit" className="glass" style={{ padding: '12px', border: '1px solid #06b6d4', color: '#06b6d4', cursor: 'pointer', borderRadius: '12px', fontWeight: 600 }}>
+                    {loading ? 'Buscando...' : 'Vincular Caso'}
+                  </button>
+                </form>
+              </div>
+            </div>
           </motion.div>
         )}
 

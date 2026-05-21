@@ -107,3 +107,38 @@ export async function createPatientFamily(familyName: string) {
     return { error: "Error al crear la familia del paciente" };
   }
 }
+
+export async function linkExistingFamily(familyCode: string) {
+  const session = await getProSession();
+  if (!session) return { error: "No autorizado" };
+
+  const proId = (session.user as any).id;
+  const orgId = (session.user as any).organizationId;
+
+  try {
+    const existingFamily = await db.select().from(families).where(eq(families.code, familyCode));
+    
+    if (existingFamily.length === 0) {
+      return { error: "Código de familia no encontrado" };
+    }
+
+    if (existingFamily[0].professionalId) {
+      if (existingFamily[0].professionalId !== proId) {
+        return { error: "Esta familia ya está vinculada a otro profesional" };
+      }
+      return { error: "Ya estabas vinculado a esta familia" };
+    }
+
+    await db.update(families)
+      .set({ 
+        professionalId: proId,
+        organizationId: orgId || existingFamily[0].organizationId 
+      })
+      .where(eq(families.id, existingFamily[0].id));
+
+    revalidatePath("/pro");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al vincular familia" };
+  }
+}

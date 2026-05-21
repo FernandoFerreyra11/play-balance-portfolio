@@ -109,8 +109,8 @@ export function LandingPage() {
             <ValueCard 
               icon={<Target size={32} color="#06b6d4" />}
               title="Economía de Fichas"
-              description="Enfoque que transforma la corrección en cultivo de fortalezas, motivación estructurada, facilitando la adopción de hábitos sólidos desde la autoeficacia."
-              reference="Terapia Cognitivo-Conductual (TCC)"
+              description="Cambiamos la corrección por el cultivo de fortalezas. Un sistema de incentivos estructurados que facilita la adopción de hábitos positivos a través del progreso visible."
+              reference="Terapia Conductual Aplicada (Ayllon & Azrin)"
             />
             <ValueCard 
               icon={<Brain size={32} color="#8b5cf6" />}

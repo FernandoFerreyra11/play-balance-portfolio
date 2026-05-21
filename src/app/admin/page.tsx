@@ -35,12 +35,27 @@ export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('family');
+  const [pendingCount, setPendingCount] = useState(0);
+  const [pendingSuggestionsCount, setPendingSuggestionsCount] = useState(0);
+
+  const fetchPendingCounts = useCallback(async () => {
+    const [approvalsData, suggestionsData] = await Promise.all([
+      getPendingApprovals(),
+      getSuggestions()
+    ]);
+    setPendingCount((approvalsData as any[]).length);
+    setPendingSuggestionsCount((suggestionsData as any[]).filter(s => s.status === 'pending').length);
+  }, []);
 
   useEffect(() => {
     if (status === 'unauthenticated' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent')) {
       router.push('/');
+    } else if (status === 'authenticated') {
+      fetchPendingCounts();
+      const interval = setInterval(fetchPendingCounts, 30000);
+      return () => clearInterval(interval);
     }
-  }, [status, session, router]);
+  }, [status, session, router, fetchPendingCounts]);
 
   if (status === 'loading' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent')) {
     return <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Cargando...</div>;
@@ -110,12 +125,14 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('approvals')}
           icon={<CheckCircle size={18} />}
           label="Aprobaciones"
+          badgeCount={pendingCount}
         />
         <TabButton 
           active={activeTab === 'suggestions'} 
           onClick={() => setActiveTab('suggestions')}
           icon={<MessageSquare size={18} />}
           label="Sugerencias"
+          badgeCount={pendingSuggestionsCount}
         />
         <TabButton 
           active={activeTab === 'stats'} 
@@ -130,8 +147,8 @@ export default function AdminDashboard() {
         {activeTab === 'family' && <FamilyManager />}
         {activeTab === 'quests' && <QuestsManager />}
         {activeTab === 'rewards' && <RewardsManager />}
-        {activeTab === 'approvals' && <ApprovalsManager />}
-        {activeTab === 'suggestions' && <SuggestionsManager />}
+        {activeTab === 'approvals' && <ApprovalsManager onUpdate={fetchPendingCounts} />}
+        {activeTab === 'suggestions' && <SuggestionsManager onUpdate={fetchPendingCounts} />}
         {activeTab === 'stats' && <StatsManager />}
       </main>
     </div>
@@ -560,9 +577,10 @@ interface TabButtonProps {
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  badgeCount?: number;
 }
 
-function TabButton({ active, onClick, icon, label }: TabButtonProps) {
+function TabButton({ active, onClick, icon, label, badgeCount }: TabButtonProps) {
   return (
     <button 
       onClick={onClick}
@@ -570,10 +588,23 @@ function TabButton({ active, onClick, icon, label }: TabButtonProps) {
       style={{ 
         display: 'flex', alignItems: 'center', gap: '8px', 
         padding: '10px 20px', borderRadius: '12px', border: active ? 'none' : '1px solid var(--border-color)',
-        color: active ? 'white' : 'var(--text-dim)', cursor: 'pointer', whiteSpace: 'nowrap'
+        color: active ? 'white' : 'var(--text-dim)', cursor: 'pointer', whiteSpace: 'nowrap', position: 'relative'
       }}
     >
       {icon} {label}
+      {badgeCount !== undefined && badgeCount > 0 && (
+        <span style={{
+          background: 'var(--danger-color)',
+          color: 'white',
+          borderRadius: '50%',
+          padding: '2px 6px',
+          fontSize: '0.7rem',
+          fontWeight: 800,
+          marginLeft: '4px'
+        }}>
+          {badgeCount}
+        </span>
+      )}
     </button>
   );
 }
@@ -899,7 +930,11 @@ interface PendingApprovalItem {
   questReward: number;
 }
 
-function ApprovalsManager() {
+interface ApprovalsManagerProps {
+  onUpdate?: () => void;
+}
+
+function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
   const [pending, setPending] = useState<PendingApprovalItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -917,14 +952,20 @@ function ApprovalsManager() {
 
   const handleApprove = async (id: string) => {
     const res = await approveQuest(id);
-    if (res.success) fetchPending();
+    if (res.success) {
+      fetchPending();
+      if (onUpdate) onUpdate();
+    }
     else alert(res.error);
   };
 
   const handleReject = async (id: string) => {
     if (confirm('¿Quieres rechazar esta solicitud?')) {
       const res = await rejectQuest(id);
-      if (res.success) fetchPending();
+      if (res.success) {
+        fetchPending();
+        if (onUpdate) onUpdate();
+      }
     }
   };
 
@@ -991,7 +1032,11 @@ interface SuggestionItem {
   createdAt: Date | null;
 }
 
-function SuggestionsManager() {
+interface SuggestionsManagerProps {
+  onUpdate?: () => void;
+}
+
+function SuggestionsManager({ onUpdate }: SuggestionsManagerProps = {}) {
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -1009,7 +1054,10 @@ function SuggestionsManager() {
 
   const handleAction = async (id: string, status: 'approved' | 'rejected') => {
     const res = await updateSuggestionStatus(id, status);
-    if (res.success) fetchSuggestions();
+    if (res.success) {
+      fetchSuggestions();
+      if (onUpdate) onUpdate();
+    }
     else alert(res.error);
   };
 

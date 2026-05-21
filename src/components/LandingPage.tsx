@@ -48,7 +48,7 @@ export function LandingPage() {
               Rediseñá la estrategia y transformá la rutina <br /> en una <span style={{ color: '#06b6d4' }}>Aventura Épica</span>
             </h1>
             <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '800px', margin: '30px auto', lineHeight: 1.6 }}>
-              <strong>PlayBalance</strong> es una plataforma gamificada para transformar las rutinas, la disciplina y las tareas del hogar en un juego motivador. Ayuda a los padres a fomentar buenos hábitos en sus hijos mediante un sistema de misiones y recompensas (economía de fichas), reduciendo las peleas diarias y, al mismo tiempo, permitiendo que profesionales (psicólogos, terapeutas, nutricionistas, coach, etc.) puedan hacer un seguimiento real del comportamiento del niño, paciente o cliente en casa.
+              <strong>PlayBalance</strong> es una plataforma gamificada para transformar las rutinas, la disciplina y las tareas del hogar en un juego motivador. Ayuda a los padres a fomentar buenos hábitos en sus hijos mediante un sistema de misiones y recompensas (economía de fichas), reduciendo las peleas diarias y, al mismo tiempo, permitiendo que profesionales (psicólogos, terapeutas, nutricionistas, coaches, etc.) puedan hacer un seguimiento real del comportamiento de los niños, pacientes o clientes en casa.
             </p>
             
             <div className="hero-buttons">

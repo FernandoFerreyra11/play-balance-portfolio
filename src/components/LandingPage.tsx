@@ -98,10 +98,10 @@ export function LandingPage() {
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, marginBottom: '20px' }}>
-              Respaldado por la <span style={{ color: '#8b5cf6' }}>ciencia</span>, diseñado para la diversión
+              Diseñado para generar buenos <span style={{ color: '#8b5cf6' }}>hábitos</span>, basado en principios simples
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-              PlayBalance no es solo un juego. Se basa en principios clínicos de modificación de conducta y psicología evolutiva.
+            <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto' }}>
+              PlayBalance es una herramienta de gestión de equipos. Se basa en principios como autoconciencia, responsabilidad, intencionalidad, disciplina, resiliencia y curiosidad.
             </p>
           </div>
 

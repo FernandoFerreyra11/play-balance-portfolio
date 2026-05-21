@@ -8,17 +8,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-async function getEffectiveFamilyId() {
+interface AuthUser {
+  id?: string;
+  familyId?: string;
+  role?: string;
+}
+
+async function checkParentSession() {
   const session = await getServerSession(authOptions);
-  if (!session) return null;
-  return (session.user as any).familyId;
+  if (!session || (session.user as AuthUser).role !== 'parent') {
+    return null;
+  }
+  return session.user as { id: string; familyId: string; role: string };
 }
 
 export async function createFamilyMember(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  const familyId = await getEffectiveFamilyId();
-
-  if (!session || (session.user as any).role !== 'parent' || !familyId) {
+  const user = await checkParentSession();
+  if (!user || !user.familyId) {
     return { error: "No tienes permiso para realizar esta acción" };
   }
 
@@ -46,7 +52,7 @@ export async function createFamilyMember(formData: FormData) {
   const existingMembers = await db
     .select({ role: users.role })
     .from(users)
-    .where(eq(users.familyId, familyId as string));
+    .where(eq(users.familyId, user.familyId));
 
   const childCount = existingMembers.filter(m => m.role === 'child').length;
   const parentCount = existingMembers.filter(m => m.role === 'parent').length;
@@ -69,19 +75,21 @@ export async function createFamilyMember(formData: FormData) {
       password: hashedPassword,
       role,
       image: image || '👤',
-      parentId: (session.user as any).id,
-      familyId: familyId as string,
+      parentId: user.id,
+      familyId: user.familyId,
     });
 
     revalidatePath("/admin");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Error al crear el miembro de la familia" };
   }
 }
 
 export async function getFamilyMembers() {
-  const familyId = await getEffectiveFamilyId();
+  const session = await getServerSession(authOptions);
+  if (!session) return [];
+  const familyId = (session.user as AuthUser).familyId;
   if (!familyId) return [];
 
   const members = await db
@@ -94,14 +102,14 @@ export async function getFamilyMembers() {
       image: users.image,
     })
     .from(users)
-    .where(eq(users.familyId, familyId as string));
+    .where(eq(users.familyId, familyId));
 
   return members;
 }
 
 export async function updateFamilyMember(id: string, formData: FormData) {
-  const familyId = await getEffectiveFamilyId();
-  if (!familyId) return { error: "No autorizado" };
+  const user = await checkParentSession();
+  if (!user || !user.familyId) return { error: "No autorizado" };
 
   const name = formData.get("name") as string;
   const role = formData.get("role") as 'child' | 'parent';
@@ -110,7 +118,7 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   const password = formData.get("password") as string;
   const image = formData.get("image") as string;
 
-  const updateData: any = { name, role, image, email };
+  const updateData: { name?: string; role?: 'child' | 'parent'; image?: string; email?: string | null; password?: string } = { name, role, image, email };
   if (password) {
     updateData.password = await bcrypt.hash(password, 10);
   }
@@ -118,72 +126,74 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   try {
     await db.update(users)
       .set(updateData)
-      .where(and(eq(users.id, id), eq(users.familyId, familyId as string)));
+      .where(and(eq(users.id, id), eq(users.familyId, user.familyId)));
     
     revalidatePath("/admin");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Error al actualizar" };
   }
 }
 
 export async function deleteFamilyMember(id: string) {
-  const familyId = await getEffectiveFamilyId();
-  if (!familyId) return { error: "No autorizado" };
+  const user = await checkParentSession();
+  if (!user || !user.familyId) return { error: "No autorizado" };
 
   try {
     await db.delete(users)
-      .where(and(eq(users.id, id), eq(users.familyId, familyId as string)));
+      .where(and(eq(users.id, id), eq(users.familyId, user.familyId)));
     
     revalidatePath("/admin");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Error al eliminar" };
   }
 }
 
 export async function getFamilyDetail() {
-  const familyId = await getEffectiveFamilyId();
+  const session = await getServerSession(authOptions);
+  if (!session) return null;
+  const familyId = (session.user as AuthUser).familyId;
   if (!familyId) return null;
 
   const result = await db
     .select()
     .from(families)
-    .where(eq(families.id, familyId as string))
+    .where(eq(families.id, familyId))
     .limit(1);
   
   return result[0] || null;
 }
 
 export async function deleteOwnFamily() {
-  const session = await getServerSession(authOptions);
-  const familyId = await getEffectiveFamilyId();
-
-  if (!session || (session.user as any).role !== 'parent' || !familyId) {
+  const user = await checkParentSession();
+  if (!user || !user.familyId) {
     return { error: "No autorizado" };
   }
 
   try {
     // 1. Obtener IDs de todos los usuarios de la familia para limpiar sus datos
-    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, familyId as string));
+    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
     const userIds = familyUsers.map(u => u.id);
 
-    if (userIds.length > 0) {
-      // 2. Limpiar datos vinculados a usuarios
-      await db.delete(transactions).where(inArray(transactions.userId, userIds));
-      await db.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
-      await db.delete(suggestions).where(inArray(suggestions.childId, userIds));
-    }
+    await db.transaction(async (tx) => {
+      if (userIds.length > 0) {
+        // 2. Limpiar datos vinculados a usuarios
+        await tx.delete(transactions).where(inArray(transactions.userId, userIds));
+        await tx.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
+        await tx.delete(suggestions).where(inArray(suggestions.childId, userIds));
+      }
 
-    // 3. Limpiar datos vinculados a la familia
-    await db.delete(rewards).where(eq(rewards.familyId, familyId as string));
-    await db.delete(quests).where(eq(quests.familyId, familyId as string));
-    
-    // 4. Borrar todos los usuarios de la familia
-    await db.delete(users).where(eq(users.familyId, familyId as string));
-    
-    // 5. Borrar la familia
-    await db.delete(families).where(eq(families.id, familyId as string));
+      // 3. Limpiar datos vinculados a la familia
+      await tx.delete(rewards).where(eq(rewards.familyId, user.familyId));
+      await tx.delete(quests).where(eq(quests.familyId, user.familyId));
+      
+      // 4. Borrar todos los usuarios de la familia
+      await tx.delete(users).where(eq(users.familyId, user.familyId));
+      
+      // 5. Borrar la familia
+      await tx.delete(families).where(eq(families.id, user.familyId));
+    });
     
     return { success: true };
   } catch (error) {

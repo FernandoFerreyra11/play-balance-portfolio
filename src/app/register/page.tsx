@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { UserPlus, ArrowRight, Loader2, Mail, Lock, User } from 'lucide-react';
+import { ArrowRight, Loader2, Mail, Lock, User } from 'lucide-react';
 import { registerUser } from '../actions/auth';
 import Link from 'next/link';
 
@@ -152,7 +152,13 @@ export default function RegisterPage() {
   );
 }
 
-function RoleButton({ active, onClick, label }: any) {
+interface RoleButtonProps {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}
+
+function RoleButton({ active, onClick, label }: RoleButtonProps) {
   return (
     <button
       type="button"

@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { 
   Plus, 
   Trash2, 
   CheckCircle, 
   XCircle, 
-  LayoutDashboard, 
   Trophy, 
   Gift, 
   MessageSquare,
@@ -38,12 +37,12 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('family');
 
   useEffect(() => {
-    if (status === 'unauthenticated' || (status === 'authenticated' && (session?.user as any).role !== 'parent')) {
+    if (status === 'unauthenticated' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent')) {
       router.push('/');
     }
   }, [status, session, router]);
 
-  if (status === 'loading' || (status === 'authenticated' && (session?.user as any).role !== 'parent')) {
+  if (status === 'loading' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent')) {
     return <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Cargando...</div>;
   }
 
@@ -141,9 +140,24 @@ export default function AdminDashboard() {
 
 const AVATARS = ['🎮', '🚀', '🦖', '🎨', '🦄', '⚡', '🛡️', '👑', '🌟', '🛠️', '🐱', '🦊', '🐼', '🐯', '🦁'];
 
+interface FamilyMember {
+  id: string;
+  name: string;
+  role: 'child' | 'parent';
+  image: string | null;
+  email: string | null;
+  balance: number;
+}
+
+interface FamilyDetail {
+  id: string;
+  name: string;
+  code: string;
+}
+
 function FamilyManager() {
-  const [members, setMembers] = useState<any[]>([]);
-  const [family, setFamily] = useState<any>(null);
+  const [members, setMembers] = useState<FamilyMember[]>([]);
+  const [family, setFamily] = useState<FamilyDetail | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [bonusId, setBonusId] = useState<string | null>(null);
@@ -158,12 +172,14 @@ function FamilyManager() {
       getFamilyMembers(),
       getFamilyDetail()
     ]);
-    setMembers(membersData);
-    setFamily(familyData);
+    setMembers(membersData as FamilyMember[]);
+    setFamily(familyData as FamilyDetail);
   };
 
     useEffect(() => {
-      fetchData();
+      Promise.resolve().then(() => {
+        fetchData();
+      });
     }, []);
 
     useEffect(() => {
@@ -358,7 +374,7 @@ function FamilyManager() {
               <select 
                 name="role" 
                 value={formRole}
-                onChange={(e) => setFormRole(e.target.value as any)}
+                onChange={(e) => setFormRole(e.target.value as 'child' | 'parent')}
                 style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }}
               >
                 <option value="child" style={{ color: 'black' }}>Aventurero</option>
@@ -400,14 +416,14 @@ function FamilyManager() {
                 <select 
                   name="role" 
                   value={editingRole || member.role} 
-                  onChange={(e) => setEditingRole(e.target.value as any)}
+                  onChange={(e) => setEditingRole(e.target.value as 'child' | 'parent')}
                   style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}
                 >
                   <option value="child" style={{ color: 'black' }}>Jugador</option>
                   <option value="parent" style={{ color: 'black' }}>Admin</option>
                 </select>
                 {(editingRole || member.role) === 'parent' && (
-                  <input name="email" type="email" defaultValue={member.email} placeholder="Email de acceso" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                  <input name="email" type="email" defaultValue={member.email ?? undefined} placeholder="Email de acceso" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 )}
                 <input name="password" type="password" placeholder="Cambiar contraseña (opcional)" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 <button disabled={loading} type="submit" className="btn-primary" style={{ padding: '8px' }}>
@@ -539,7 +555,14 @@ function FamilyManager() {
   );
 }
 
-function TabButton({ active, onClick, icon, label }: any) {
+interface TabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}
+
+function TabButton({ active, onClick, icon, label }: TabButtonProps) {
   return (
     <button 
       onClick={onClick}
@@ -555,20 +578,29 @@ function TabButton({ active, onClick, icon, label }: any) {
   );
 }
 
+interface QuestItem {
+  id: string;
+  title: string;
+  reward: number;
+  category: string;
+}
+
 // Estos se implementarán después pero mantenemos la estructura
 function QuestsManager() {
-  const [questsList, setQuestsList] = useState<any[]>([]);
+  const [questsList, setQuestsList] = useState<QuestItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchQuests = async () => {
     const data = await getQuests();
-    setQuestsList(data);
+    setQuestsList(data as QuestItem[]);
   };
 
   useEffect(() => {
-    fetchQuests();
+    Promise.resolve().then(() => {
+      fetchQuests();
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -708,19 +740,28 @@ function QuestsManager() {
   );
 }
 
+interface RewardItem {
+  id: string;
+  title: string;
+  cost: number;
+  minutes: number | null;
+}
+
 function RewardsManager() {
-  const [rewardsList, setRewardsList] = useState<any[]>([]);
+  const [rewardsList, setRewardsList] = useState<RewardItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchRewards = async () => {
     const data = await getRewards();
-    setRewardsList(data);
+    setRewardsList(data as RewardItem[]);
   };
 
   useEffect(() => {
-    fetchRewards();
+    Promise.resolve().then(() => {
+      fetchRewards();
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -808,7 +849,7 @@ function RewardsManager() {
                 <input name="title" defaultValue={reward.title} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <input name="cost" type="number" defaultValue={reward.cost} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
-                  <input name="minutes" type="number" defaultValue={reward.minutes} placeholder="Minutos" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
+                  <input name="minutes" type="number" defaultValue={reward.minutes || ''} placeholder="Minutos" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button type="submit" className="btn-primary" style={{ flex: 1, padding: '8px' }}>Guardar</button>
@@ -850,18 +891,28 @@ function RewardsManager() {
     </motion.div>
   );
 }
+interface PendingApprovalItem {
+  id: string;
+  childImage: string | null;
+  childName: string;
+  questTitle: string;
+  questReward: number;
+}
+
 function ApprovalsManager() {
-  const [pending, setPending] = useState<any[]>([]);
+  const [pending, setPending] = useState<PendingApprovalItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPending = async () => {
     const data = await getPendingApprovals();
-    setPending(data);
+    setPending(data as PendingApprovalItem[]);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchPending();
+    Promise.resolve().then(() => {
+      fetchPending();
+    });
   }, []);
 
   const handleApprove = async (id: string) => {
@@ -931,18 +982,29 @@ function ApprovalsManager() {
     </motion.div>
   );
 }
+interface SuggestionItem {
+  id: string;
+  childImage: string | null;
+  childName: string;
+  content: string;
+  status: string | null;
+  createdAt: Date | null;
+}
+
 function SuggestionsManager() {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchSuggestions = async () => {
     const data = await getSuggestions();
-    setSuggestions(data);
+    setSuggestions(data as SuggestionItem[]);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchSuggestions();
+    Promise.resolve().then(() => {
+      fetchSuggestions();
+    });
   }, []);
 
   const handleAction = async (id: string, status: 'approved' | 'rejected') => {
@@ -970,9 +1032,9 @@ function SuggestionsManager() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: '1.1rem', marginBottom: '5px' }}>{item.childName} sugiere:</h3>
-                  <p style={{ fontSize: '1.05rem', lineHeight: 1.5, color: '#fff' }}>"{item.content}"</p>
+                  <p style={{ fontSize: '1.05rem', lineHeight: 1.5, color: '#fff' }}>&ldquo;{item.content}&rdquo;</p>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '10px' }}>
-                    Enviado el {new Date(item.createdAt).toLocaleDateString()}
+                    Enviado el {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -1022,32 +1084,56 @@ function SuggestionsManager() {
   );
 }
 
+interface TransactionItem {
+  id: string;
+  userImage: string | null;
+  userName: string;
+  description: string | null;
+  type: string;
+  amount: number;
+  createdAt: Date | null;
+}
+
+interface FamilyStats {
+  summary: {
+    totalEarned: number;
+    questsCount: number;
+    totalSpent: number;
+    rewardsCount: number;
+  };
+  transactions: TransactionItem[];
+}
+
 function StatsManager() {
   const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('7d');
   const [selectedChild, setSelectedChild] = useState<string>('all');
-  const [members, setMembers] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [members, setMembers] = useState<FamilyMember[]>([]);
+  const [stats, setStats] = useState<FamilyStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     const data = await getFamilyStats(period, selectedChild === 'all' ? undefined : selectedChild);
-    setStats(data);
+    setStats(data as FamilyStats);
     setLoading(false);
-  };
+  }, [period, selectedChild]);
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const data = await getFamilyMembers();
-    setMembers(data.filter(m => m.role === 'child'));
-  };
-
-  useEffect(() => {
-    fetchMembers();
+    setMembers((data as FamilyMember[]).filter(m => m.role === 'child'));
   }, []);
 
   useEffect(() => {
-    fetchStats();
-  }, [period, selectedChild]);
+    Promise.resolve().then(() => {
+      fetchMembers();
+    });
+  }, [fetchMembers]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchStats();
+    });
+  }, [fetchStats]);
 
   if (loading && !stats) return <div style={{ textAlign: 'center', padding: '60px' }}>Analizando datos familiares...</div>;
 
@@ -1103,23 +1189,23 @@ function StatsManager() {
             <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--primary-color)' }}>
               <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Ganados</p>
               <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                <Coins size={28} /> {stats.summary.totalEarned}
+                <Coins size={28} /> {stats?.summary.totalEarned}
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.questsCount} misiones</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats?.summary.questsCount} misiones</p>
             </div>
             <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--accent-color)' }}>
               <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tokens Canjeados</p>
               <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                <Trophy size={28} /> {stats.summary.totalSpent}
+                <Trophy size={28} /> {stats?.summary.totalSpent}
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats.summary.rewardsCount} premios</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats?.summary.rewardsCount} premios</p>
             </div>
           </div>
 
           <div className="glass card">
             <h3 style={{ marginBottom: '20px' }}>Actividad Reciente</h3>
             <div style={{ display: 'grid', gap: '15px' }}>
-              {stats.transactions.map((t: any) => (
+              {stats?.transactions.map((t: TransactionItem) => (
                 <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -1135,12 +1221,12 @@ function StatsManager() {
                       {t.type === 'quest' ? '+' : ''}{t.amount}
                     </p>
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                      {new Date(t.createdAt).toLocaleDateString()}
+                      {t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>
               ))}
-              {stats.transactions.length === 0 && (
+              {stats?.transactions.length === 0 && (
                 <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)' }}>No hay actividad registrada en este período.</p>
               )}
             </div>

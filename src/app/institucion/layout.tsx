@@ -9,7 +9,7 @@ export default async function OrgLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || (session.user as any).role !== 'org_admin') {
+  if (!session || (session.user as { role?: string }).role !== 'org_admin') {
     redirect("/login");
   }
 

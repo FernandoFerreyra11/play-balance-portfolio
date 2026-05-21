@@ -39,7 +39,7 @@ function LoginForm() {
     } else {
       // Obtenemos la sesión para ver el rol real
       const session = await getSession();
-      const userRole = (session?.user as any)?.role;
+      const userRole = (session?.user as { role?: string })?.role;
 
       if (userRole === 'super_admin') {
         router.push('/super-admin');

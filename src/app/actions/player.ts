@@ -7,6 +7,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
+interface AuthUser {
+  id?: string;
+  familyId?: string;
+  role?: string;
+}
+
 export async function getPlayerStats() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
@@ -14,7 +20,7 @@ export async function getPlayerStats() {
   const [user] = await db
     .select()
     .from(users)
-    .where(eq(users.id, (session.user as any).id))
+    .where(eq(users.id, (session.user as AuthUser).id as string))
     .limit(1);
 
   return user;
@@ -22,7 +28,7 @@ export async function getPlayerStats() {
 
 export async function getAvailableQuests() {
   const session = await getServerSession(authOptions);
-  if (!session) return [];
+  if (!session || (session.user as AuthUser).role !== 'child') return [];
 
   const player = await getPlayerStats();
   if (!player || !player.familyId) return [];
@@ -42,7 +48,7 @@ export async function getAvailableQuests() {
       eq(activeQuests.childId, player.id),
       eq(activeQuests.status, 'pending_approval')
     ))
-    .where(eq(quests.familyId, player.familyId as string))
+    .where(eq(quests.familyId, player.familyId))
     .orderBy(desc(quests.createdAt));
 
   return parentQuests;
@@ -50,7 +56,7 @@ export async function getAvailableQuests() {
 
 export async function getAvailableRewards() {
   const session = await getServerSession(authOptions);
-  if (!session) return [];
+  if (!session || (session.user as AuthUser).role !== 'child') return [];
 
   const player = await getPlayerStats();
   if (!player || !player.familyId) return [];
@@ -58,7 +64,7 @@ export async function getAvailableRewards() {
   const parentRewards = await db
     .select()
     .from(rewards)
-    .where(eq(rewards.familyId, player.familyId as string))
+    .where(eq(rewards.familyId, player.familyId))
     .orderBy(desc(rewards.createdAt));
 
   return parentRewards;
@@ -66,55 +72,80 @@ export async function getAvailableRewards() {
 
 export async function requestQuestCompletion(questId: string) {
   const session = await getServerSession(authOptions);
-  if (!session) return { error: "No autorizado" };
+  if (!session || (session.user as AuthUser).role !== 'child') return { error: "No autorizado" };
+
+  const familyId = (session.user as AuthUser).familyId;
+  if (!familyId) return { error: "No autorizado" };
 
   try {
+    // Verificar que la misión pertenezca a la familia del menor (evitar IDOR)
+    const [quest] = await db
+      .select({ id: quests.id })
+      .from(quests)
+      .where(and(eq(quests.id, questId), eq(quests.familyId, familyId)))
+      .limit(1);
+
+    if (!quest) return { error: "Misión no encontrada o no pertenece a tu equipo" };
+
     await db.insert(activeQuests).values({
-      childId: (session.user as any).id,
+      childId: (session.user as AuthUser).id as string,
       questId,
-      status: 'pending_approval', // Usamos el enum del esquema
+      status: 'pending_approval',
     });
 
     revalidatePath("/");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Error al solicitar aprobación" };
   }
 }
 
 export async function requestReward(rewardId: string) {
   const session = await getServerSession(authOptions);
-  if (!session) return { error: "No autorizado" };
+  if (!session || (session.user as AuthUser).role !== 'child') return { error: "No autorizado" };
 
-  const player = await getPlayerStats();
-  if (!player) return { error: "Jugador no encontrado" };
-
-  const [reward] = await db
-    .select()
-    .from(rewards)
-    .where(eq(rewards.id, rewardId))
-    .limit(1);
-
-  if (!reward) return { error: "Premio no encontrado" };
-  if (player.balance! < reward.cost) return { error: "No tienes suficientes tokens" };
+  const playerId = (session.user as AuthUser).id as string;
+  const familyId = (session.user as AuthUser).familyId;
+  if (!familyId) return { error: "No autorizado" };
 
   try {
-    // 1. Restar balance
-    await db.update(users)
-      .set({ balance: player.balance! - reward.cost })
-      .where(eq(users.id, player.id));
+    return await db.transaction(async (tx) => {
+      // Obtener jugador y premio dentro de la transacción
+      const [player] = await tx
+        .select()
+        .from(users)
+        .where(eq(users.id, playerId))
+        .limit(1);
 
-    // 2. Registrar transacción
-    await db.insert(transactions).values({
-      userId: player.id,
-      amount: -reward.cost,
-      type: 'reward', // Tipo estandarizado
-      description: `Canje de premio: ${reward.title}`,
+      if (!player) return { error: "Jugador no encontrado" };
+
+      const [reward] = await tx
+        .select()
+        .from(rewards)
+        .where(and(eq(rewards.id, rewardId), eq(rewards.familyId, familyId)))
+        .limit(1);
+
+      if (!reward) return { error: "Premio no encontrado o no pertenece a tu equipo" };
+      if ((player.balance || 0) < reward.cost) return { error: "No tienes suficientes tokens" };
+
+      // 1. Restar balance
+      await tx.update(users)
+        .set({ balance: (player.balance || 0) - reward.cost })
+        .where(eq(users.id, playerId));
+
+      // 2. Registrar transacción
+      await tx.insert(transactions).values({
+        userId: playerId,
+        amount: -reward.cost,
+        type: 'reward',
+        description: `Canje de premio: ${reward.title}`,
+      });
+
+      revalidatePath("/");
+      return { success: true };
     });
-
-    revalidatePath("/");
-    return { success: true };
   } catch (error) {
+    console.error("Error al procesar el canje de premio:", error);
     return { error: "Error al procesar el canje" };
   }
 }
@@ -123,9 +154,18 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
   const session = await getServerSession(authOptions);
   if (!session || !session.user) return null;
 
-  const familyId = (session.user as any).familyId;
-  
+  const familyId = (session.user as AuthUser).familyId;
   if (!familyId) return null;
+
+  // Si se pasa childId, verificar que el menor pertenezca al mismo familyId (evitar IDOR)
+  if (childId) {
+    const [child] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.id, childId), eq(users.familyId, familyId)))
+      .limit(1);
+    if (!child) return null;
+  }
 
   // Calculamos la fecha de inicio
   let startDate = new Date(0); // Por defecto 'all'
@@ -173,37 +213,41 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
 
 export async function awardSpontaneousTokens(childId: string, amount: number, description: string) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'parent') return { error: "No autorizado" };
+  if (!session || (session.user as AuthUser).role !== 'parent') return { error: "No autorizado" };
 
-  const familyId = (session.user as any).familyId;
-  
-  // Verificamos que el aventurero pertenece al mismo equipo
-  const [child] = await db
-    .select()
-    .from(users)
-    .where(and(eq(users.id, childId), eq(users.familyId, familyId)))
-    .limit(1);
-
-  if (!child) return { error: "Aventurero no encontrado o no pertenece al equipo" };
+  const familyId = (session.user as AuthUser).familyId;
+  if (!familyId) return { error: "No autorizado" };
   if (amount <= 0) return { error: "La cantidad debe ser mayor a 0" };
 
   try {
-    // 1. Sumar balance
-    await db.update(users)
-      .set({ balance: (child.balance || 0) + amount })
-      .where(eq(users.id, childId));
+    // Verificamos que el aventurero pertenece al mismo equipo
+    const [child] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.id, childId), eq(users.familyId, familyId)))
+      .limit(1);
 
-    // 2. Registrar transacción
-    await db.insert(transactions).values({
-      userId: childId,
-      amount: amount,
-      type: 'bonus',
-      description: `Bonus: ${description}`,
+    if (!child) return { error: "Aventurero no encontrado o no pertenece al equipo" };
+
+    await db.transaction(async (tx) => {
+      // 1. Sumar balance
+      await tx.update(users)
+        .set({ balance: (child.balance || 0) + amount })
+        .where(eq(users.id, childId));
+
+      // 2. Registrar transacción
+      await tx.insert(transactions).values({
+        userId: childId,
+        amount: amount,
+        type: 'bonus',
+        description: `Bonus: ${description}`,
+      });
     });
 
     revalidatePath("/admin");
     return { success: true };
   } catch (error) {
+    console.error("Error al otorgar tokens espontáneos:", error);
     return { error: "Error al otorgar el bonus" };
   }
 }

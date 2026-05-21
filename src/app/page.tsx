@@ -30,10 +30,10 @@ export default async function Home() {
   return (
     <Dashboards 
       initialData={{ 
-        player, 
-        quests, 
-        rewards, 
-        mySuggestions 
+        player: player as any, 
+        quests: quests as any, 
+        rewards: rewards as any, 
+        mySuggestions: mySuggestions as any
       }} 
     />
   );

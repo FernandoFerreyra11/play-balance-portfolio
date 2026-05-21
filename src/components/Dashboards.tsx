@@ -1,16 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { 
   Coins, 
   Trophy, 
-  LogOut, 
-  CheckCircle2, 
-  Settings,
   Gift,
-  Clock,
-  Sparkles,
   MessageSquarePlus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -24,11 +19,48 @@ import {
 } from '@/app/actions/player';
 import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
 
-export function Dashboards({ initialData }: any) {
-  const [player, setPlayer] = useState(initialData.player);
-  const [quests, setQuests] = useState(initialData.quests);
-  const [rewards, setRewards] = useState(initialData.rewards);
-  const [mySuggestions, setMySuggestions] = useState(initialData.mySuggestions);
+interface DashboardPlayer {
+  id: string;
+  name: string;
+  role: string;
+  balance: number;
+  image?: string | null;
+}
+
+interface DashboardQuest {
+  id: string;
+  title: string;
+  reward: number;
+  status?: string | null;
+}
+
+interface DashboardReward {
+  id: string;
+  title: string;
+  cost: number;
+}
+
+interface DashboardSuggestion {
+  id: string;
+  content: string;
+  status: string | null;
+  createdAt: Date | null;
+}
+
+interface DashboardsProps {
+  initialData: {
+    player: DashboardPlayer;
+    quests: DashboardQuest[];
+    rewards: DashboardReward[];
+    mySuggestions: DashboardSuggestion[];
+  };
+}
+
+export function Dashboards({ initialData }: DashboardsProps) {
+  const [player, setPlayer] = useState<DashboardPlayer>(initialData.player);
+  const [quests, setQuests] = useState<DashboardQuest[]>(initialData.quests);
+  const [rewards, setRewards] = useState<DashboardReward[]>(initialData.rewards);
+  const [mySuggestions, setMySuggestions] = useState<DashboardSuggestion[]>(initialData.mySuggestions);
   const [suggestionText, setSuggestionText] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -37,10 +69,10 @@ export function Dashboards({ initialData }: any) {
     const q = await getAvailableQuests();
     const r = await getAvailableRewards();
     const s = await getMySuggestions();
-    setPlayer(stats);
-    setQuests(q);
-    setRewards(r);
-    setMySuggestions(s);
+    setPlayer(stats as DashboardPlayer);
+    setQuests(q as DashboardQuest[]);
+    setRewards(r as DashboardReward[]);
+    setMySuggestions(s as DashboardSuggestion[]);
   };
 
   const handleSuggestionSubmit = async () => {
@@ -55,13 +87,13 @@ export function Dashboards({ initialData }: any) {
   };
 
   if (player?.role === 'parent' || player?.role === 'professional' || player?.role === 'org_admin' || player?.role === 'super_admin') {
-    const roleConfig: any = {
+    const roleConfig: Record<string, { icon: string; title: string; desc: string; link: string }> = {
       parent: { icon: '🛡️', title: 'Hola, Capitán', desc: 'Gestiona tu equipo', link: '/admin' },
       professional: { icon: '🩺', title: 'Panel Profesional', desc: 'Gestiona tus pacientes', link: '/pro' },
       org_admin: { icon: '🏢', title: 'Panel Institucional', desc: 'Gestiona tu centro', link: '/institucion' },
       super_admin: { icon: '🌐', title: 'Super Admin', desc: 'Control Global', link: '/super-admin' }
     };
-    const config = roleConfig[player.role as string] || roleConfig.parent;
+    const config = roleConfig[player.role] || roleConfig.parent;
 
     return (
       <div style={{ textAlign: 'center', paddingTop: '100px', minHeight: '100vh', background: '#020617', color: 'white' }}>
@@ -101,7 +133,7 @@ export function Dashboards({ initialData }: any) {
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {quests.map((quest: any) => (
+            {quests.map((quest: DashboardQuest) => (
               <div key={quest.id} className="glass action-card" style={{ borderLeft: '6px solid #06b6d4' }}>
                 <div><h3 style={{ margin: '0 0 5px 0' }}>{quest.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>+{quest.reward} Tokens</div></div>
                 <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary action-btn">
@@ -113,9 +145,8 @@ export function Dashboards({ initialData }: any) {
         </section>
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Gift color="#8b5cf6" /> Premios</h2>
-          {/* ... similar a misiones ... */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {rewards.map((reward: any) => (
+            {rewards.map((reward: DashboardReward) => (
               <div key={reward.id} className="glass action-card" style={{ borderLeft: '6px solid #8b5cf6' }}>
                 <div><h3 style={{ margin: '0 0 5px 0' }}>{reward.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>{reward.cost} Tokens</div></div>
                 <button disabled={player?.balance < reward.cost} onClick={async () => { await requestReward(reward.id); fetchData(); }} className="btn-primary action-btn" style={{ background: '#8b5cf6' }}>
@@ -143,12 +174,12 @@ export function Dashboards({ initialData }: any) {
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {mySuggestions?.map((sugg: any) => (
+            {mySuggestions?.map((sugg: DashboardSuggestion) => (
               <div key={sugg.id} className="glass" style={{ padding: '15px', borderRadius: '15px', borderLeft: '4px solid rgba(255,255,255,0.1)' }}>
                 <p style={{ margin: '0 0 10px 0', fontWeight: 600 }}>{sugg.content}</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#94a3b8' }}>
                   <span>Estado: {sugg.status === 'pending' ? '⏳ En revisión' : sugg.status === 'approved' ? '✅ Aprobada' : '❌ Rechazada'}</span>
-                  <span>{new Date(sugg.createdAt).toLocaleDateString()}</span>
+                  <span>{sugg.createdAt ? new Date(sugg.createdAt).toLocaleDateString() : 'N/A'}</span>
                 </div>
               </div>
             ))}

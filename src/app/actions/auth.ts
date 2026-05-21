@@ -48,7 +48,7 @@ export async function registerUser(formData: FormData) {
         slug: slug,
       }).returning();
       
-      const newOrg = (insertedOrgs as any)[0];
+      const newOrg = insertedOrgs[0];
 
       // 2. Crear Usuario
       await db.insert(users).values({
@@ -80,7 +80,7 @@ export async function registerUser(formData: FormData) {
       code: familyCode,
     }).returning();
     
-    const newFamily = (insertedFamilies as any)[0];
+    const newFamily = insertedFamilies[0];
 
     await db.insert(users).values({
       name,

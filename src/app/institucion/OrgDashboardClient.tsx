@@ -7,22 +7,37 @@ import {
   Users, 
   Plus, 
   LogOut,
-  ChevronRight,
   TrendingUp,
   Award,
   CheckCircle,
   XCircle,
   Mail,
-  Lock,
   UserPlus
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { createProfessional } from '../actions/org';
 
-export default function OrgDashboardClient({ initialStats, initialProfessionals }: any) {
-  const { data: session }: any = useSession();
-  const [professionals, setProfessionals] = useState(initialProfessionals);
-  const [stats, setStats] = useState(initialStats);
+interface ProfessionalItem {
+  id: string;
+  name: string;
+  email: string | null;
+}
+
+interface OrgStats {
+  orgName?: string;
+  professionalsCount?: number;
+  totalPatients?: number;
+}
+
+interface OrgDashboardClientProps {
+  initialStats: OrgStats | null;
+  initialProfessionals: ProfessionalItem[];
+}
+
+export default function OrgDashboardClient({ initialStats, initialProfessionals }: OrgDashboardClientProps) {
+  const { data: session } = useSession();
+  const professionals = initialProfessionals || [];
+  const stats = initialStats || {};
   const [loading, setLoading] = useState(false);
   const [showAddPro, setShowAddPro] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -74,7 +89,7 @@ export default function OrgDashboardClient({ initialStats, initialProfessionals 
             <Building2 size={32} color="#06b6d4" />
           </div>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{stats.orgName}</h1>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{stats?.orgName || 'Cargando...'}</h1>
             <p style={{ color: '#94a3b8' }}>Gestión Institucional • Director: {session?.user?.name}</p>
           </div>
         </div>
@@ -86,8 +101,8 @@ export default function OrgDashboardClient({ initialStats, initialProfessionals 
 
       {/* Stats Ejecutivas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
-        <StatCard icon={<Users color="#06b6d4" />} title="Equipo Profesional" value={stats.professionalsCount || 0} />
-        <StatCard icon={<Award color="#10b981" />} title="Pacientes en el Centro" value={stats.totalPatients || 0} />
+        <StatCard icon={<Users color="#06b6d4" />} title="Equipo Profesional" value={stats?.professionalsCount || 0} />
+        <StatCard icon={<Award color="#10b981" />} title="Pacientes en el Centro" value={stats?.totalPatients || 0} />
         <StatCard icon={<TrendingUp color="#8b5cf6" />} title="Eficiencia de Equipo" value="92%" />
       </div>
 
@@ -129,7 +144,7 @@ export default function OrgDashboardClient({ initialStats, initialProfessionals 
         )}
 
         <div style={{ display: 'grid', gap: '15px' }}>
-          {professionals.map((pro: any) => (
+          {professionals.map((pro: ProfessionalItem) => (
             <motion.div 
               key={pro.id}
               whileHover={{ background: 'rgba(255,255,255,0.05)' }}
@@ -195,7 +210,13 @@ export default function OrgDashboardClient({ initialStats, initialProfessionals 
   );
 }
 
-function StatCard({ icon, title, value }: any) {
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: string | number;
+}
+
+function StatCard({ icon, title, value }: StatCardProps) {
   return (
     <div className="glass" style={{ padding: '25px', borderRadius: '25px', display: 'flex', gap: '20px', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
       <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px' }}>

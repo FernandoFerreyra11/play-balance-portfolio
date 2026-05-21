@@ -19,9 +19,24 @@ import {
 } from 'lucide-react';
 import { getGlobalStats, getAllFamilies, deleteFamily, resetFamilyCode, updateFamilyName } from '../actions/super-admin';
 
+interface FamilyItem {
+  id: string;
+  name: string;
+  code: string;
+  memberCount: number;
+  createdAt: Date | null;
+}
+
+interface GlobalStats {
+  families: number;
+  users: number;
+  quests: number;
+  tokens: number;
+}
+
 export default function SuperAdminClient() {
-  const [stats, setStats] = useState<any>(null);
-  const [families, setFamilies] = useState<any[]>([]);
+  const [stats, setStats] = useState<GlobalStats | null>(null);
+  const [families, setFamilies] = useState<FamilyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -30,13 +45,16 @@ export default function SuperAdminClient() {
       getGlobalStats(),
       getAllFamilies()
     ]);
-    setStats(statsData);
-    setFamilies(familiesData);
+    setStats(statsData as GlobalStats);
+    setFamilies(familiesData as FamilyItem[]);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchData();
+    // Wrap in a promise resolve callback to avoid calling setState synchronously within the effect body
+    Promise.resolve().then(() => {
+      fetchData();
+    });
   }, []);
 
   const handleResetCode = async (id: string, name: string) => {
@@ -185,7 +203,7 @@ export default function SuperAdminClient() {
                     </div>
                   </td>
                   <td style={{ padding: '20px', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>
-                    {new Date(f.createdAt).toLocaleDateString()}
+                    {f.createdAt ? new Date(f.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
                   <td style={{ padding: '20px' }}>
                     <button 
@@ -234,7 +252,14 @@ export default function SuperAdminClient() {
   );
 }
 
-function StatCard({ title, value, icon, color }: any) {
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: string;
+}
+
+function StatCard({ title, value, icon, color }: StatCardProps) {
   return (
     <div className="glass StatCard" style={{ 
       padding: '25px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)',

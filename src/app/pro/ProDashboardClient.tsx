@@ -7,9 +7,7 @@ import {
   Users, 
   TrendingUp, 
   Plus, 
-  Settings, 
   LogOut,
-  Search,
   ChevronRight,
   ClipboardList,
   Building2,
@@ -20,14 +18,29 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { createOrganization, createPatientFamily } from '../actions/pro';
 
-export default function ProDashboardClient({ initialStats, initialFamilies }: any) {
-  const { data: session }: any = useSession();
-  const [families, setFamilies] = useState(initialFamilies);
-  const [stats, setStats] = useState(initialStats);
+interface PatientFamilyItem {
+  id: string;
+  name: string;
+  code: string;
+}
+
+interface ProStats {
+  activePatients?: number;
+}
+
+interface ProDashboardClientProps {
+  initialStats: ProStats | null;
+  initialFamilies: PatientFamilyItem[];
+}
+
+export default function ProDashboardClient({ initialStats, initialFamilies }: ProDashboardClientProps) {
+  const { data: session } = useSession();
+  const families = initialFamilies || [];
+  const stats = initialStats || {};
   const [loading, setLoading] = useState(false);
   const [showAddFamily, setShowAddFamily] = useState(false);
   const [showOrgForm, setShowOrgForm] = useState(
-    session?.user?.role === 'professional' && !session?.user?.organizationId
+    (session?.user as { role?: string, organizationId?: string })?.role === 'professional' && !(session?.user as { organizationId?: string }).organizationId
   );
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
@@ -136,7 +149,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: an
 
       {/* Stats rápidas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
-        <StatCard icon={<Users color="#06b6d4" />} title="Total Pacientes" value={stats.activePatients || 0} />
+        <StatCard icon={<Users color="#06b6d4" />} title="Total Pacientes" value={stats?.activePatients || 0} />
         <StatCard icon={<TrendingUp color="#10b981" />} title="Cumplimiento Global" value="84%" />
         <StatCard icon={<ClipboardList color="#8b5cf6" />} title="Misiones Activas" value="12" />
       </div>
@@ -168,7 +181,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: an
         )}
 
         <div style={{ display: 'grid', gap: '15px' }}>
-          {families.map((family: any) => (
+          {families.map((family: PatientFamilyItem) => (
             <motion.div 
               key={family.id}
               whileHover={{ x: 10, background: 'rgba(255,255,255,0.05)' }}
@@ -229,7 +242,13 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: an
   );
 }
 
-function StatCard({ icon, title, value }: any) {
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: string | number;
+}
+
+function StatCard({ icon, title, value }: StatCardProps) {
   return (
     <div className="glass" style={{ padding: '25px', borderRadius: '25px', display: 'flex', gap: '20px', alignItems: 'center' }}>
       <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px' }}>

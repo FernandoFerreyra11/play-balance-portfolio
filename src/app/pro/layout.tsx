@@ -9,7 +9,7 @@ export default async function ProLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || (session.user as any).role !== 'professional') {
+  if (!session || (session.user as { role?: string }).role !== 'professional') {
     redirect("/login");
   }
 

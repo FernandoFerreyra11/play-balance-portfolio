@@ -3,8 +3,18 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { users, families } from "@/db/schema";
-import { eq, or, and } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+
+interface CustomUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  role?: string | null;
+  parentId?: string | null;
+  familyId?: string | null;
+  organizationId?: string | null;
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db),
@@ -33,10 +43,10 @@ export const authOptions: NextAuthOptions = {
         if (credentials.familyCode) {
           // Búsqueda por Nombre + Código de Familia (para niños)
           const [result] = await db
-            .select({
-              user: users,
-              family: families
-            })
+             .select({
+               user: users,
+               family: families
+             })
             .from(users)
             .innerJoin(families, eq(users.familyId, families.id))
             .where(
@@ -88,21 +98,29 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
-        token.parentId = (user as any).parentId;
-        token.familyId = (user as any).familyId;
-        token.organizationId = (user as any).organizationId;
+        const customUser = user as CustomUser;
+        token.id = customUser.id;
+        token.role = customUser.role;
+        token.parentId = customUser.parentId;
+        token.familyId = customUser.familyId;
+        token.organizationId = customUser.organizationId;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).parentId = token.parentId;
-        (session.user as any).familyId = token.familyId;
-        (session.user as any).organizationId = token.organizationId;
+        const sessionUser = session.user as {
+          id?: string;
+          role?: string | null;
+          parentId?: string | null;
+          familyId?: string | null;
+          organizationId?: string | null;
+        };
+        sessionUser.id = token.id as string;
+        sessionUser.role = token.role as string | null;
+        sessionUser.parentId = token.parentId as string | null;
+        sessionUser.familyId = token.familyId as string | null;
+        sessionUser.organizationId = token.organizationId as string | null;
       }
       return session;
     },

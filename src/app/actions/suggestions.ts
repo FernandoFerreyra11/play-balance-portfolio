@@ -7,44 +7,60 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-async function getEffectiveFamilyId() {
+interface AuthUser {
+  id?: string;
+  familyId?: string;
+  role?: string;
+}
+
+async function checkParentSession() {
   const session = await getServerSession(authOptions);
-  if (!session) return null;
-  return (session.user as any).familyId;
+  if (!session || (session.user as AuthUser).role !== 'parent') {
+    return null;
+  }
+  return session.user as { id: string; familyId: string; role: string };
+}
+
+async function checkChildSession() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as AuthUser).role !== 'child') {
+    return null;
+  }
+  return session.user as { id: string; familyId: string; role: string };
 }
 
 export async function createSuggestion(content: string) {
-  const session = await getServerSession(authOptions);
-  if (!session) return { error: "No autorizado" };
+  const user = await checkChildSession();
+  if (!user) return { error: "No autorizado" };
 
   try {
     await db.insert(suggestions).values({
-      childId: (session.user as any).id,
+      childId: user.id,
       content,
     });
     revalidatePath("/");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Error al enviar la sugerencia" };
   }
 }
 
 export async function getMySuggestions() {
-  const session = await getServerSession(authOptions);
-  if (!session) return [];
+  const user = await checkChildSession();
+  if (!user) return [];
 
   const data = await db
     .select()
     .from(suggestions)
-    .where(eq(suggestions.childId, (session.user as any).id))
+    .where(eq(suggestions.childId, user.id))
     .orderBy(desc(suggestions.createdAt));
 
   return data;
 }
 
 export async function getSuggestions() {
-  const familyId = await getEffectiveFamilyId();
-  if (!familyId) return [];
+  const user = await checkParentSession();
+  if (!user || !user.familyId) return [];
 
   const data = await db
     .select({
@@ -57,24 +73,37 @@ export async function getSuggestions() {
     })
     .from(suggestions)
     .innerJoin(users, eq(suggestions.childId, users.id))
-    .where(eq(users.familyId, familyId as string))
+    .where(eq(users.familyId, user.familyId))
     .orderBy(desc(suggestions.createdAt));
 
   return data;
 }
 
 export async function updateSuggestionStatus(id: string, status: 'approved' | 'rejected') {
-  const session = await getServerSession(authOptions);
-  if (!session) return { error: "No autorizado" };
+  const user = await checkParentSession();
+  if (!user || !user.familyId) return { error: "No autorizado" };
 
   try {
+    // Verificar que la sugerencia pertenezca a un miembro de la familia del padre (evitar IDOR)
+    const [sug] = await db
+      .select({ id: suggestions.id })
+      .from(suggestions)
+      .innerJoin(users, eq(suggestions.childId, users.id))
+      .where(and(
+        eq(suggestions.id, id),
+        eq(users.familyId, user.familyId)
+      ))
+      .limit(1);
+
+    if (!sug) return { error: "Sugerencia no encontrada o no pertenece a tu equipo" };
+
     await db.update(suggestions)
       .set({ status })
       .where(eq(suggestions.id, id));
     
     revalidatePath("/admin");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Error al actualizar la sugerencia" };
   }
 }

@@ -7,7 +7,7 @@ export default async function SuperAdminPage() {
   const session = await getServerSession(authOptions);
 
   // Si no hay sesión o no es super_admin, redirección al login
-  if (!session || (session.user as any).role !== 'super_admin') {
+  if (!session || (session.user as { role?: string }).role !== 'super_admin') {
     redirect("/login");
   }
 

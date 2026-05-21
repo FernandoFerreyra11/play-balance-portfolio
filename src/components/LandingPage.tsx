@@ -115,8 +115,8 @@ export function LandingPage() {
             <ValueCard 
               icon={<Brain size={32} color="#8b5cf6" />}
               title="Refuerzo Positivo"
-              description="Al premiar el esfuerzo, el cerebro libera dopamina, asociando las responsabilidades diarias con emociones positivas y logro."
-              reference="Condicionamiento Operante (B.F. Skinner)"
+              description="Validamos el progreso. Premiar el esfuerzo activa el sistema de recompensa cerebral, vinculando las responsabilidades diarias con emociones de logro y alta motivación."
+              reference="Condicionamiento Operante (Skinner) y Mecanismos de Dopamina (Schultz et al.)"
             />
             <ValueCard 
               icon={<HeartHandshake size={32} color="#ec4899" />}

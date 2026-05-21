@@ -149,8 +149,24 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer style={{ padding: '60px 0', borderTop: '1px solid rgba(255,255,255,0.05)', color: '#475569', textAlign: 'center' }}>
-        <p>© 2026 Play Balance. Diseñado para equipos del futuro.</p>
+      <footer style={{ padding: '60px 0', borderTop: '1px solid rgba(255,255,255,0.05)', color: '#475569' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '40px' }}>
+          <div>
+            <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem' }}>PlayBalance</h3>
+            <p>Transformando la rutina en aventuras extraordinarias.</p>
+          </div>
+          <div>
+            <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '1.2rem' }}>Contacto</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <li><a href="mailto:hola@play-balance.com" style={{ color: '#06b6d4', textDecoration: 'none' }}>hola@play-balance.com</a> (General)</li>
+              <li><a href="mailto:soporte@play-balance.com" style={{ color: '#06b6d4', textDecoration: 'none' }}>soporte@play-balance.com</a> (Soporte Técnico)</li>
+              <li><a href="mailto:contacto@play-balance.com" style={{ color: '#06b6d4', textDecoration: 'none' }}>contacto@play-balance.com</a> (Comercial/Institucional)</li>
+            </ul>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <p>© 2026 Play Balance. Diseñado para equipos del futuro.</p>
+        </div>
       </footer>
 
       <style jsx>{`

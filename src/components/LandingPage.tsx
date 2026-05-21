@@ -121,7 +121,7 @@ export function LandingPage() {
             <ValueCard 
               icon={<HeartHandshake size={32} color="#ec4899" />}
               title="Autodeterminación"
-              description="Fomentamos la autonomía. Los niños pueden sugerir ideas y negociar sus metas, sintiéndose protagonistas de su desarrollo."
+              description="Impulsamos la autonomía. Permitir que los niños propongan ideas y negocien sus propias metas los convierte en los verdaderos protagonistas de su desarrollo."
               reference="Teoría de la Autodeterminación (Deci & Ryan)"
             />
             <ValueCard 

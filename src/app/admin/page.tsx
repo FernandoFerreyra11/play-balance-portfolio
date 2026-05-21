@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import UpgradeModal from '@/components/UpgradeModal';
 import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember, getFamilyDetail, deleteOwnFamily } from '../actions/family';
 import { getQuests, createQuest, deleteQuest, updateQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
@@ -183,6 +184,8 @@ function FamilyManager() {
   const [formRole, setFormRole] = useState<'child' | 'parent'>('child');
   const [editingRole, setEditingRole] = useState<'child' | 'parent' | null>(null);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState('');
 
   const fetchData = async () => {
     const [membersData, familyData] = await Promise.all([
@@ -217,7 +220,12 @@ function FamilyManager() {
         fetchData();
         setNotification({ message: '¡Miembro creado con éxito! 🎉', type: 'success' });
       } else {
-        setNotification({ message: res.error || 'Error al crear', type: 'error' });
+        if (res.error?.includes('plan gratuito')) {
+          setUpgradeMessage(res.error);
+          setShowUpgradeModal(true);
+        } else {
+          setNotification({ message: res.error || 'Error al crear', type: 'error' });
+        }
       }
       setLoading(false);
     };
@@ -287,6 +295,11 @@ function FamilyManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        message={upgradeMessage} 
+      />
       <AnimatePresence>
         {notification && (
           <motion.div

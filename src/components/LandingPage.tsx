@@ -127,8 +127,8 @@ export function LandingPage() {
             <ValueCard 
               icon={<Dna size={32} color="#10b981" />}
               title="Neuroplasticidad"
-              description="El entorno gamificado reduce el estrés y la resistencia, creando el estado cerebral ideal para aprender nuevas habilidades."
-              reference="Aprendizaje Basado en el Juego"
+              description="Estimulamos la flexibilidad cerebral. Los entornos lúdicos reducen el estrés y la resistencia al cambio, optimizando las áreas cognitivas encargadas de asimilar nuevas habilidades."
+              reference="Neuroplasticidad y Entornos Dinámicos (Kühn et al.)"
             />
           </div>
         </div>

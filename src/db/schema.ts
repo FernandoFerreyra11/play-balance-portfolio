@@ -33,6 +33,7 @@ export const families = pgTable('families', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
   code: text('code').unique().notNull(),
+  plan: text('plan').default('free'), // 'free' o 'premium'
   organizationId: uuid('organization_id').references(() => organizations.id), // Familia bajo una organización
   professionalId: uuid('professional_id').references((): AnyPgColumn => users.id), // Terapeuta asignado
   createdAt: timestamp('created_at').defaultNow(),

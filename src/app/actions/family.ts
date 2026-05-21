@@ -49,20 +49,30 @@ export async function createFamilyMember(formData: FormData) {
   }
 
   // --- Límites del Plan Gratuito ---
-  const existingMembers = await db
-    .select({ role: users.role })
-    .from(users)
-    .where(eq(users.familyId, user.familyId));
+  const familyData = await db
+    .select({ plan: families.plan })
+    .from(families)
+    .where(eq(families.id, user.familyId))
+    .limit(1);
+    
+  const isPremium = familyData[0]?.plan === 'premium';
 
-  const childCount = existingMembers.filter(m => m.role === 'child').length;
-  const parentCount = existingMembers.filter(m => m.role === 'parent').length;
+  if (!isPremium) {
+    const existingMembers = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.familyId, user.familyId));
 
-  if (role === 'child' && childCount >= 1) {
-    return { error: "El plan gratuito solo permite 1 Aventurero. Actualiza tu plan para agregar más." };
-  }
-  
-  if (role === 'parent' && parentCount >= 2) {
-    return { error: "El plan gratuito solo permite un máximo de 2 Capitanes por equipo." };
+    const childCount = existingMembers.filter(m => m.role === 'child').length;
+    const parentCount = existingMembers.filter(m => m.role === 'parent').length;
+
+    if (role === 'child' && childCount >= 1) {
+      return { error: "El plan gratuito solo permite 1 Aventurero. Actualiza a PREMIUM para agregar más." };
+    }
+    
+    if (role === 'parent' && parentCount >= 2) {
+      return { error: "El plan gratuito solo permite un máximo de 2 Capitanes por equipo." };
+    }
   }
   // ---------------------------------
 

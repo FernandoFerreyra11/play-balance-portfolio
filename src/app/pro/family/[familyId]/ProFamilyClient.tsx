@@ -57,7 +57,6 @@ interface ProFamilyClientProps {
 }
 
 export default function ProFamilyClient({ familyData, activityData, initialNotes, initialMessages, proId }: ProFamilyClientProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages'>('overview');
   const [selectedChild, setSelectedChild] = useState<string | 'all'>('all');
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [loading, setLoading] = useState(false);

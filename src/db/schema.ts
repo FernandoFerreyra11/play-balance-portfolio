@@ -23,7 +23,7 @@ export const users = pgTable('users', {
   password: text('password'),
   image: text('image'),
   role: roleEnum('role').default('child'),
-  parentId: uuid('parent_id'), 
+  parentId: uuid('parent_id'),
   familyId: uuid('family_id').references((): AnyPgColumn => families.id),
   organizationId: uuid('organization_id').references(() => organizations.id), // Vinculado a una clínica/escuela
   balance: integer('balance').default(0),
@@ -77,6 +77,8 @@ export const quests = pgTable('quests', {
   reward: integer('reward').notNull(),
   category: text('category').default('general'),
   familyId: uuid('family_id').references(() => families.id), // Vinculado a la familia
+  targetChildId: uuid('target_child_id').references(() => users.id), // Si es null, es para todos los niños de la familia
+  isTherapy: integer('is_therapy').default(0), // 0 = false, 1 = true (Misión Clínica)
   createdBy: uuid('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
 });

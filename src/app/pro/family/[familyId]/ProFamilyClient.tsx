@@ -13,10 +13,11 @@ import {
   Lock,
   Plus,
   MessageSquare,
-  Send
+  Send,
+  Stethoscope
 } from 'lucide-react';
 import Link from 'next/link';
-import { addProfessionalNote, deleteProfessionalNote } from '@/app/actions/proStats';
+import { addProfessionalNote, deleteProfessionalNote, assignTherapyQuest } from '@/app/actions/proStats';
 import { sendMessage } from '@/app/actions/messages';
 
 interface Child {
@@ -61,7 +62,9 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [loading, setLoading] = useState(false);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [therapyLoading, setTherapyLoading] = useState(false);
   const [messageTarget, setMessageTarget] = useState<'parents' | 'children'>('parents');
+  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages' | 'therapies'>('overview');
 
   // Filtramos la actividad si se seleccionó un niño específico
   const filteredTransactions = selectedChild === 'all' 
@@ -104,6 +107,25 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       alert(res.error);
     }
     setMsgLoading(false);
+  };
+
+  const handleAssignTherapy = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setTherapyLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const reward = parseInt(formData.get('reward') as string);
+    const targetChildId = formData.get('targetChildId') as string;
+
+    const res = await assignTherapyQuest(familyData.family.id, targetChildId, title, description, reward);
+    if (res.success) {
+      alert("Terapia asignada con éxito al aventurero.");
+      window.location.reload();
+    } else {
+      alert(res.error);
+    }
+    setTherapyLoading(false);
   };
 
   return (
@@ -186,6 +208,15 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           }}
         >
           <MessageSquare size={18} /> Buzón de Familia
+        </button>
+        <button
+          onClick={() => setActiveTab('therapies')}
+          style={{ 
+            padding: '15px 20px', background: 'none', border: 'none', color: activeTab === 'therapies' ? '#f43f5e' : '#94a3b8', 
+            borderBottom: activeTab === 'therapies' ? '2px solid #f43f5e' : '2px solid transparent', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px'
+          }}
+        >
+          <Stethoscope size={18} /> Terapias Clínicas
         </button>
       </div>
 
@@ -383,6 +414,77 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                     <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Aún no hay mensajes en este muro.</p>
                   )}
                 </div>
+              </div>
+
+            </div>
+          </motion.div>
+        ) : activeTab === 'therapies' ? (
+          <motion.div key="therapies" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+              
+              <div className="glass card">
+                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f43f5e' }}>
+                  <Stethoscope size={20} /> Asignar Terapia (Misión)
+                </h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '20px' }}>
+                  Crea una misión que llegará al dispositivo del aventurero. El progreso será monitoreado y los padres validarán la recompensa de tokens.
+                </p>
+                <form onSubmit={handleAssignTherapy} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <select 
+                    name="targetChildId" 
+                    required 
+                    style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }}
+                  >
+                    <option value="" disabled selected>Selecciona al Aventurero...</option>
+                    {familyData.children.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <input 
+                    name="title" 
+                    placeholder="Ej: Ejercicios de respiración (5 min)" 
+                    required 
+                    style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }} 
+                  />
+                  <textarea 
+                    name="description" 
+                    placeholder="Instrucciones adicionales para el aventurero y los padres..." 
+                    rows={3} 
+                    style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white', resize: 'vertical' }} 
+                  />
+                  <input 
+                    name="reward" 
+                    type="number"
+                    placeholder="Recompensa en Tokens (Ej: 50)" 
+                    required 
+                    style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }} 
+                  />
+                  <button disabled={therapyLoading} type="submit" style={{ background: '#f43f5e', color: 'white', border: 'none', padding: '15px', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                    {therapyLoading ? 'Asignando...' : <><Plus size={18} /> Asignar Terapia</>}
+                  </button>
+                </form>
+              </div>
+
+              <div className="glass card">
+                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
+                  <Award size={20} /> Terapias Asignadas (Activas)
+                </h3>
+                {activityData.quests.filter(q => q.isTherapy === 1).length === 0 ? (
+                  <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No hay terapias asignadas actualmente.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {activityData.quests.filter(q => q.isTherapy === 1).map((q, i) => (
+                      <div key={q.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', borderLeft: q.status === 'completed' ? '4px solid #10b981' : '4px solid #f43f5e' }}>
+                        <div>
+                          <p style={{ fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Stethoscope size={14} color="#f43f5e" /> {q.questTitle}
+                          </p>
+                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{q.childName} • Estado: {q.status}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

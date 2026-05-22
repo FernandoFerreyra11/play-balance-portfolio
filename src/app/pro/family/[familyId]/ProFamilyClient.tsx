@@ -168,7 +168,6 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       (e.target as HTMLFormElement).reset();
       router.refresh();
     } else {
-    } else {
       setNotification({ message: res.error || 'Error al asignar terapia', type: 'error' });
     }
     setTherapyLoading(false);

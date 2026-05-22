@@ -113,7 +113,9 @@ export async function getFamilyActivityForPro(familyId: string, childId?: string
       status: activeQuests.status,
       completedAt: activeQuests.completedAt,
       questTitle: quests.title,
+      isTherapy: quests.isTherapy,
       childName: users.name,
+      childId: users.id,
     })
     .from(activeQuests)
     .innerJoin(users, eq(activeQuests.childId, users.id))

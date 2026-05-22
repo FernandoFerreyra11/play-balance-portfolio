@@ -1441,13 +1441,43 @@ function ProMessagesManager() {
             <MessageSquare size={20} /> Historial de Conversación
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
-            {filteredMessages.map((msg: any) => (
-              <div key={msg.id} className={`admin-chat-bubble ${msg.senderId === currentUserId ? 'admin-chat-bubble-mine' : 'admin-chat-bubble-other'}`} style={{ 
-                background: msg.senderId === currentUserId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
-                borderLeft: msg.senderId === currentUserId ? '4px solid #06b6d4' : (messageTarget === 'parents' ? '4px solid #f59e0b' : '4px solid #06b6d4'),
+            {filteredMessages.map((msg: any) => {
+              let isRightSide = false;
+              let borderColor = '';
+              let bgColor = '';
+              let titleColor = '';
+
+              if (msg.senderId === currentUserId) {
+                isRightSide = true;
+                borderColor = '#06b6d4'; // Cyan
+                bgColor = 'rgba(6, 182, 212, 0.1)';
+                titleColor = '#06b6d4';
+              } else if (messageTarget === 'children') {
+                if (msg.senderRole === 'professional') {
+                  isRightSide = false;
+                  borderColor = '#8b5cf6'; // Purple
+                  bgColor = 'rgba(139, 92, 246, 0.05)';
+                  titleColor = '#8b5cf6';
+                } else {
+                  isRightSide = true; // El niño se alinea a la derecha para contrastar
+                  borderColor = '#10b981'; // Green
+                  bgColor = 'rgba(16, 185, 129, 0.1)';
+                  titleColor = '#10b981';
+                }
+              } else {
+                isRightSide = false;
+                borderColor = '#f59e0b'; // Orange
+                bgColor = 'rgba(255,255,255,0.05)';
+                titleColor = '#f59e0b';
+              }
+
+              return (
+              <div key={msg.id} className={`admin-chat-bubble ${isRightSide ? 'admin-chat-bubble-mine' : 'admin-chat-bubble-other'}`} style={{ 
+                background: bgColor, 
+                borderLeft: `4px solid ${borderColor}`,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === currentUserId ? '#06b6d4' : (messageTarget === 'parents' ? '#f59e0b' : '#06b6d4') }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: titleColor }}>
                     {msg.senderId === currentUserId ? 'Tú' : (msg.senderRole === 'professional' ? 'Dr/Coach ' + msg.senderName : msg.senderName)}
                   </span>
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
@@ -1456,7 +1486,8 @@ function ProMessagesManager() {
                 </div>
                 <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', fontSize: '0.95rem' }}>{msg.content}</p>
               </div>
-            ))}
+              );
+            })}
             {filteredMessages.length === 0 && (
               <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>
                 {messageTarget === 'parents' 

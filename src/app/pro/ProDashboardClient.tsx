@@ -118,8 +118,8 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
         )}
       </AnimatePresence>
 
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
           <div style={{ 
             padding: '15px', background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)', 
             borderRadius: '20px', boxShadow: '0 10px 20px rgba(6, 182, 212, 0.3)' 
@@ -127,13 +127,13 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
             <Stethoscope size={32} color="white" />
           </div>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Panel Profesional</h1>
+            <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 800 }}>Panel Profesional</h1>
             <p style={{ color: '#94a3b8' }}>Bienvenido de nuevo, Dr. {session?.user?.name}</p>
           </div>
         </div>
         
         <div style={{ display: 'flex', gap: '15px' }}>
-          <button onClick={() => signOut({ callbackUrl: '/' })} className="glass" style={{ padding: '10px 20px', borderRadius: '12px', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="glass" style={{ padding: '10px 20px', borderRadius: '12px', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
             <LogOut size={18} /> Salir
           </button>
         </div>
@@ -164,22 +164,22 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
       )}
 
       {/* Stats rápidas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
         <StatCard icon={<Users color="#06b6d4" />} title="Total Pacientes" value={stats?.activePatients || 0} />
         <StatCard icon={<TrendingUp color="#10b981" />} title="Cumplimiento Global" value="84%" />
         <StatCard icon={<ClipboardList color="#8b5cf6" />} title="Misiones Activas" value="12" />
       </div>
 
       {/* Listado de Familias/Casos */}
-      <div className="glass" style={{ padding: '30px', borderRadius: '30px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="glass" style={{ padding: '20px', borderRadius: '30px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '30px' }}>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Users size={24} /> Casos Bajo Supervisión
           </h2>
           <button 
             onClick={() => setShowAddFamily(!showAddFamily)}
             className="btn-primary" 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', width: 'fit-content' }}
           >
             <Plus size={18} /> Nuevo Paciente
           </button>
@@ -225,13 +225,13 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
                     👪
                   </div>
                   <div>
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '2px' }}>{family.name}</h3>
-                    <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: '#94a3b8', flexWrap: 'wrap' }}>
                       <span>Código: {family.code}</span>
                     </div>
                   </div>

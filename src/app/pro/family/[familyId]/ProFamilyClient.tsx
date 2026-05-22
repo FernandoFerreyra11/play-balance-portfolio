@@ -76,6 +76,15 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
     ? activityData.transactions 
     : activityData.transactions.filter(t => t.childId === selectedChild);
 
+  // Filtramos los mensajes según el destinatario seleccionado
+  const filteredMessages = initialMessages.filter(msg => {
+    if (messageTarget === 'parents') {
+      return msg.receiverType === 'parents' || (msg.senderRole === 'parent' && msg.receiverType === 'professional') || (msg.senderRole === 'org_admin' && msg.receiverType === 'professional');
+    } else {
+      return msg.receiverType === 'children' || (msg.senderRole === 'child' && msg.receiverType === 'professional');
+    }
+  });
+
   const handleAddNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -425,7 +434,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                   <MessageSquare size={20} /> Historial de Conversación
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
-                  {initialMessages.map((msg) => (
+                  {filteredMessages.map((msg) => (
                     <div key={msg.id} style={{ 
                       padding: '15px', 
                       background: msg.senderId === proId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
@@ -439,9 +448,6 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                           {msg.senderId === proId ? 'Tú' : msg.senderName}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontSize: '0.7rem', background: msg.receiverType === 'parents' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: msg.receiverType === 'parents' ? '#fcd34d' : '#6ee7b7', padding: '2px 6px', borderRadius: '8px' }}>
-                            {msg.receiverType === 'parents' ? 'Padres' : 'Niños'}
-                          </span>
                           <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
                             {new Date(msg.createdAt).toLocaleDateString()}
                           </span>
@@ -450,8 +456,8 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                       <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', fontSize: '0.95rem' }}>{msg.content}</p>
                     </div>
                   ))}
-                  {initialMessages.length === 0 && (
-                    <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Aún no hay mensajes en este muro.</p>
+                  {filteredMessages.length === 0 && (
+                    <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Aún no hay mensajes en esta conversación.</p>
                   )}
                 </div>
               </div>

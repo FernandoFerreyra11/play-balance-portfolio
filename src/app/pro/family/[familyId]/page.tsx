@@ -3,8 +3,8 @@ import { getFamilyDetailsForPro, getFamilyActivityForPro, getProfessionalNotes }
 import { getMessagesForPro } from '@/app/actions/messages';
 import ProFamilyClient from './ProFamilyClient';
 
-export default async function ProFamilyPage({ params }: { params: { familyId: string } }) {
-  const familyId = params.familyId;
+export default async function ProFamilyPage({ params }: { params: Promise<{ familyId: string }> }) {
+  const { familyId } = await params;
 
   // Obtenemos todos los datos en el servidor
   const familyData = await getFamilyDetailsForPro(familyId);

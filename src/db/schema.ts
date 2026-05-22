@@ -118,3 +118,13 @@ export const transactions = pgTable('transactions', {
   description: text('description'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const professionalNotes = pgTable('professional_notes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  professionalId: uuid('professional_id').references(() => users.id).notNull(),
+  familyId: uuid('family_id').references(() => families.id).notNull(),
+  childId: uuid('child_id').references(() => users.id), // Opcional, puede ser nota general de la familia o específica de un niño
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});

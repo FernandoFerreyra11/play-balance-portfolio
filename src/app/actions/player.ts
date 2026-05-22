@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users, quests, rewards, activeQuests, transactions } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or, isNull } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -33,13 +33,14 @@ export async function getAvailableQuests() {
   const player = await getPlayerStats();
   if (!player || !player.familyId) return [];
 
-  // Obtenemos todas las misiones del capitán
+  // Obtenemos todas las misiones del capitán y las terapias
   const parentQuests = await db
     .select({
       id: quests.id,
       title: quests.title,
       reward: quests.reward,
       category: quests.category,
+      isTherapy: quests.isTherapy,
       status: activeQuests.status,
     })
     .from(quests)
@@ -48,7 +49,15 @@ export async function getAvailableQuests() {
       eq(activeQuests.childId, player.id),
       eq(activeQuests.status, 'pending_approval')
     ))
-    .where(eq(quests.familyId, player.familyId))
+    .where(
+      and(
+        eq(quests.familyId, player.familyId),
+        or(
+          isNull(quests.targetChildId),
+          eq(quests.targetChildId, player.id)
+        )
+      )
+    )
     .orderBy(desc(quests.createdAt));
 
   return parentQuests;

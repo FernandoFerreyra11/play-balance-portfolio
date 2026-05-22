@@ -34,6 +34,7 @@ interface DashboardQuest {
   title: string;
   reward: number;
   status?: string | null;
+  isTherapy?: number | null;
 }
 
 interface DashboardReward {
@@ -163,14 +164,22 @@ export function Dashboards({ initialData }: DashboardsProps) {
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {quests.map((quest: DashboardQuest) => (
-              <div key={quest.id} className="glass action-card" style={{ borderLeft: '6px solid #06b6d4' }}>
-                <div><h3 style={{ margin: '0 0 5px 0' }}>{quest.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>+{quest.reward} Tokens</div></div>
-                <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary action-btn">
+            {quests.map((quest: DashboardQuest) => {
+              const isTherapy = quest.isTherapy === 1;
+              return (
+              <div key={quest.id} className="glass action-card" style={{ borderLeft: isTherapy ? '6px solid #f43f5e' : '6px solid #06b6d4' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {isTherapy && <Stethoscope size={18} color="#f43f5e" />}
+                    {quest.title}
+                  </h3>
+                  <div style={{ color: '#f59e0b', fontWeight: 700 }}>+{quest.reward} Tokens</div>
+                </div>
+                <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary action-btn" style={isTherapy ? { background: '#f43f5e' } : {}}>
                   {quest.status === 'pending_approval' ? 'Revisando...' : '¡Hecho!'}
                 </button>
               </div>
-            ))}
+            )})}
           </div>
         </section>
         <section>

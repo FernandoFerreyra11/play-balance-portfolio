@@ -951,6 +951,7 @@ interface PendingApprovalItem {
   childName: string;
   questTitle: string;
   questReward: number;
+  isTherapy?: number | null;
 }
 
 interface ApprovalsManagerProps {
@@ -1010,7 +1011,13 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
               </div>
               <div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{item.childName}</h3>
-                <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Completó: <span style={{ color: 'white', fontWeight: 600 }}>{item.questTitle}</span></p>
+                <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Completó: 
+                  <span style={{ color: 'white', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {item.isTherapy === 1 && <Stethoscope size={14} color="#f43f5e" />}
+                    {item.questTitle}
+                  </span>
+                </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontSize: '0.9rem', marginTop: '5px', fontWeight: 700 }}>
                   <Coins size={14} /> Recompensa: {item.questReward} Tokens
                 </div>

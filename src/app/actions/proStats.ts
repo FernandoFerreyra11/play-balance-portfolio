@@ -188,3 +188,27 @@ export async function deleteProfessionalNote(noteId: string, familyId: string) {
     return { error: "Error al eliminar el apunte" };
   }
 }
+
+export async function assignTherapyQuest(familyId: string, childId: string, title: string, description: string, reward: number) {
+  const pro = await verifyProAccess(familyId);
+  if (!pro || !pro.id) return { error: "No autorizado" };
+
+  try {
+    await db.insert(quests).values({
+      familyId,
+      targetChildId: childId,
+      isTherapy: 1, // Es terapia clínica
+      title,
+      description,
+      reward,
+      category: 'Salud', // Podemos fijarla en Salud o permitir que el pro elija
+      createdBy: pro.id,
+    });
+    
+    revalidatePath(`/pro/family/${familyId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error asignando terapia:", error);
+    return { error: "Error al asignar la terapia" };
+  }
+}

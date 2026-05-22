@@ -36,6 +36,7 @@ export async function getPendingApprovals() {
       questTitle: quests.title,
       questReward: quests.reward,
       questId: quests.id,
+      isTherapy: quests.isTherapy,
     })
     .from(activeQuests)
     .innerJoin(users, eq(activeQuests.childId, users.id))

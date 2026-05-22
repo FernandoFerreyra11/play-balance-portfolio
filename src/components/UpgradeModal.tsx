@@ -40,15 +40,16 @@ export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent'
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="glass card"
+          className="glass card upgrade-modal"
           style={{
             maxWidth: '500px',
             width: '100%',
             position: 'relative',
-            padding: '40px',
             border: '1px solid rgba(251, 191, 36, 0.3)',
             background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(251, 191, 36, 0.1)'
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(251, 191, 36, 0.1)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
           }}
         >
           <button 
@@ -182,6 +183,28 @@ export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent'
           </button>
         </motion.div>
       </div>
+      <style jsx>{`
+        .upgrade-modal {
+          padding: 40px;
+        }
+        @media (max-width: 768px) {
+          .upgrade-modal {
+            padding: 25px 20px;
+          }
+        }
+        /* Custom scrollbar for modal */
+        .upgrade-modal::-webkit-scrollbar {
+          width: 8px;
+        }
+        .upgrade-modal::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+        }
+        .upgrade-modal::-webkit-scrollbar-thumb {
+          background: rgba(251, 191, 36, 0.4);
+          border-radius: 10px;
+        }
+      `}</style>
     </AnimatePresence>
   );
 }

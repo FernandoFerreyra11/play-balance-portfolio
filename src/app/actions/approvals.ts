@@ -74,22 +74,20 @@ export async function approveQuest(activeQuestId: string) {
 
     if (!aq) return { error: "Solicitud no encontrada o no pertenece a tu equipo" };
 
-    await db.transaction(async (tx) => {
-      await tx.update(activeQuests)
-        .set({ status: 'completed', completedAt: new Date() })
-        .where(eq(activeQuests.id, activeQuestId));
+    await db.update(activeQuests)
+      .set({ status: 'completed', completedAt: new Date() })
+      .where(eq(activeQuests.id, activeQuestId));
 
-      const [child] = await tx.select().from(users).where(eq(users.id, aq.childId!)).limit(1);
-      await tx.update(users)
-        .set({ balance: (child.balance || 0) + aq.questReward })
-        .where(eq(users.id, aq.childId!));
+    const [child] = await db.select().from(users).where(eq(users.id, aq.childId!)).limit(1);
+    await db.update(users)
+      .set({ balance: (child.balance || 0) + aq.questReward })
+      .where(eq(users.id, aq.childId!));
 
-      await tx.insert(transactions).values({
-        userId: aq.childId!,
-        amount: aq.questReward,
-        type: 'quest',
-        description: `Misión completada: ${aq.questTitle}`,
-      });
+    await db.insert(transactions).values({
+      userId: aq.childId!,
+      amount: aq.questReward,
+      type: 'quest',
+      description: `Misión completada: ${aq.questTitle}`,
     });
 
     revalidatePath("/admin");

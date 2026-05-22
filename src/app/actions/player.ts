@@ -109,41 +109,39 @@ export async function requestReward(rewardId: string) {
   if (!familyId) return { error: "No autorizado" };
 
   try {
-    return await db.transaction(async (tx) => {
-      // Obtener jugador y premio dentro de la transacción
-      const [player] = await tx
-        .select()
-        .from(users)
-        .where(eq(users.id, playerId))
-        .limit(1);
+    // Obtener jugador y premio sin transacción anidada
+    const [player] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, playerId))
+      .limit(1);
 
-      if (!player) return { error: "Jugador no encontrado" };
+    if (!player) return { error: "Jugador no encontrado" };
 
-      const [reward] = await tx
-        .select()
-        .from(rewards)
-        .where(and(eq(rewards.id, rewardId), eq(rewards.familyId, familyId)))
-        .limit(1);
+    const [reward] = await db
+      .select()
+      .from(rewards)
+      .where(and(eq(rewards.id, rewardId), eq(rewards.familyId, familyId)))
+      .limit(1);
 
-      if (!reward) return { error: "Premio no encontrado o no pertenece a tu equipo" };
-      if ((player.balance || 0) < reward.cost) return { error: "No tienes suficientes tokens" };
+    if (!reward) return { error: "Premio no encontrado o no pertenece a tu equipo" };
+    if ((player.balance || 0) < reward.cost) return { error: "No tienes suficientes tokens" };
 
-      // 1. Restar balance
-      await tx.update(users)
-        .set({ balance: (player.balance || 0) - reward.cost })
-        .where(eq(users.id, playerId));
+    // 1. Restar balance
+    await db.update(users)
+      .set({ balance: (player.balance || 0) - reward.cost })
+      .where(eq(users.id, playerId));
 
-      // 2. Registrar transacción
-      await tx.insert(transactions).values({
-        userId: playerId,
-        amount: -reward.cost,
-        type: 'reward',
-        description: `Canje de premio: ${reward.title}`,
-      });
-
-      revalidatePath("/");
-      return { success: true };
+    // 2. Registrar transacción
+    await db.insert(transactions).values({
+      userId: playerId,
+      amount: -reward.cost,
+      type: 'reward',
+      description: `Canje de premio: ${reward.title}`,
     });
+
+    revalidatePath("/");
+    return { success: true };
   } catch (error) {
     console.error("Error al procesar el canje de premio:", error);
     return { error: "Error al procesar el canje" };
@@ -229,19 +227,17 @@ export async function awardSpontaneousTokens(childId: string, amount: number, de
 
     if (!child) return { error: "Aventurero no encontrado o no pertenece al equipo" };
 
-    await db.transaction(async (tx) => {
-      // 1. Sumar balance
-      await tx.update(users)
-        .set({ balance: (child.balance || 0) + amount })
-        .where(eq(users.id, childId));
+    // 1. Sumar balance
+    await db.update(users)
+      .set({ balance: (child.balance || 0) + amount })
+      .where(eq(users.id, childId));
 
-      // 2. Registrar transacción
-      await tx.insert(transactions).values({
-        userId: childId,
-        amount: amount,
-        type: 'bonus',
-        description: `Bonus: ${description}`,
-      });
+    // 2. Registrar transacción
+    await db.insert(transactions).values({
+      userId: childId,
+      amount: amount,
+      type: 'bonus',
+      description: `Bonus: ${description}`,
     });
 
     revalidatePath("/admin");

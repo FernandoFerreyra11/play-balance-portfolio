@@ -1442,13 +1442,9 @@ function ProMessagesManager() {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
             {filteredMessages.map((msg: any) => (
-              <div key={msg.id} style={{ 
-                padding: '15px', 
+              <div key={msg.id} className={`admin-chat-bubble ${msg.senderId === currentUserId ? 'admin-chat-bubble-mine' : 'admin-chat-bubble-other'}`} style={{ 
                 background: msg.senderId === currentUserId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
-                borderRadius: '15px',
                 borderLeft: msg.senderId === currentUserId ? '4px solid #06b6d4' : (messageTarget === 'parents' ? '4px solid #f59e0b' : '4px solid #06b6d4'),
-                marginLeft: msg.senderId === currentUserId ? '40px' : '0',
-                marginRight: msg.senderId === currentUserId ? '0' : '40px',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === currentUserId ? '#06b6d4' : (messageTarget === 'parents' ? '#f59e0b' : '#06b6d4') }}>
@@ -1491,6 +1487,28 @@ function ProMessagesManager() {
         )}
 
       </div>
+      <style jsx>{`
+        .admin-chat-bubble {
+          padding: 15px;
+          border-radius: 15px;
+        }
+        .admin-chat-bubble-mine {
+          margin-left: 40px;
+          margin-right: 0;
+        }
+        .admin-chat-bubble-other {
+          margin-left: 0;
+          margin-right: 40px;
+        }
+        @media (max-width: 768px) {
+          .admin-chat-bubble-mine {
+            margin-left: 10px;
+          }
+          .admin-chat-bubble-other {
+            margin-right: 10px;
+          }
+        }
+      `}</style>
     </motion.div>
   );
 }

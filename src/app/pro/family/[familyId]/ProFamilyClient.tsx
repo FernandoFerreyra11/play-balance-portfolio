@@ -435,13 +435,9 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
                   {filteredMessages.map((msg) => (
-                    <div key={msg.id} style={{ 
-                      padding: '15px', 
+                    <div key={msg.id} className={`pro-chat-bubble ${msg.senderId === proId ? 'pro-chat-bubble-mine' : 'pro-chat-bubble-other'}`} style={{ 
                       background: msg.senderId === proId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
-                      borderRadius: '15px',
                       borderLeft: msg.senderId === proId ? '4px solid #06b6d4' : '4px solid #94a3b8',
-                      marginLeft: msg.senderId === proId ? '40px' : '0',
-                      marginRight: msg.senderId === proId ? '0' : '40px',
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === proId ? '#06b6d4' : 'white' }}>
@@ -547,6 +543,29 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           padding: 30px;
           border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+      `}</style>
+      {/* Add jsx styles for chat bubbles */}
+      <style jsx>{`
+        .pro-chat-bubble {
+          padding: 15px;
+          border-radius: 15px;
+        }
+        .pro-chat-bubble-mine {
+          margin-left: 40px;
+          margin-right: 0;
+        }
+        .pro-chat-bubble-other {
+          margin-left: 0;
+          margin-right: 40px;
+        }
+        @media (max-width: 768px) {
+          .pro-chat-bubble-mine {
+            margin-left: 10px;
+          }
+          .pro-chat-bubble-other {
+            margin-right: 10px;
+          }
         }
       `}</style>
     </div>

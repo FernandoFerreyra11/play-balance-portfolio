@@ -12,6 +12,12 @@ async function getProSession() {
   if (!session || (session.user as any).role !== 'professional') {
     return null;
   }
+  
+  const [dbUser] = await db.select({ organizationId: users.organizationId }).from(users).where(eq(users.id, (session.user as any).id));
+  if (dbUser) {
+    (session.user as any).organizationId = dbUser.organizationId;
+  }
+  
   return session;
 }
 

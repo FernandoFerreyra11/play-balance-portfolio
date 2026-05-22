@@ -21,6 +21,12 @@ async function verifyProAccess(familyId: string) {
   }
   
   const pro = session.user as AuthUser;
+  
+  const [dbUser] = await db.select({ organizationId: users.organizationId }).from(users).where(eq(users.id, pro.id as string));
+  if (dbUser) {
+    pro.organizationId = dbUser.organizationId || undefined;
+  }
+  
   console.log("verifyProAccess START", { proId: pro.id, orgId: pro.organizationId, familyId });
   
   const conditions = [eq(families.professionalId, pro.id as string)];

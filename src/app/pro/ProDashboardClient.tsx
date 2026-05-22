@@ -32,16 +32,17 @@ interface ProStats {
 interface ProDashboardClientProps {
   initialStats: ProStats | null;
   initialFamilies: PatientFamilyItem[];
+  hasOrganization?: boolean;
 }
 
-export default function ProDashboardClient({ initialStats, initialFamilies }: ProDashboardClientProps) {
+export default function ProDashboardClient({ initialStats, initialFamilies, hasOrganization }: ProDashboardClientProps) {
   const { data: session } = useSession();
   const families = initialFamilies || [];
   const stats = initialStats || {};
   const [loading, setLoading] = useState(false);
   const [showAddFamily, setShowAddFamily] = useState(false);
   const [showOrgForm, setShowOrgForm] = useState(
-    (session?.user as { role?: string, organizationId?: string })?.role === 'professional' && !(session?.user as { organizationId?: string }).organizationId
+    (session?.user as { role?: string })?.role === 'professional' && !hasOrganization
   );
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 

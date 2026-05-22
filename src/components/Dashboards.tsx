@@ -23,6 +23,7 @@ import {
   requestReward 
 } from '@/app/actions/player';
 import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
+import { sendMessage, getMessagesForFamily } from '@/app/actions/messages';
 
 interface DashboardPlayer {
   id: string;
@@ -30,6 +31,7 @@ interface DashboardPlayer {
   role: string;
   balance: number;
   image?: string | null;
+  familyId?: string | null;
 }
 
 interface DashboardQuest {
@@ -71,6 +73,8 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [messages, setMessages] = useState<any[]>(initialData.messages || []);
   const [suggestionText, setSuggestionText] = useState('');
   const [sending, setSending] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [replying, setReplying] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const fetchData = async () => {
@@ -78,10 +82,12 @@ export function Dashboards({ initialData }: DashboardsProps) {
     const q = await getAvailableQuests();
     const r = await getAvailableRewards();
     const s = await getMySuggestions();
+    const m = await getMessagesForFamily('children');
     setPlayer(stats as DashboardPlayer);
     setQuests(q as DashboardQuest[]);
     setRewards(r as DashboardReward[]);
     setMySuggestions(s as DashboardSuggestion[]);
+    if (m.success) setMessages(m.data);
   };
 
   const handleSuggestionSubmit = async () => {
@@ -96,6 +102,21 @@ export function Dashboards({ initialData }: DashboardsProps) {
       setNotification({ message: 'Hubo un error al enviar tu idea', type: 'error' });
     }
     setSending(false);
+  };
+
+  const handleReplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyText.trim() || !player?.familyId) return;
+    setReplying(true);
+    const res = await sendMessage(player.familyId, replyText, 'professional');
+    if (res.success) {
+      setReplyText('');
+      setNotification({ message: '¡Mensaje enviado!', type: 'success' });
+      fetchData();
+    } else {
+      setNotification({ message: 'Hubo un error al enviar tu mensaje', type: 'error' });
+    }
+    setReplying(false);
   };
 
   if (player?.role === 'parent' || player?.role === 'professional' || player?.role === 'org_admin' || player?.role === 'super_admin') {
@@ -171,29 +192,51 @@ export function Dashboards({ initialData }: DashboardsProps) {
       <div className="dashboard-grid">
         
         {/* Sección de Mensajes del Profesional */}
-        {messages.length > 0 && (
-          <section style={{ gridColumn: '1 / -1' }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#06b6d4' }}>
-              <Stethoscope /> Mensajes de tu Dr/Coach
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-              {messages.map((msg) => (
-                <div key={msg.id} className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '4px solid #06b6d4', position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(6, 182, 212, 0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#06b6d4' }}>
-                      <Stethoscope size={16} />
+        <section style={{ gridColumn: '1 / -1' }}>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#06b6d4' }}>
+            <Stethoscope /> Chat con tu Dr/Coach
+          </h2>
+          <div className="glass" style={{ padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+              {messages.length === 0 ? (
+                <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px 0' }}>No hay mensajes aún. ¡Escríbele a tu coach!</p>
+              ) : (
+                messages.map((msg) => (
+                  <div key={msg.id} style={{ 
+                    padding: '15px', 
+                    borderRadius: '15px',
+                    background: msg.senderId === player?.id ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)',
+                    borderLeft: msg.senderId === player?.id ? '4px solid #06b6d4' : '4px solid #94a3b8',
+                    marginLeft: msg.senderId === player?.id ? '40px' : '0',
+                    marginRight: msg.senderId === player?.id ? '0' : '40px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 600, color: msg.senderId === player?.id ? '#06b6d4' : 'white' }}>
+                        {msg.senderId === player?.id ? 'Tú' : `Dr/Coach ${msg.senderName}`}
+                      </span>
+                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                        {new Date(msg.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span style={{ fontWeight: 600 }}>Dr/Coach {msg.senderName}</span>
-                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 'auto' }}>
-                      {new Date(msg.createdAt).toLocaleDateString()}
-                    </span>
+                    <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', margin: 0, fontSize: '0.95rem' }}>{msg.content}</p>
                   </div>
-                  <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', margin: 0 }}>{msg.content}</p>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-          </section>
-        )}
+            <form onSubmit={handleReplySubmit} style={{ display: 'flex', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+              <input
+                type="text"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Escribe un mensaje para tu coach..."
+                style={{ flex: 1, padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              />
+              <button type="submit" disabled={replying || !replyText.trim()} className="btn-primary" style={{ padding: '0 25px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageCircle size={18} /> {replying ? 'Enviando...' : 'Enviar'}
+              </button>
+            </form>
+          </div>
+        </section>
 
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>

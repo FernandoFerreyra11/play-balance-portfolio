@@ -65,9 +65,12 @@ export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'chil
         condition = eq(messages.receiverType, receiverTypeFilter);
       }
     } else {
-      // Un niño solo puede ver mensajes para niños
+      // Un niño solo puede ver mensajes para niños y los que él mismo envió al profesional
       if (receiverTypeFilter === 'parents' || receiverTypeFilter === 'all') return { error: 'No autorizado', data: [] };
-      condition = eq(messages.receiverType, 'children');
+      condition = or(
+        eq(messages.receiverType, 'children'),
+        and(eq(messages.receiverType, 'professional'), eq(messages.senderId, user.id))
+      );
     }
 
     const whereClause = condition 

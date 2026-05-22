@@ -11,7 +11,8 @@ import {
   Stethoscope,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -154,7 +155,9 @@ export function Dashboards({ initialData }: DashboardsProps) {
           <div className="user-avatar">{player?.image || '👤'}</div>
           <div>
             <h1 className="user-name">¡Hola, {player?.name}!</h1>
-            <button onClick={() => signOut()} className="logout-btn">Salir</button>
+            <button onClick={() => signOut()} className="logout-btn">
+              <LogOut size={14} /> Cerrar sesión
+            </button>
           </div>
         </div>
         <div className="glass token-card">
@@ -327,12 +330,19 @@ export function Dashboards({ initialData }: DashboardsProps) {
           font-weight: 700;
         }
         .logout-btn {
-          background: none;
-          border: none;
+          background: rgba(239, 68, 68, 0.1);
           color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          padding: 8px 16px;
+          border-radius: 12px;
           cursor: pointer;
-          font-size: 1rem;
-          text-align: left;
+          font-weight: 600;
+          font-size: 0.8rem;
+          margin-top: 5px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: fit-content;
         }
         .token-card {
           padding: 15px 30px;

@@ -21,6 +21,7 @@ async function verifyProAccess(familyId: string) {
   }
   
   const pro = session.user as AuthUser;
+  console.log("verifyProAccess START", { proId: pro.id, orgId: pro.organizationId, familyId });
   
   const conditions = [eq(families.professionalId, pro.id as string)];
   if (pro.organizationId) {
@@ -33,10 +34,12 @@ async function verifyProAccess(familyId: string) {
     .where(
       and(
         eq(families.id, familyId),
-        or(...conditions)
+        conditions.length > 1 ? or(...conditions) : conditions[0]
       )
     )
     .limit(1);
+
+  console.log("verifyProAccess RESULT", { familyFound: !!family });
 
   if (!family) return null;
   return pro;

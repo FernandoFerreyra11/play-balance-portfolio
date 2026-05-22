@@ -15,6 +15,7 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
+import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { createOrganization, createPatientFamily, linkExistingFamily } from '../actions/pro';
 
@@ -216,30 +217,28 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
 
         <div style={{ display: 'grid', gap: '15px' }}>
           {families.map((family: PatientFamilyItem) => (
-            <motion.div 
-              key={family.id}
-              whileHover={{ x: 10, background: 'rgba(255,255,255,0.05)' }}
-              style={{ 
-                padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem' }}>
-                  👪
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '2px' }}>{family.name}</h3>
-                  <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: '#94a3b8' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <AlertCircle size={14} color="#f59e0b" /> 2 misiones pendientes
-                    </span>
-                    <span>Código: {family.code}</span>
+            <Link key={family.id} href={`/pro/family/${family.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <motion.div 
+                whileHover={{ x: 10, background: 'rgba(255,255,255,0.05)' }}
+                style={{ 
+                  padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem' }}>
+                    👪
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '2px' }}>{family.name}</h3>
+                    <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                      <span>Código: {family.code}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <ChevronRight color="#475569" />
-            </motion.div>
+                <ChevronRight color="#475569" />
+              </motion.div>
+            </Link>
           ))}
           {families.length === 0 && (
             <div style={{ textAlign: 'center', padding: '60px', color: '#475569' }}>

@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users, families, transactions, activeQuests, quests, professionalNotes } from "@/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, or } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -28,8 +28,10 @@ async function verifyProAccess(familyId: string) {
     .where(
       and(
         eq(families.id, familyId),
-        // Si el pro tiene organización, la familia debe estar en esa organización
-        pro.organizationId ? eq(families.organizationId, pro.organizationId) : undefined
+        or(
+          eq(families.professionalId, pro.id as string),
+          pro.organizationId ? eq(families.organizationId, pro.organizationId) : undefined
+        )
       )
     )
     .limit(1);

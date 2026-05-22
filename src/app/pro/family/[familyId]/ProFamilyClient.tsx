@@ -230,7 +230,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '30px' }}>
+      <div className="tabs-container">
         <button
           onClick={() => setActiveTab('overview')}
           style={{ 
@@ -272,7 +272,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       <AnimatePresence mode="wait">
         {activeTab === 'overview' ? (
           <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+            <div className="pro-family-grid" style={{ gap: '30px' }}>
               
               <div className="glass card">
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', color: '#10b981' }}>
@@ -335,7 +335,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+            <div className="pro-family-grid-sidebar" style={{ gap: '30px' }}>
               
               <div className="glass card">
                 <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -391,7 +391,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
         ) : activeTab === 'messages' ? (
           <motion.div key="messages" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+            <div className="pro-family-grid-sidebar">
               
               <div className="glass card">
                 <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
@@ -462,7 +462,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           </motion.div>
         ) : activeTab === 'therapies' ? (
           <motion.div key="therapies" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+            <div className="pro-family-grid" style={{ gap: '30px' }}>
               
               <div className="glass card">
                 <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f43f5e' }}>
@@ -545,8 +545,24 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           border: 1px solid rgba(255, 255, 255, 0.05);
         }
       `}</style>
-      {/* Add jsx styles for chat bubbles */}
+      {/* Add jsx styles for chat bubbles and layouts */}
       <style jsx>{`
+        .pro-family-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .pro-family-grid-sidebar {
+          display: grid;
+          grid-template-columns: 1fr 2fr;
+        }
+        .tabs-container {
+          display: flex;
+          gap: 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          margin-bottom: 30px;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
         .pro-chat-bubble {
           padding: 15px;
           border-radius: 15px;
@@ -565,6 +581,16 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           }
           .pro-chat-bubble-other {
             margin-right: 10px;
+          }
+          .pro-family-grid {
+            grid-template-columns: 1fr;
+          }
+          .pro-family-grid-sidebar {
+            grid-template-columns: 1fr;
+          }
+          .tabs-container {
+            flex-direction: column;
+            gap: 10px;
           }
         }
       `}</style>

@@ -15,6 +15,7 @@ interface UpgradeModalProps {
 
 export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent', onSubscribe, isLoading }: UpgradeModalProps) {
   const [isAnnual, setIsAnnual] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   if (!isOpen) return null;
 
@@ -170,7 +171,7 @@ export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent'
 
           <button 
             className="btn-primary"
-            onClick={onSubscribe}
+            onClick={() => setShowComingSoon(true)}
             disabled={isLoading}
             style={{ 
               width: '100%', padding: '16px', fontSize: '1.1rem', 
@@ -179,8 +180,20 @@ export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent'
               opacity: isLoading ? 0.7 : 1
             }}
           >
-            {isLoading ? 'Procesando...' : 'Suscribirse Ahora'} <ArrowRight size={20} />
+            Suscribirse Ahora <ArrowRight size={20} />
           </button>
+          
+          <AnimatePresence>
+            {showComingSoon && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }} 
+                animate={{ opacity: 1, height: 'auto' }} 
+                style={{ marginTop: '15px', color: '#fbbf24', textAlign: 'center', fontSize: '0.95rem', fontWeight: 600 }}
+              >
+                ¡Próximamente! Estamos integrando la pasarela de pagos segura.
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
       <style jsx>{`

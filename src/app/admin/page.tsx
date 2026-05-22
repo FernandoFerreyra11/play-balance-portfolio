@@ -23,14 +23,6 @@ import {
   Send,
   Stethoscope
 } from 'lucide-react';
-  Coins,
-  Pencil,
-  X,
-  Clock,
-  MessageSquarePlus,
-  BarChart3,
-  AlertTriangle
-} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';

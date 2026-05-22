@@ -239,7 +239,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
             </div>
           </motion.div>
-        ) : (
+        ) : activeTab === 'notes' ? (
           <motion.div key="notes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
             
             {/* Aviso Legal Obligatorio */}

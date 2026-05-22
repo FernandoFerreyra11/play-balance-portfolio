@@ -28,7 +28,7 @@ export default async function Home() {
     getMySuggestions()
   ]);
 
-  let initialMessages = [];
+  let initialMessages: any[] = [];
   if (session?.user && (session.user as any).role === 'child') {
     const msgsRes = await getMessagesForFamily('children');
     if (msgsRes.success) {

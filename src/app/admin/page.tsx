@@ -48,7 +48,7 @@ export default function AdminDashboard() {
     const [approvalsData, suggestionsData, messagesData] = await Promise.all([
       getPendingApprovals(),
       getSuggestions(),
-      getMessagesForFamily('parents')
+      getMessagesForFamily('all')
     ]);
     setPendingCount((approvalsData as any[]).length);
     setPendingSuggestionsCount((suggestionsData as any[]).filter(s => s.status === 'pending').length);
@@ -1329,11 +1329,12 @@ function ProMessagesManager() {
   const [familyId, setFamilyId] = useState<string>('');
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [messageTarget, setMessageTarget] = useState<'parents' | 'children'>('parents');
 
   const fetchMessages = async () => {
     setLoading(true);
-    // Para los padres, cargamos los mensajes dirigidos a 'parents'
-    const res = await getMessagesForFamily('parents');
+    // Para los padres, cargamos todos los mensajes
+    const res = await getMessagesForFamily('all');
     if (res.success) {
       setMessages(res.data);
       setCurrentUserId(res.currentUserId);
@@ -1368,6 +1369,14 @@ function ProMessagesManager() {
     }
     setMsgLoading(false);
   };
+
+  const filteredMessages = messages.filter((msg: any) => {
+    if (messageTarget === 'parents') {
+      return msg.receiverType === 'parents' || (msg.senderRole === 'parent' && msg.receiverType === 'professional') || (msg.senderRole === 'org_admin' && msg.receiverType === 'professional');
+    } else {
+      return msg.receiverType === 'children' || (msg.senderRole === 'child' && msg.receiverType === 'professional');
+    }
+  });
 
   if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando mensajes del profesional...</div>;
 
@@ -1405,29 +1414,44 @@ function ProMessagesManager() {
           <Stethoscope color="#f59e0b" /> Buzón del Profesional
         </h2>
         <p style={{ color: 'var(--text-dim)' }}>
-          Comunicación directa y privada con el profesional asignado a tu familia. 
-          Los aventureros no tienen acceso a estos mensajes.
+          Aquí puedes comunicarte de forma privada con el profesional o supervisar los mensajes que le envía a los aventureros.
         </p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
+        
+        {/* Selector de conversación */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+          <button 
+            onClick={() => setMessageTarget('parents')}
+            style={{ flex: 1, padding: '12px', borderRadius: '15px', border: messageTarget === 'parents' ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: messageTarget === 'parents' ? 'rgba(245, 158, 11, 0.1)' : 'transparent', color: messageTarget === 'parents' ? 'white' : 'var(--text-dim)', cursor: 'pointer', fontWeight: 600 }}
+          >
+            Nuestra Conversación
+          </button>
+          <button 
+            onClick={() => setMessageTarget('children')}
+            style={{ flex: 1, padding: '12px', borderRadius: '15px', border: messageTarget === 'children' ? '2px solid #06b6d4' : '1px solid rgba(255,255,255,0.1)', background: messageTarget === 'children' ? 'rgba(6, 182, 212, 0.1)' : 'transparent', color: messageTarget === 'children' ? 'white' : 'var(--text-dim)', cursor: 'pointer', fontWeight: 600 }}
+          >
+            Conversación de Aventureros
+          </button>
+        </div>
         
         <div className="glass card">
           <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <MessageSquare size={20} /> Historial de Conversación
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
-            {messages.map((msg) => (
+            {filteredMessages.map((msg: any) => (
               <div key={msg.id} style={{ 
                 padding: '15px', 
                 background: msg.senderId === currentUserId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
                 borderRadius: '15px',
-                borderLeft: msg.senderId === currentUserId ? '4px solid #06b6d4' : '4px solid #f59e0b',
+                borderLeft: msg.senderId === currentUserId ? '4px solid #06b6d4' : (messageTarget === 'parents' ? '4px solid #f59e0b' : '4px solid #06b6d4'),
                 marginLeft: msg.senderId === currentUserId ? '40px' : '0',
                 marginRight: msg.senderId === currentUserId ? '0' : '40px',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === currentUserId ? '#06b6d4' : '#f59e0b' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === currentUserId ? '#06b6d4' : (messageTarget === 'parents' ? '#f59e0b' : '#06b6d4') }}>
                     {msg.senderId === currentUserId ? 'Tú' : (msg.senderRole === 'professional' ? 'Dr/Coach ' + msg.senderName : msg.senderName)}
                   </span>
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
@@ -1437,28 +1461,34 @@ function ProMessagesManager() {
                 <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', fontSize: '0.95rem' }}>{msg.content}</p>
               </div>
             ))}
-            {messages.length === 0 && (
-              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>No hay mensajes registrados. Puedes escribirle a tu profesional aquí.</p>
+            {filteredMessages.length === 0 && (
+              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>
+                {messageTarget === 'parents' 
+                  ? 'No hay mensajes registrados. Puedes escribirle a tu profesional aquí.'
+                  : 'Aún no hay mensajes entre el profesional y los aventureros.'}
+              </p>
             )}
           </div>
         </div>
 
-        <div className="glass card" style={{ borderTop: '4px solid #f59e0b' }}>
-          <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
-            <Send size={20} /> Responder al Profesional
-          </h3>
-          <form onSubmit={handleSendMessage} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <textarea 
-              name="content" 
-              required 
-              placeholder="Escribe tu mensaje privado para el profesional..."
-              style={{ padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '100px', resize: 'vertical' }} 
-            />
-            <button disabled={msgLoading} type="submit" className="btn-primary" style={{ padding: '12px', background: '#f59e0b', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Send size={16} /> {msgLoading ? 'Enviando...' : 'Enviar Mensaje'}
-            </button>
-          </form>
-        </div>
+        {messageTarget === 'parents' && (
+          <div className="glass card" style={{ borderTop: '4px solid #f59e0b' }}>
+            <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
+              <Send size={20} /> Responder al Profesional
+            </h3>
+            <form onSubmit={handleSendMessage} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <textarea 
+                name="content" 
+                required 
+                placeholder="Escribe tu mensaje privado para el profesional..."
+                style={{ padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '100px', resize: 'vertical' }} 
+              />
+              <button disabled={msgLoading} type="submit" className="btn-primary" style={{ padding: '12px', background: '#f59e0b', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Send size={16} /> {msgLoading ? 'Enviando...' : 'Enviar Mensaje'}
+              </button>
+            </form>
+          </div>
+        )}
 
       </div>
     </motion.div>

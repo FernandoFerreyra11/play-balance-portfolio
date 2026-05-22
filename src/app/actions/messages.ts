@@ -42,7 +42,7 @@ export async function getMessagesForPro(familyId: string) {
 }
 
 // Para la Familia: Obtener mensajes
-export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'children') {
+export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'children' | 'all' = 'parents') {
   const session = await getSession();
   if (!session) return { error: 'No autorizado', data: [] };
   
@@ -52,20 +52,27 @@ export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'chil
   try {
     // Si es padre (admin), puede ver los mensajes dirigidos a padres Y a niños.
     // Si es niño (player), solo puede ver los mensajes dirigidos a niños.
-    // Pero la función permite filtrar por receiverType explícito.
     
     let condition;
     if (user.role === 'parent' || user.role === 'org_admin') {
-      if (receiverTypeFilter === 'parents') {
+      if (receiverTypeFilter === 'all') {
+        condition = undefined;
+      } else if (receiverTypeFilter === 'parents') {
         condition = or(eq(messages.receiverType, 'parents'), eq(messages.receiverType, 'professional'));
+      } else if (receiverTypeFilter === 'children') {
+        condition = or(eq(messages.receiverType, 'children'), eq(messages.receiverType, 'professional'));
       } else {
         condition = eq(messages.receiverType, receiverTypeFilter);
       }
     } else {
       // Un niño solo puede ver mensajes para niños
-      if (receiverTypeFilter === 'parents') return { error: 'No autorizado', data: [] };
+      if (receiverTypeFilter === 'parents' || receiverTypeFilter === 'all') return { error: 'No autorizado', data: [] };
       condition = eq(messages.receiverType, 'children');
     }
+
+    const whereClause = condition 
+      ? and(eq(messages.familyId, user.familyId), condition)
+      : eq(messages.familyId, user.familyId);
 
     const familyMsgs = await db
       .select({
@@ -79,12 +86,7 @@ export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'chil
       })
       .from(messages)
       .innerJoin(users, eq(messages.senderId, users.id))
-      .where(
-        and(
-          eq(messages.familyId, user.familyId),
-          condition
-        )
-      )
+      .where(whereClause)
       .orderBy(desc(messages.createdAt));
 
     return { success: true, data: familyMsgs, currentUserId: user.id };

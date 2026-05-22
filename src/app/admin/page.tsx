@@ -21,7 +21,8 @@ import {
   BarChart3,
   AlertTriangle,
   Send,
-  Stethoscope
+  Stethoscope,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';

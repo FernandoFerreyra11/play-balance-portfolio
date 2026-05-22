@@ -8,13 +8,12 @@ import {
   Gift,
   MessageSquarePlus,
   MessageCircle,
-  Stethoscope
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
+  Stethoscope,
   CheckCircle,
   XCircle,
   AlertCircle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { 
   getPlayerStats, 

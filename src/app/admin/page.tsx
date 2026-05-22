@@ -1031,22 +1031,28 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
               </div>
             </div>
             
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                onClick={() => handleApprove(item.id)}
-                className="btn-primary" 
-                style={{ background: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
-              >
-                <CheckCircle size={18} /> Aprobar
-              </button>
-              <button 
-                onClick={() => handleReject(item.id)}
-                className="glass" 
-                style={{ color: 'var(--danger-color)', border: '1px solid var(--danger-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', cursor: 'pointer' }}
-              >
-                <XCircle size={18} /> Rechazar
-              </button>
-            </div>
+            {item.isTherapy === 1 ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f43f5e', fontSize: '0.9rem', fontWeight: 600, padding: '10px 20px', background: 'rgba(244, 63, 94, 0.1)', borderRadius: '12px', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
+                <Stethoscope size={18} /> En revisión por el profesional
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  onClick={() => handleApprove(item.id)}
+                  className="btn-primary" 
+                  style={{ background: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+                >
+                  <CheckCircle size={18} /> Aprobar
+                </button>
+                <button 
+                  onClick={() => handleReject(item.id)}
+                  className="glass" 
+                  style={{ color: 'var(--danger-color)', border: '1px solid var(--danger-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', cursor: 'pointer' }}
+                >
+                  <XCircle size={18} /> Rechazar
+                </button>
+              </div>
+            )}
           </div>
         ))}
 

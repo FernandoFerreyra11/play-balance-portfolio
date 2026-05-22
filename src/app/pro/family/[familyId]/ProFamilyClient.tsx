@@ -22,7 +22,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { addProfessionalNote, deleteProfessionalNote, assignTherapyQuest } from '@/app/actions/proStats';
+import { addProfessionalNote, deleteProfessionalNote, assignTherapyQuest, approveTherapyQuest, rejectTherapyQuest } from '@/app/actions/proStats';
 import { sendMessage } from '@/app/actions/messages';
 import { getFamilyMetrics } from '@/app/actions/proMetrics';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
@@ -168,9 +168,32 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       (e.target as HTMLFormElement).reset();
       router.refresh();
     } else {
+    } else {
       setNotification({ message: res.error || 'Error al asignar terapia', type: 'error' });
     }
     setTherapyLoading(false);
+  };
+
+  const handleApproveTherapy = async (id: string) => {
+    const res = await approveTherapyQuest(id, familyData.family.id);
+    if (res.success) {
+      setNotification({ message: 'Terapia validada correctamente. Tokens enviados.', type: 'success' });
+      router.refresh();
+    } else {
+      setNotification({ message: res.error || 'Error al validar terapia', type: 'error' });
+    }
+  };
+
+  const handleRejectTherapy = async (id: string) => {
+    if (confirm('¿Quieres pedirle al paciente que repita esta terapia? No se entregarán los tokens aún.')) {
+      const res = await rejectTherapyQuest(id, familyData.family.id);
+      if (res.success) {
+        setNotification({ message: 'Terapia devuelta a estado en progreso.', type: 'success' });
+        router.refresh();
+      } else {
+        setNotification({ message: res.error || 'Error al rechazar', type: 'error' });
+      }
+    }
   };
 
   return (
@@ -594,26 +617,59 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                 </form>
               </div>
 
-              <div className="glass card">
-                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
-                  <Award size={20} /> Terapias Asignadas (Activas)
-                </h3>
-                {activityData.quests.filter(q => q.isTherapy === 1).length === 0 ? (
-                  <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No hay terapias asignadas actualmente.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {activityData.quests.filter(q => q.isTherapy === 1).map((q, i) => (
-                      <div key={q.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', borderLeft: q.status === 'completed' ? '4px solid #10b981' : '4px solid #f43f5e' }}>
-                        <div>
-                          <p style={{ fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Stethoscope size={14} color="#f43f5e" /> {q.questTitle}
-                          </p>
-                          <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{q.childName} • Estado: {q.status}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div className="glass card">
+                  <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#10b981' }}>
+                    <CheckCircle size={20} /> Pendientes de Validación
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '15px' }}>Tú eres el encargado de evaluar si estas terapias se completaron correctamente para liberar los tokens.</p>
+                  {activityData.quests.filter(q => q.isTherapy === 1 && q.status === 'pending_approval').length === 0 ? (
+                    <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No hay terapias pendientes de revisión.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      {activityData.quests.filter(q => q.isTherapy === 1 && q.status === 'pending_approval').map((q, i) => (
+                        <div key={q.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', padding: '15px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', borderLeft: '4px solid #10b981' }}>
+                          <div>
+                            <p style={{ fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <Stethoscope size={14} color="#10b981" /> {q.questTitle}
+                            </p>
+                            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Aventurero: {q.childName}</p>
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={() => handleApproveTherapy(q.id)} className="btn-primary" style={{ background: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px' }}>
+                              <CheckCircle size={16} /> Aprobar
+                            </button>
+                            <button onClick={() => handleRejectTherapy(q.id)} className="glass" style={{ color: '#ef4444', border: '1px solid #ef4444', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', cursor: 'pointer' }}>
+                              <XCircle size={16} /> Rechazar
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="glass card">
+                  <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
+                    <Award size={20} /> Historial de Terapias
+                  </h3>
+                  {activityData.quests.filter(q => q.isTherapy === 1 && q.status !== 'pending_approval').length === 0 ? (
+                    <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No hay otras terapias asignadas actualmente.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      {activityData.quests.filter(q => q.isTherapy === 1 && q.status !== 'pending_approval').map((q, i) => (
+                        <div key={q.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', borderLeft: q.status === 'completed' ? '4px solid #10b981' : '4px solid #f43f5e' }}>
+                          <div>
+                            <p style={{ fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <Stethoscope size={14} color="#f43f5e" /> {q.questTitle}
+                            </p>
+                            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{q.childName} • Estado: {q.status === 'in_progress' ? 'En Progreso' : q.status}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
             </div>

@@ -214,3 +214,77 @@ export async function assignTherapyQuest(familyId: string, childId: string, titl
     return { error: "Error al asignar la terapia" };
   }
 }
+
+export async function approveTherapyQuest(activeQuestId: string, familyId: string) {
+  const pro = await verifyProAccess(familyId);
+  if (!pro || !pro.id) return { error: "No autorizado" };
+
+  try {
+    const [aq] = await db
+      .select({
+        childId: activeQuests.childId,
+        questReward: quests.reward,
+        questTitle: quests.title,
+      })
+      .from(activeQuests)
+      .innerJoin(quests, eq(activeQuests.questId, quests.id))
+      .where(and(
+        eq(activeQuests.id, activeQuestId),
+        eq(quests.isTherapy, 1)
+      ))
+      .limit(1);
+
+    if (!aq) return { error: "Terapia no encontrada" };
+
+    await db.update(activeQuests)
+      .set({ status: 'completed', completedAt: new Date() })
+      .where(eq(activeQuests.id, activeQuestId));
+
+    const [child] = await db.select().from(users).where(eq(users.id, aq.childId!)).limit(1);
+    await db.update(users)
+      .set({ balance: (child.balance || 0) + aq.questReward })
+      .where(eq(users.id, aq.childId!));
+
+    await db.insert(transactions).values({
+      userId: aq.childId!,
+      amount: aq.questReward,
+      type: 'quest',
+      description: `Terapia validada: ${aq.questTitle}`,
+    });
+
+    revalidatePath(`/pro/family/${familyId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error al aprobar terapia:", error);
+    return { error: "Error al aprobar la terapia" };
+  }
+}
+
+export async function rejectTherapyQuest(activeQuestId: string, familyId: string) {
+  const pro = await verifyProAccess(familyId);
+  if (!pro || !pro.id) return { error: "No autorizado" };
+
+  try {
+    const [aq] = await db
+      .select({ id: activeQuests.id })
+      .from(activeQuests)
+      .innerJoin(quests, eq(activeQuests.questId, quests.id))
+      .where(and(
+        eq(activeQuests.id, activeQuestId),
+        eq(quests.isTherapy, 1)
+      ))
+      .limit(1);
+
+    if (!aq) return { error: "Terapia no encontrada" };
+
+    await db.update(activeQuests)
+      .set({ status: 'in_progress' })
+      .where(eq(activeQuests.id, activeQuestId));
+
+    revalidatePath(`/pro/family/${familyId}`);
+    return { success: true };
+  } catch {
+    return { error: "Error al rechazar" };
+  }
+}
+

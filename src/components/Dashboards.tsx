@@ -419,8 +419,9 @@ export function Dashboards({ initialData }: DashboardsProps) {
             font-size: 1.8rem;
           }
           .logout-btn {
-            text-align: center;
-            width: 100%;
+            width: fit-content;
+            margin: 5px auto 0;
+            justify-content: center;
           }
           .token-card {
             width: 100%;

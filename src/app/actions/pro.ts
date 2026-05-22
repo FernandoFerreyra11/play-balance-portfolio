@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-async function getProSession() {
+export async function getProSession() {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== 'professional') {
     return null;

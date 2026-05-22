@@ -21,8 +21,11 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { addProfessionalNote, deleteProfessionalNote, assignTherapyQuest } from '@/app/actions/proStats';
 import { sendMessage } from '@/app/actions/messages';
+import { getFamilyMetrics } from '@/app/actions/proMetrics';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
 interface Child {
   id: string;
@@ -52,15 +55,23 @@ interface Note {
   childId: string | null;
 }
 
+interface MetricsData {
+  complianceRate: number;
+  topRewards: { name: string; count: number }[];
+  weeklyTrend: { day: string; tokens: number }[];
+  avgResponseTimeHrs: number;
+}
+
 interface ProFamilyClientProps {
   familyData: FamilyData;
   activityData: ActivityData;
   initialNotes: Note[];
   initialMessages: any[];
+  initialMetrics?: MetricsData | null;
   proId: string;
 }
 
-export default function ProFamilyClient({ familyData, activityData, initialNotes, initialMessages, proId }: ProFamilyClientProps) {
+export default function ProFamilyClient({ familyData, activityData, initialNotes, initialMessages, initialMetrics, proId }: ProFamilyClientProps) {
   const [selectedChild, setSelectedChild] = useState<string | 'all'>('all');
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [loading, setLoading] = useState(false);
@@ -69,7 +80,19 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
   const [messageTarget, setMessageTarget] = useState<'parents' | 'children'>('parents');
   const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages' | 'therapies'>('overview');
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [metrics, setMetrics] = useState<MetricsData | null>(initialMetrics || null);
   const router = useRouter();
+
+  // Fetch metrics when selected child changes
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      const res = await getFamilyMetrics(familyData.family.id, selectedChild === 'all' ? undefined : selectedChild);
+      if (res.success && res.metrics) {
+        setMetrics(res.metrics as MetricsData);
+      }
+    };
+    fetchMetrics();
+  }, [selectedChild, familyData.family.id]);
 
   // Filtramos la actividad si se seleccionó un niño específico
   const filteredTransactions = selectedChild === 'all' 
@@ -272,6 +295,70 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       <AnimatePresence mode="wait">
         {activeTab === 'overview' ? (
           <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            
+            {/* KPI Cards */}
+            <div className="pro-family-grid" style={{ gap: '20px', marginBottom: '30px' }}>
+              <div className="glass card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '15px', borderRadius: '15px', color: '#10b981' }}>
+                  <Activity size={30} />
+                </div>
+                <div>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '5px' }}>Tasa de Cumplimiento</p>
+                  <h3 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }}>{metrics?.complianceRate || 0}%</h3>
+                </div>
+              </div>
+              <div className="glass card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ background: 'rgba(56, 189, 248, 0.2)', padding: '15px', borderRadius: '15px', color: '#38bdf8' }}>
+                  <MessageSquare size={30} />
+                </div>
+                <div>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '5px' }}>T. Promedio de Respuesta</p>
+                  <h3 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0 }}>{metrics?.avgResponseTimeHrs || 0} hs</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Row */}
+            <div className="pro-family-grid" style={{ gap: '30px', marginBottom: '30px' }}>
+              <div className="glass card">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', color: '#fbbf24' }}>
+                  <TrendingUp size={20} /> Tendencia Semanal (Fichas)
+                </h3>
+                <div style={{ width: '100%', height: 250 }}>
+                  <ResponsiveContainer>
+                    <LineChart data={metrics?.weeklyTrend || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <RechartsTooltip contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                      <Line type="monotone" dataKey="tokens" stroke="#fbbf24" strokeWidth={3} dot={{ r: 4, fill: '#fbbf24', strokeWidth: 0 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="glass card">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', color: '#f43f5e' }}>
+                  <Award size={20} /> Top 3 Recompensas
+                </h3>
+                <div style={{ width: '100%', height: 250 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={metrics?.topRewards || []} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.1)" />
+                      <XAxis type="number" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis dataKey="name" type="category" stroke="#e2e8f0" fontSize={12} tickLine={false} axisLine={false} width={80} />
+                      <RechartsTooltip contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
+                      <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={20}>
+                        {metrics?.topRewards?.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={['#f43f5e', '#fbbf24', '#38bdf8'][index % 3]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
             <div className="pro-family-grid" style={{ gap: '30px' }}>
               
               <div className="glass card">

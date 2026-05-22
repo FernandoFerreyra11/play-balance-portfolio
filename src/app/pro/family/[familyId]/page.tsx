@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getFamilyDetailsForPro, getFamilyActivityForPro, getProfessionalNotes } from '@/app/actions/proStats';
 import { getMessagesForPro } from '@/app/actions/messages';
+import { getFamilyMetrics } from '@/app/actions/proMetrics';
 import ProFamilyClient from './ProFamilyClient';
 
 export default async function ProFamilyPage({ params }: { params: Promise<{ familyId: string }> }) {
@@ -20,6 +21,9 @@ export default async function ProFamilyPage({ params }: { params: Promise<{ fami
   const initialMessages = messagesRes.success ? messagesRes.data : [];
   const proId = messagesRes.proId || '';
 
+  const metricsRes = await getFamilyMetrics(familyId);
+  const initialMetrics = metricsRes.success ? metricsRes.metrics : null;
+
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)' }}>
       <ProFamilyClient 
@@ -27,6 +31,7 @@ export default async function ProFamilyPage({ params }: { params: Promise<{ fami
         activityData={activityData} 
         initialNotes={initialNotes}
         initialMessages={initialMessages}
+        initialMetrics={initialMetrics}
         proId={proId}
       />
     </main>

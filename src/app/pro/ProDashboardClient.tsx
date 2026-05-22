@@ -15,6 +15,7 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { createOrganization, createPatientFamily, linkExistingFamily } from '../actions/pro';
@@ -45,6 +46,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
     (session?.user as { role?: string })?.role === 'professional' && !hasOrganization
   );
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const router = useRouter();
 
   const handleCreateOrg = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,8 +59,8 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
     if (res.success) {
       setNotification({ message: 'Clínica/Organización configurada con éxito', type: 'success' });
       setShowOrgForm(false);
-      // Forzar recarga para actualizar el session con el organizationId
-      window.location.reload();
+      // Actualizar datos sin recargar la página completa
+      router.refresh();
     } else {
       setNotification({ message: res.error || 'Error', type: 'error' });
     }
@@ -73,7 +75,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
     if (res.success) {
       setNotification({ message: 'Nuevo caso familiar creado', type: 'success' });
       setShowAddFamily(false);
-      window.location.reload();
+      router.refresh();
     } else {
       setNotification({ message: res.error || 'Error', type: 'error' });
     }
@@ -89,7 +91,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
     if (res.success) {
       setNotification({ message: 'Familia vinculada con éxito', type: 'success' });
       setShowAddFamily(false);
-      window.location.reload();
+      router.refresh();
     } else {
       setNotification({ message: res.error || 'Error', type: 'error' });
     }
@@ -107,14 +109,21 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
             animate={{ opacity: 1, y: 20, x: '-50%' }}
             exit={{ opacity: 0, y: -50, x: '-50%' }}
             style={{
-              position: 'fixed', top: 0, left: '50%', zIndex: 1000,
+              position: 'fixed', top: '20px', left: '50%', zIndex: 1000,
               background: notification.type === 'success' ? '#10b981' : '#ef4444',
               color: 'white', padding: '12px 25px', borderRadius: '12px',
-              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
             }}
           >
             {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
             {notification.message}
+            <button 
+              onClick={() => setNotification(null)}
+              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginLeft: '10px', display: 'flex' }}
+            >
+              <AlertCircle size={16} /> {/* O un icono de X, usamos AlertCircle por simplicidad o podríamos importar X */}
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

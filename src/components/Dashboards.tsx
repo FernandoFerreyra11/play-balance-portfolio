@@ -9,8 +9,12 @@ import {
   MessageSquarePlus,
   MessageCircle,
   Stethoscope
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  CheckCircle,
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { 
   getPlayerStats, 
@@ -68,6 +72,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [messages, setMessages] = useState<any[]>(initialData.messages || []);
   const [suggestionText, setSuggestionText] = useState('');
   const [sending, setSending] = useState(false);
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const fetchData = async () => {
     const stats = await getPlayerStats();
@@ -86,7 +91,10 @@ export function Dashboards({ initialData }: DashboardsProps) {
     const res = await createSuggestion(suggestionText);
     if (res.success) {
       setSuggestionText('');
+      setNotification({ message: '¡Tu idea ha sido enviada con éxito!', type: 'success' });
       fetchData();
+    } else {
+      setNotification({ message: 'Hubo un error al enviar tu idea', type: 'error' });
     }
     setSending(false);
   };
@@ -133,6 +141,33 @@ export function Dashboards({ initialData }: DashboardsProps) {
           <div className="token-display"><Coins size={32} color="#f59e0b" /> {player?.balance || 0}</div>
         </div>
       </header>
+
+      {/* Notificación */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed', top: '20px', left: '50%', zIndex: 1000,
+              background: notification.type === 'success' ? '#10b981' : '#ef4444',
+              color: 'white', padding: '12px 25px', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+            <button 
+              onClick={() => setNotification(null)}
+              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginLeft: '10px', display: 'flex' }}
+            >
+              <AlertCircle size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="dashboard-grid">
         

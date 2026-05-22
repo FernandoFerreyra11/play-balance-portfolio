@@ -56,7 +56,11 @@ export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'chil
     
     let condition;
     if (user.role === 'parent' || user.role === 'org_admin') {
-      condition = eq(messages.receiverType, receiverTypeFilter);
+      if (receiverTypeFilter === 'parents') {
+        condition = or(eq(messages.receiverType, 'parents'), eq(messages.receiverType, 'professional'));
+      } else {
+        condition = eq(messages.receiverType, receiverTypeFilter);
+      }
     } else {
       // Un niño solo puede ver mensajes para niños
       if (receiverTypeFilter === 'parents') return { error: 'No autorizado', data: [] };
@@ -116,5 +120,28 @@ export async function sendMessage(familyId: string, content: string, receiverTyp
     return { success: true };
   } catch (error) {
     return { error: 'Error al enviar el mensaje' };
+  }
+}
+
+export async function markMyMessagesAsRead(receiverType: 'parents' | 'children') {
+  const session = await getSession();
+  if (!session) return { error: 'No autorizado' };
+  
+  const user = session.user as any;
+  if (!user.familyId) return { error: 'No perteneces a una familia' };
+
+  try {
+    await db.update(messages)
+      .set({ read: 1 })
+      .where(
+        and(
+          eq(messages.familyId, user.familyId),
+          eq(messages.receiverType, receiverType),
+          eq(messages.read, 0)
+        )
+      );
+    return { success: true };
+  } catch (error) {
+    return { error: 'Error al marcar como leídos' };
   }
 }

@@ -33,7 +33,7 @@ import { getRewards, createReward, updateReward, deleteReward } from '../actions
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
 import { getFamilyStats, awardSpontaneousTokens } from '../actions/player';
-import { getMessagesForFamily, sendMessage } from '../actions/messages';
+import { getMessagesForFamily, sendMessage, markMyMessagesAsRead } from '../actions/messages';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -41,14 +41,19 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('family');
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingSuggestionsCount, setPendingSuggestionsCount] = useState(0);
+  const [unreadProMessagesCount, setUnreadProMessagesCount] = useState(0);
 
   const fetchPendingCounts = useCallback(async () => {
-    const [approvalsData, suggestionsData] = await Promise.all([
+    const [approvalsData, suggestionsData, messagesData] = await Promise.all([
       getPendingApprovals(),
-      getSuggestions()
+      getSuggestions(),
+      getMessagesForFamily('parents')
     ]);
     setPendingCount((approvalsData as any[]).length);
     setPendingSuggestionsCount((suggestionsData as any[]).filter(s => s.status === 'pending').length);
+    if ((messagesData as any).success) {
+      setUnreadProMessagesCount((messagesData as any).data.filter((m: any) => m.read === 0 && m.receiverType === 'parents').length);
+    }
   }, []);
 
   useEffect(() => {
@@ -140,9 +145,10 @@ export default function AdminDashboard() {
         />
         <TabButton 
           active={activeTab === 'pro-messages'} 
-          onClick={() => setActiveTab('pro-messages')}
+          onClick={() => { setActiveTab('pro-messages'); fetchPendingCounts(); }}
           icon={<Stethoscope size={18} />}
           label="Buzón Profesional"
+          badgeCount={unreadProMessagesCount}
         />
         <TabButton 
           active={activeTab === 'stats'} 
@@ -1321,6 +1327,7 @@ function ProMessagesManager() {
   const [msgLoading, setMsgLoading] = useState(false);
   const [familyId, setFamilyId] = useState<string>('');
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const fetchMessages = async () => {
     setLoading(true);
@@ -1332,6 +1339,9 @@ function ProMessagesManager() {
       // Para obtener el familyId, podemos sacar la familia del admin
       const family = await getFamilyDetail();
       if (family) setFamilyId((family as any).id);
+      
+      // Marcar como leídos
+      await markMyMessagesAsRead('parents');
     }
     setLoading(false);
   };
@@ -1349,10 +1359,11 @@ function ProMessagesManager() {
 
     const res = await sendMessage(familyId, content, 'professional');
     if (res.success) {
+      setNotification({ message: 'Mensaje enviado correctamente', type: 'success' });
       (e.target as HTMLFormElement).reset();
       fetchMessages();
     } else {
-      alert(res.error);
+      setNotification({ message: res.error || 'Error al enviar mensaje', type: 'error' });
     }
     setMsgLoading(false);
   };
@@ -1361,6 +1372,33 @@ function ProMessagesManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      {/* Notificación */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed', top: '20px', left: '50%', zIndex: 1000,
+              background: notification.type === 'success' ? '#10b981' : '#ef4444',
+              color: 'white', padding: '12px 25px', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+            <button 
+              onClick={() => setNotification(null)}
+              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginLeft: '10px', display: 'flex' }}
+            >
+              <AlertCircle size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div style={{ marginBottom: '30px' }}>
         <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Stethoscope color="#f59e0b" /> Buzón del Profesional

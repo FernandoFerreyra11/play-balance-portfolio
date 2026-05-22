@@ -14,8 +14,12 @@ import {
   Plus,
   MessageSquare,
   Send,
-  Stethoscope
+  Stethoscope,
+  CheckCircle,
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { addProfessionalNote, deleteProfessionalNote, assignTherapyQuest } from '@/app/actions/proStats';
 import { sendMessage } from '@/app/actions/messages';
@@ -64,6 +68,8 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
   const [therapyLoading, setTherapyLoading] = useState(false);
   const [messageTarget, setMessageTarget] = useState<'parents' | 'children'>('parents');
   const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages' | 'therapies'>('overview');
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const router = useRouter();
 
   // Filtramos la actividad si se seleccionó un niño específico
   const filteredTransactions = selectedChild === 'all' 
@@ -79,9 +85,11 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
     const res = await addProfessionalNote(familyData.family.id, content, childId);
     if (res.success) {
-      window.location.reload();
+      setNotification({ message: 'Apunte guardado correctamente', type: 'success' });
+      (e.target as HTMLFormElement).reset();
+      router.refresh();
     } else {
-      alert(res.error);
+      setNotification({ message: res.error || 'Error al guardar apunte', type: 'error' });
     }
     setLoading(false);
   };
@@ -89,7 +97,10 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
   const handleDeleteNote = async (id: string) => {
     if (confirm('¿Eliminar este apunte?')) {
       const res = await deleteProfessionalNote(id, familyData.family.id);
-      if (res.success) window.location.reload();
+      if (res.success) {
+        setNotification({ message: 'Apunte eliminado', type: 'success' });
+        router.refresh();
+      }
     }
   };
 
@@ -101,9 +112,11 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
     const res = await sendMessage(familyData.family.id, content, messageTarget);
     if (res.success) {
-      window.location.reload();
+      setNotification({ message: 'Mensaje enviado correctamente', type: 'success' });
+      (e.target as HTMLFormElement).reset();
+      router.refresh();
     } else {
-      alert(res.error);
+      setNotification({ message: res.error || 'Error al enviar mensaje', type: 'error' });
     }
     setMsgLoading(false);
   };
@@ -119,10 +132,11 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
     const res = await assignTherapyQuest(familyData.family.id, targetChildId, title, description, reward);
     if (res.success) {
-      alert("Terapia asignada con éxito al aventurero.");
-      window.location.reload();
+      setNotification({ message: 'Terapia asignada con éxito al aventurero', type: 'success' });
+      (e.target as HTMLFormElement).reset();
+      router.refresh();
     } else {
-      alert(res.error);
+      setNotification({ message: res.error || 'Error al asignar terapia', type: 'error' });
     }
     setTherapyLoading(false);
   };
@@ -130,6 +144,33 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
       
+      {/* Notificación */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed', top: '20px', left: '50%', zIndex: 1000,
+              background: notification.type === 'success' ? '#10b981' : '#ef4444',
+              color: 'white', padding: '12px 25px', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+            <button 
+              onClick={() => setNotification(null)}
+              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginLeft: '10px', display: 'flex' }}
+            >
+              <AlertCircle size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div style={{ marginBottom: '30px' }}>
         <Link href="/pro" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', textDecoration: 'none', marginBottom: '20px', width: 'fit-content' }}>
           <ArrowLeft size={16} /> Volver al Panel

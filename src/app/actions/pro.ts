@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users, families, organizations, activeQuests } from "@/db/schema";
-import { eq, and, sql, count } from "drizzle-orm";
+import { eq, and, sql, count, inArray } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -33,10 +33,41 @@ export async function getProfessionalStats() {
       .from(families)
       .where(eq(families.professionalId, proId));
 
-    // Podríamos añadir más stats como misiones completadas por sus pacientes
+    // Get all families managed by the professional
+    const managedFamilies = await db.select({ id: families.id }).from(families).where(eq(families.professionalId, proId));
+    
+    let globalComplianceRate = 0;
+    let activeMissions = 0;
+
+    if (managedFamilies.length > 0) {
+      const familyIds = managedFamilies.map(f => f.id);
+      
+      // Get all children for these families
+      const children = await db.select({ id: users.id })
+        .from(users)
+        .where(and(inArray(users.familyId, familyIds), eq(users.role, 'child')));
+        
+      if (children.length > 0) {
+        const childIds = children.map(c => c.id);
+        
+        // Get all active quests for these children
+        const quests = await db.select({ status: activeQuests.status })
+          .from(activeQuests)
+          .where(inArray(activeQuests.childId, childIds));
+          
+        const totalAssigned = quests.length;
+        const completed = quests.filter(q => q.status === 'completed').length;
+        
+        globalComplianceRate = totalAssigned > 0 ? Math.round((completed / totalAssigned) * 100) : 0;
+        activeMissions = quests.filter(q => q.status === 'in_progress').length;
+      }
+    }
+
     return {
       familiesCount: familiesCount[0].value,
-      activePatients: familiesCount[0].value, // Simplificado por ahora
+      activePatients: familiesCount[0].value,
+      globalComplianceRate,
+      activeMissions
     };
   } catch (error) {
     return { error: "Error al cargar estadísticas" };

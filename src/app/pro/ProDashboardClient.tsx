@@ -29,6 +29,8 @@ interface PatientFamilyItem {
 
 interface ProStats {
   activePatients?: number;
+  globalComplianceRate?: number;
+  activeMissions?: number;
 }
 
 interface ProDashboardClientProps {
@@ -206,8 +208,8 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
       {/* Stats rápidas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
         <StatCard icon={<Users color="#06b6d4" />} title="Total Pacientes" value={stats?.activePatients || 0} />
-        <StatCard icon={<TrendingUp color="#10b981" />} title="Cumplimiento Global" value="84%" />
-        <StatCard icon={<ClipboardList color="#8b5cf6" />} title="Misiones Activas" value="12" />
+        <StatCard icon={<TrendingUp color="#10b981" />} title="Cumplimiento Global" value={`${stats?.globalComplianceRate || 0}%`} />
+        <StatCard icon={<ClipboardList color="#8b5cf6" />} title="Misiones Activas" value={stats?.activeMissions || 0} />
       </div>
 
       {/* Listado de Familias/Casos */}

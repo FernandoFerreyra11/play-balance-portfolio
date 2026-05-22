@@ -202,14 +202,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                 <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px 0' }}>No hay mensajes aún. ¡Escríbele a tu coach!</p>
               ) : (
                 messages.map((msg) => (
-                  <div key={msg.id} style={{ 
-                    padding: '15px', 
-                    borderRadius: '15px',
-                    background: msg.senderId === player?.id ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)',
-                    borderLeft: msg.senderId === player?.id ? '4px solid #06b6d4' : '4px solid #94a3b8',
-                    marginLeft: msg.senderId === player?.id ? '40px' : '0',
-                    marginRight: msg.senderId === player?.id ? '0' : '40px',
-                  }}>
+                  <div key={msg.id} className={`chat-bubble ${msg.senderId === player?.id ? 'chat-bubble-mine' : 'chat-bubble-other'}`}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', justifyContent: 'space-between' }}>
                       <span style={{ fontWeight: 600, color: msg.senderId === player?.id ? '#06b6d4' : 'white' }}>
                         {msg.senderId === player?.id ? 'Tú' : `Dr/Coach ${msg.senderName}`}
@@ -223,7 +216,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                 ))
               )}
             </div>
-            <form onSubmit={handleReplySubmit} style={{ display: 'flex', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+            <form onSubmit={handleReplySubmit} className="reply-form">
               <input
                 type="text"
                 value={replyText}
@@ -231,7 +224,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                 placeholder="Escribe un mensaje para tu coach..."
                 style={{ flex: 1, padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
               />
-              <button type="submit" disabled={replying || !replyText.trim()} className="btn-primary" style={{ padding: '0 25px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button type="submit" disabled={replying || !replyText.trim()} className="btn-primary reply-btn">
                 <MessageCircle size={18} /> {replying ? 'Enviando...' : 'Enviar'}
               </button>
             </form>
@@ -372,6 +365,35 @@ export function Dashboards({ initialData }: DashboardsProps) {
           border-radius: 12px;
           white-space: nowrap;
         }
+        .chat-bubble {
+          padding: 15px;
+          border-radius: 15px;
+        }
+        .chat-bubble-mine {
+          background: rgba(6, 182, 212, 0.1);
+          border-left: 4px solid #06b6d4;
+          margin-left: 40px;
+          margin-right: 0;
+        }
+        .chat-bubble-other {
+          background: rgba(255,255,255,0.05);
+          border-left: 4px solid #94a3b8;
+          margin-left: 0;
+          margin-right: 40px;
+        }
+        .reply-form {
+          display: flex;
+          gap: 10px;
+          border-top: 1px solid rgba(255,255,255,0.1);
+          padding-top: 20px;
+        }
+        .reply-btn {
+          padding: 0 25px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
 
         @media (max-width: 768px) {
           .dashboard-header {
@@ -408,6 +430,20 @@ export function Dashboards({ initialData }: DashboardsProps) {
           }
           .action-btn {
             width: 100%;
+          }
+          .chat-bubble-mine {
+            margin-left: 10px;
+          }
+          .chat-bubble-other {
+            margin-right: 10px;
+          }
+          .reply-form {
+            flex-direction: column;
+          }
+          .reply-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 15px;
           }
         }
       `}</style>

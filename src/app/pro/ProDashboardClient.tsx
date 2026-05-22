@@ -96,7 +96,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
   };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: 'clamp(15px, 5vw, 40px)', maxWidth: '1200px', margin: '0 auto' }}>
       
       {/* Notificación */}
       <AnimatePresence>
@@ -187,7 +187,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies }: Pr
 
         {showAddFamily && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{ marginBottom: '30px', overflow: 'hidden' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
               {/* Opción A: Crear Nuevo */}
               <div className="glass" style={{ padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>Opción A: Crear Nuevo Caso</h3>

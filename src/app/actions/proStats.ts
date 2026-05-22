@@ -22,16 +22,18 @@ async function verifyProAccess(familyId: string) {
   
   const pro = session.user as AuthUser;
   
+  const conditions = [eq(families.professionalId, pro.id as string)];
+  if (pro.organizationId) {
+    conditions.push(eq(families.organizationId, pro.organizationId));
+  }
+  
   const [family] = await db
     .select()
     .from(families)
     .where(
       and(
         eq(families.id, familyId),
-        or(
-          eq(families.professionalId, pro.id as string),
-          pro.organizationId ? eq(families.organizationId, pro.organizationId) : undefined
-        )
+        or(...conditions)
       )
     )
     .limit(1);

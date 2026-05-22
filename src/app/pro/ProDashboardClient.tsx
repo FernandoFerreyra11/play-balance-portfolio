@@ -18,7 +18,8 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
-import { createOrganization, createPatientFamily, linkExistingFamily } from '../actions/pro';
+import { createOrganization, createPatientFamily, linkExistingFamily, upgradeProPlan } from '../actions/pro';
+import UpgradeModal from '@/components/UpgradeModal';
 
 interface PatientFamilyItem {
   id: string;
@@ -45,6 +46,8 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
   const [showOrgForm, setShowOrgForm] = useState(
     (session?.user as { role?: string })?.role === 'professional' && !hasOrganization
   );
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const router = useRouter();
 
@@ -76,6 +79,9 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
       setNotification({ message: 'Nuevo caso familiar creado', type: 'success' });
       setShowAddFamily(false);
       router.refresh();
+    } else if (res.error === 'UPGRADE_REQUIRED') {
+      setShowUpgradeModal(true);
+      setShowAddFamily(false);
     } else {
       setNotification({ message: res.error || 'Error', type: 'error' });
     }
@@ -92,15 +98,39 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
       setNotification({ message: 'Familia vinculada con éxito', type: 'success' });
       setShowAddFamily(false);
       router.refresh();
+    } else if (res.error === 'UPGRADE_REQUIRED') {
+      setShowUpgradeModal(true);
+      setShowAddFamily(false);
     } else {
       setNotification({ message: res.error || 'Error', type: 'error' });
     }
     setLoading(false);
   };
 
+  const handleUpgrade = async () => {
+    setUpgradeLoading(true);
+    const res = await upgradeProPlan('unlimited');
+    if (res.success) {
+      setShowUpgradeModal(false);
+      setNotification({ message: '¡Plan Profesional Premium activado con éxito!', type: 'success' });
+      router.refresh();
+    } else {
+      setNotification({ message: 'Error al procesar suscripción', type: 'error' });
+    }
+    setUpgradeLoading(false);
+  };
+
   return (
     <div style={{ padding: 'clamp(15px, 5vw, 40px)', maxWidth: '1200px', margin: '0 auto' }}>
       
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        mode="pro"
+        onSubscribe={handleUpgrade}
+        isLoading={upgradeLoading}
+      />
+
       {/* Notificación */}
       <AnimatePresence>
         {notification && (

@@ -8,9 +8,12 @@ interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   message?: string;
+  mode?: 'parent' | 'pro';
+  onSubscribe?: () => void;
+  isLoading?: boolean;
 }
 
-export default function UpgradeModal({ isOpen, onClose, message }: UpgradeModalProps) {
+export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent', onSubscribe, isLoading }: UpgradeModalProps) {
   const [isAnnual, setIsAnnual] = useState(false);
 
   if (!isOpen) return null;
@@ -85,7 +88,7 @@ export default function UpgradeModal({ isOpen, onClose, message }: UpgradeModalP
               Desbloquea PlayBalance <span style={{ color: '#fbbf24' }}>Premium</span>
             </h2>
             <p style={{ color: '#fbbf24', fontSize: '0.95rem', fontWeight: 600 }}>
-              {message || 'Lleva el desarrollo de tu equipo al siguiente nivel.'}
+              {message || (mode === 'pro' ? 'Expande tu práctica con familias ilimitadas.' : 'Lleva el desarrollo de tu equipo al siguiente nivel.')}
             </p>
           </div>
 
@@ -102,7 +105,7 @@ export default function UpgradeModal({ isOpen, onClose, message }: UpgradeModalP
                 fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s'
               }}
             >
-              Mensual
+              {mode === 'pro' ? 'Crecimiento' : 'Mensual'}
             </button>
             <button 
               onClick={() => setIsAnnual(true)}
@@ -114,25 +117,32 @@ export default function UpgradeModal({ isOpen, onClose, message }: UpgradeModalP
                 position: 'relative'
               }}
             >
-              Anual
-              <span style={{
-                position: 'absolute', top: '-10px', right: '-10px',
-                background: '#10b981', color: 'white', fontSize: '0.65rem',
-                padding: '2px 8px', borderRadius: '10px', fontWeight: 800
-              }}>
-                2 MESES GRATIS
-              </span>
+              {mode === 'pro' ? 'Ilimitado' : 'Anual'}
+              {mode !== 'pro' && (
+                <span style={{
+                  position: 'absolute', top: '-10px', right: '-10px',
+                  background: '#10b981', color: 'white', fontSize: '0.65rem',
+                  padding: '2px 8px', borderRadius: '10px', fontWeight: 800
+                }}>
+                  2 MESES GRATIS
+                </span>
+              )}
             </button>
           </div>
 
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <div style={{ fontSize: '3rem', fontWeight: 800, color: 'white', lineHeight: 1 }}>
-              ${isAnnual ? '39.990' : '3.999'}
+              {mode === 'pro' ? (isAnnual ? '$39.990' : '$4.999') : (isAnnual ? '$39.990' : '$3.999')}
             </div>
             <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '5px' }}>
-              ARS / {isAnnual ? 'año' : 'mes'}
+              ARS / {mode === 'pro' ? (isAnnual ? 'mes (tarifa plana)' : 'mes por familia extra') : (isAnnual ? 'año' : 'mes')}
             </div>
-            {isAnnual && (
+            {!isAnnual && mode === 'pro' && (
+              <div style={{ color: '#10b981', fontSize: '0.85rem', marginTop: '5px', fontWeight: 600 }}>
+                Escala a tu propio ritmo
+              </div>
+            )}
+            {isAnnual && mode !== 'pro' && (
               <div style={{ color: '#10b981', fontSize: '0.85rem', marginTop: '5px', fontWeight: 600 }}>
                 (Equivale a $3.332 / mes)
               </div>
@@ -140,21 +150,35 @@ export default function UpgradeModal({ isOpen, onClose, message }: UpgradeModalP
           </div>
 
           <div style={{ display: 'grid', gap: '15px', marginBottom: '35px' }}>
-            <FeatureItem text="Aventureros ilimitados en el equipo" />
-            <FeatureItem text="Capitanes y co-capitanes sin límite" />
-            <FeatureItem text="Historial de progreso clínico completo" />
-            <FeatureItem text="Soporte prioritario 24/7" />
+            {mode === 'pro' ? (
+              <>
+                <FeatureItem text={isAnnual ? "Familias de pacientes ilimitadas" : "Familias adicionales bajo demanda"} />
+                <FeatureItem text="Acceso a historiales clínicos" />
+                <FeatureItem text="Herramientas de seguimiento avanzadas" />
+                <FeatureItem text="Soporte prioritario" />
+              </>
+            ) : (
+              <>
+                <FeatureItem text="Aventureros ilimitados en el equipo" />
+                <FeatureItem text="Capitanes y co-capitanes sin límite" />
+                <FeatureItem text="Historial de progreso clínico completo" />
+                <FeatureItem text="Soporte prioritario 24/7" />
+              </>
+            )}
           </div>
 
           <button 
             className="btn-primary"
+            onClick={onSubscribe}
+            disabled={isLoading}
             style={{ 
               width: '100%', padding: '16px', fontSize: '1.1rem', 
               background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-              color: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
+              color: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
+              opacity: isLoading ? 0.7 : 1
             }}
           >
-            Suscribirse Ahora <ArrowRight size={20} />
+            {isLoading ? 'Procesando...' : 'Suscribirse Ahora'} <ArrowRight size={20} />
           </button>
         </motion.div>
       </div>

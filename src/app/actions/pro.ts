@@ -94,6 +94,21 @@ export async function createPatientFamily(familyName: string) {
   const proId = (session.user as any).id;
   const orgId = (session.user as any).organizationId;
 
+  // Verificar límites del plan
+  const [dbUser] = await db.select({ subscriptionPlan: users.subscriptionPlan }).from(users).where(eq(users.id, proId));
+  const plan = dbUser?.subscriptionPlan || 'free';
+  
+  if (plan === 'free') {
+    const familiesCount = await db
+      .select({ value: count() })
+      .from(families)
+      .where(eq(families.professionalId, proId));
+      
+    if (familiesCount[0].value >= 2) {
+      return { error: "UPGRADE_REQUIRED" };
+    }
+  }
+
   // Generar un código único
   const familyCode = `PRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
@@ -121,6 +136,21 @@ export async function linkExistingFamily(familyCode: string) {
   const proId = (session.user as any).id;
   const orgId = (session.user as any).organizationId;
 
+  // Verificar límites del plan
+  const [dbUser] = await db.select({ subscriptionPlan: users.subscriptionPlan }).from(users).where(eq(users.id, proId));
+  const plan = dbUser?.subscriptionPlan || 'free';
+  
+  if (plan === 'free') {
+    const familiesCount = await db
+      .select({ value: count() })
+      .from(families)
+      .where(eq(families.professionalId, proId));
+      
+    if (familiesCount[0].value >= 2) {
+      return { error: "UPGRADE_REQUIRED" };
+    }
+  }
+
   try {
     const existingFamily = await db.select().from(families).where(eq(families.code, familyCode));
     
@@ -146,5 +176,20 @@ export async function linkExistingFamily(familyCode: string) {
     return { success: true };
   } catch (error) {
     return { error: "Error al vincular familia" };
+  }
+}
+
+export async function upgradeProPlan(plan: 'growth' | 'unlimited') {
+  const session = await getProSession();
+  if (!session) return { error: "No autorizado" };
+
+  const proId = (session.user as any).id;
+
+  try {
+    await db.update(users).set({ subscriptionPlan: plan }).where(eq(users.id, proId));
+    revalidatePath("/pro");
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al actualizar el plan" };
   }
 }

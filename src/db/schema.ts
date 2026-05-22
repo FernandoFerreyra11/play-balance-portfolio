@@ -27,6 +27,7 @@ export const users = pgTable('users', {
   familyId: uuid('family_id').references((): AnyPgColumn => families.id),
   organizationId: uuid('organization_id').references(() => organizations.id), // Vinculado a una clínica/escuela
   balance: integer('balance').default(0),
+  subscriptionPlan: text('subscription_plan').default('free'), // 'free', 'growth', 'unlimited'
   createdAt: timestamp('created_at').defaultNow(),
 });
 

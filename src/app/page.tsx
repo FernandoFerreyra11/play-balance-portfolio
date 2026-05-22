@@ -8,6 +8,7 @@ import {
   getAvailableRewards 
 } from "./actions/player";
 import { getMySuggestions } from "./actions/suggestions";
+import { getMessagesForFamily } from "./actions/messages";
 
 export default async function Home() {
   console.log("SERVER: Rendering Home page");
@@ -27,13 +28,22 @@ export default async function Home() {
     getMySuggestions()
   ]);
 
+  let initialMessages = [];
+  if (session?.user && (session.user as any).role === 'child') {
+    const msgsRes = await getMessagesForFamily('children');
+    if (msgsRes.success) {
+      initialMessages = msgsRes.data;
+    }
+  }
+
   return (
     <Dashboards 
       initialData={{ 
         player: player as any, 
         quests: quests as any, 
         rewards: rewards as any, 
-        mySuggestions: mySuggestions as any
+        mySuggestions: mySuggestions as any,
+        messages: initialMessages
       }} 
     />
   );

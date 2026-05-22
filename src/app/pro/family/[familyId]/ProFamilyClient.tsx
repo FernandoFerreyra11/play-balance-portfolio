@@ -11,10 +11,13 @@ import {
   FileText,
   Trash2,
   Lock,
-  Plus
+  Plus,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 import Link from 'next/link';
 import { addProfessionalNote, deleteProfessionalNote } from '@/app/actions/proStats';
+import { sendMessage } from '@/app/actions/messages';
 
 interface Child {
   id: string;
@@ -48,13 +51,17 @@ interface ProFamilyClientProps {
   familyData: FamilyData;
   activityData: ActivityData;
   initialNotes: Note[];
+  initialMessages: any[];
+  proId: string;
 }
 
-export default function ProFamilyClient({ familyData, activityData, initialNotes }: ProFamilyClientProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'notes'>('overview');
+export default function ProFamilyClient({ familyData, activityData, initialNotes, initialMessages, proId }: ProFamilyClientProps) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages'>('overview');
   const [selectedChild, setSelectedChild] = useState<string | 'all'>('all');
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [loading, setLoading] = useState(false);
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [messageTarget, setMessageTarget] = useState<'parents' | 'children'>('parents');
 
   // Filtramos la actividad si se seleccionó un niño específico
   const filteredTransactions = selectedChild === 'all' 
@@ -82,6 +89,21 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       const res = await deleteProfessionalNote(id, familyData.family.id);
       if (res.success) window.location.reload();
     }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setMsgLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const content = formData.get('content') as string;
+
+    const res = await sendMessage(familyData.family.id, content, messageTarget);
+    if (res.success) {
+      window.location.reload();
+    } else {
+      alert(res.error);
+    }
+    setMsgLoading(false);
   };
 
   return (
@@ -155,6 +177,15 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           }}
         >
           <Lock size={18} /> Apuntes Privados
+        </button>
+        <button
+          onClick={() => setActiveTab('messages')}
+          style={{ 
+            padding: '15px 20px', background: 'none', border: 'none', color: activeTab === 'messages' ? '#f59e0b' : '#94a3b8', 
+            borderBottom: activeTab === 'messages' ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px'
+          }}
+        >
+          <MessageSquare size={18} /> Buzón de Familia
         </button>
       </div>
 
@@ -277,7 +308,86 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
             </div>
           </motion.div>
-        )}
+        ) : activeTab === 'messages' ? (
+          <motion.div key="messages" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+              
+              <div className="glass card">
+                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
+                  <Send size={20} /> Nuevo Mensaje
+                </h3>
+                
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                  <button 
+                    onClick={() => setMessageTarget('parents')}
+                    style={{ flex: 1, padding: '10px', borderRadius: '10px', border: messageTarget === 'parents' ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: messageTarget === 'parents' ? 'rgba(245, 158, 11, 0.1)' : 'transparent', color: messageTarget === 'parents' ? 'white' : '#94a3b8', cursor: 'pointer' }}
+                  >
+                    Para Padres
+                  </button>
+                  <button 
+                    onClick={() => setMessageTarget('children')}
+                    style={{ flex: 1, padding: '10px', borderRadius: '10px', border: messageTarget === 'children' ? '2px solid #06b6d4' : '1px solid rgba(255,255,255,0.1)', background: messageTarget === 'children' ? 'rgba(6, 182, 212, 0.1)' : 'transparent', color: messageTarget === 'children' ? 'white' : '#94a3b8', cursor: 'pointer' }}
+                  >
+                    Para Niños
+                  </button>
+                </div>
+
+                <form onSubmit={handleSendMessage} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <textarea 
+                    name="content" 
+                    required 
+                    placeholder={messageTarget === 'parents' 
+                      ? "Mensaje privado para los capitanes (los aventureros no lo verán)..."
+                      : "Mensaje de aliento o indicación para los aventureros..."
+                    }
+                    style={{ padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '120px', resize: 'vertical' }} 
+                  />
+                  <button disabled={msgLoading} type="submit" className="btn-primary" style={{ padding: '12px', background: messageTarget === 'parents' ? '#f59e0b' : '#06b6d4', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+                    {msgLoading ? 'Enviando...' : 'Enviar Mensaje'}
+                  </button>
+                </form>
+              </div>
+
+              <div className="glass card">
+                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <MessageSquare size={20} /> Historial de Conversación
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
+                  {initialMessages.map((msg) => (
+                    <div key={msg.id} style={{ 
+                      padding: '15px', 
+                      background: msg.senderId === proId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
+                      borderRadius: '15px',
+                      borderLeft: msg.senderId === proId ? '4px solid #06b6d4' : '4px solid #94a3b8',
+                      marginLeft: msg.senderId === proId ? '40px' : '0',
+                      marginRight: msg.senderId === proId ? '0' : '40px',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === proId ? '#06b6d4' : 'white' }}>
+                          {msg.senderId === proId ? 'Tú' : msg.senderName}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '0.7rem', background: msg.receiverType === 'parents' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: msg.receiverType === 'parents' ? '#fcd34d' : '#6ee7b7', padding: '2px 6px', borderRadius: '8px' }}>
+                            {msg.receiverType === 'parents' ? 'Padres' : 'Niños'}
+                          </span>
+                          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                            {new Date(msg.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', fontSize: '0.95rem' }}>{msg.content}</p>
+                    </div>
+                  ))}
+                  {initialMessages.length === 0 && (
+                    <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Aún no hay mensajes en este muro.</p>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        ) : null}
       </AnimatePresence>
 
       <style jsx>{`

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getFamilyDetailsForPro, getFamilyActivityForPro, getProfessionalNotes } from '@/app/actions/proStats';
+import { getMessagesForPro } from '@/app/actions/messages';
 import ProFamilyClient from './ProFamilyClient';
 
 export default async function ProFamilyPage({ params }: { params: { familyId: string } }) {
@@ -15,6 +16,9 @@ export default async function ProFamilyPage({ params }: { params: { familyId: st
 
   const activityData = await getFamilyActivityForPro(familyId) || { transactions: [], quests: [] };
   const initialNotes = await getProfessionalNotes(familyId);
+  const messagesRes = await getMessagesForPro(familyId);
+  const initialMessages = messagesRes.success ? messagesRes.data : [];
+  const proId = messagesRes.proId || '';
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)' }}>
@@ -22,6 +26,8 @@ export default async function ProFamilyPage({ params }: { params: { familyId: st
         familyData={familyData} 
         activityData={activityData} 
         initialNotes={initialNotes}
+        initialMessages={initialMessages}
+        proId={proId}
       />
     </main>
   );

@@ -19,6 +19,16 @@ import {
   Clock,
   MessageSquarePlus,
   BarChart3,
+  AlertTriangle,
+  Send,
+  Stethoscope
+} from 'lucide-react';
+  Coins,
+  Pencil,
+  X,
+  Clock,
+  MessageSquarePlus,
+  BarChart3,
   AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +41,7 @@ import { getRewards, createReward, updateReward, deleteReward } from '../actions
 import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
 import { getFamilyStats, awardSpontaneousTokens } from '../actions/player';
+import { getMessagesForFamily, sendMessage } from '../actions/messages';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -136,6 +147,12 @@ export default function AdminDashboard() {
           badgeCount={pendingSuggestionsCount}
         />
         <TabButton 
+          active={activeTab === 'pro-messages'} 
+          onClick={() => setActiveTab('pro-messages')}
+          icon={<Stethoscope size={18} />}
+          label="Buzón Profesional"
+        />
+        <TabButton 
           active={activeTab === 'stats'} 
           onClick={() => setActiveTab('stats')}
           icon={<BarChart3 size={18} />}
@@ -150,6 +167,7 @@ export default function AdminDashboard() {
         {activeTab === 'rewards' && <RewardsManager />}
         {activeTab === 'approvals' && <ApprovalsManager onUpdate={fetchPendingCounts} />}
         {activeTab === 'suggestions' && <SuggestionsManager onUpdate={fetchPendingCounts} />}
+        {activeTab === 'pro-messages' && <ProMessagesManager />}
         {activeTab === 'stats' && <StatsManager />}
       </main>
     </div>
@@ -1297,3 +1315,115 @@ function StatsManager() {
     </motion.div>
   );
 }
+
+function ProMessagesManager() {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [familyId, setFamilyId] = useState<string>('');
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+
+  const fetchMessages = async () => {
+    setLoading(true);
+    // Para los padres, cargamos los mensajes dirigidos a 'parents'
+    const res = await getMessagesForFamily('parents');
+    if (res.success) {
+      setMessages(res.data);
+      setCurrentUserId(res.currentUserId);
+      // Para obtener el familyId, podemos sacar la familia del admin
+      const family = await getFamilyDetail();
+      if (family) setFamilyId((family as any).id);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!familyId) return;
+    setMsgLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const content = formData.get('content') as string;
+
+    const res = await sendMessage(familyId, content, 'professional');
+    if (res.success) {
+      (e.target as HTMLFormElement).reset();
+      fetchMessages();
+    } else {
+      alert(res.error);
+    }
+    setMsgLoading(false);
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>Cargando mensajes del profesional...</div>;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div style={{ marginBottom: '30px' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Stethoscope color="#f59e0b" /> Buzón del Profesional
+        </h2>
+        <p style={{ color: 'var(--text-dim)' }}>
+          Comunicación directa y privada con el profesional asignado a tu familia. 
+          Los aventureros no tienen acceso a estos mensajes.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
+        
+        <div className="glass card">
+          <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <MessageSquare size={20} /> Historial de Conversación
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+            {messages.map((msg) => (
+              <div key={msg.id} style={{ 
+                padding: '15px', 
+                background: msg.senderId === currentUserId ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255,255,255,0.05)', 
+                borderRadius: '15px',
+                borderLeft: msg.senderId === currentUserId ? '4px solid #06b6d4' : '4px solid #f59e0b',
+                marginLeft: msg.senderId === currentUserId ? '40px' : '0',
+                marginRight: msg.senderId === currentUserId ? '0' : '40px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: msg.senderId === currentUserId ? '#06b6d4' : '#f59e0b' }}>
+                    {msg.senderId === currentUserId ? 'Tú' : (msg.senderRole === 'professional' ? 'Dr/Coach ' + msg.senderName : msg.senderName)}
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                    {new Date(msg.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', fontSize: '0.95rem' }}>{msg.content}</p>
+              </div>
+            ))}
+            {messages.length === 0 && (
+              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>No hay mensajes registrados. Puedes escribirle a tu profesional aquí.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="glass card" style={{ borderTop: '4px solid #f59e0b' }}>
+          <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b' }}>
+            <Send size={20} /> Responder al Profesional
+          </h3>
+          <form onSubmit={handleSendMessage} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <textarea 
+              name="content" 
+              required 
+              placeholder="Escribe tu mensaje privado para el profesional..."
+              style={{ padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '100px', resize: 'vertical' }} 
+            />
+            <button disabled={msgLoading} type="submit" className="btn-primary" style={{ padding: '12px', background: '#f59e0b', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Send size={16} /> {msgLoading ? 'Enviando...' : 'Enviar Mensaje'}
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </motion.div>
+  );
+}
+

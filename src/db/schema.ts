@@ -3,6 +3,7 @@ import { pgTable, text, integer, timestamp, uuid, pgEnum, primaryKey, AnyPgColum
 export const roleEnum = pgEnum('role', ['parent', 'child', 'super_admin', 'professional', 'org_admin']);
 export const statusEnum = pgEnum('status', ['pending', 'approved', 'rejected']);
 export const questStatusEnum = pgEnum('quest_status', ['in_progress', 'pending_approval', 'completed']);
+export const receiverTypeEnum = pgEnum('receiver_type', ['parents', 'children', 'professional']);
 
 export const organizations = pgTable('organizations', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -127,4 +128,14 @@ export const professionalNotes = pgTable('professional_notes', {
   content: text('content').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const messages = pgTable('messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  familyId: uuid('family_id').references(() => families.id).notNull(),
+  senderId: uuid('sender_id').references(() => users.id).notNull(), // Pro, Parent, or Child
+  receiverType: receiverTypeEnum('receiver_type').notNull(), // 'parents', 'children', 'professional'
+  content: text('content').notNull(),
+  read: integer('read').default(0), // 0 = false, 1 = true
+  createdAt: timestamp('created_at').defaultNow(),
 });

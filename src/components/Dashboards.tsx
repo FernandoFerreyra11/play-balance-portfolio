@@ -6,7 +6,9 @@ import {
   Coins, 
   Trophy, 
   Gift,
-  MessageSquarePlus
+  MessageSquarePlus,
+  MessageCircle,
+  Stethoscope
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -53,6 +55,7 @@ interface DashboardsProps {
     quests: DashboardQuest[];
     rewards: DashboardReward[];
     mySuggestions: DashboardSuggestion[];
+    messages?: any[];
   };
 }
 
@@ -61,6 +64,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [quests, setQuests] = useState<DashboardQuest[]>(initialData.quests);
   const [rewards, setRewards] = useState<DashboardReward[]>(initialData.rewards);
   const [mySuggestions, setMySuggestions] = useState<DashboardSuggestion[]>(initialData.mySuggestions);
+  const [messages, setMessages] = useState<any[]>(initialData.messages || []);
   const [suggestionText, setSuggestionText] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -130,6 +134,32 @@ export function Dashboards({ initialData }: DashboardsProps) {
       </header>
 
       <div className="dashboard-grid">
+        
+        {/* Sección de Mensajes del Profesional */}
+        {messages.length > 0 && (
+          <section style={{ gridColumn: '1 / -1' }}>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#06b6d4' }}>
+              <Stethoscope /> Mensajes de tu Dr/Coach
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+              {messages.map((msg) => (
+                <div key={msg.id} className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '4px solid #06b6d4', position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(6, 182, 212, 0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#06b6d4' }}>
+                      <Stethoscope size={16} />
+                    </div>
+                    <span style={{ fontWeight: 600 }}>Dr/Coach {msg.senderName}</span>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 'auto' }}>
+                      {new Date(msg.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, color: '#e2e8f0', margin: 0 }}>{msg.content}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

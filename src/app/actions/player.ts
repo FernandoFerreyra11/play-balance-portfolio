@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { users, quests, rewards, activeQuests, transactions } from "@/db/schema";
+import { users, quests, rewards, activeQuests, transactions, rewardClaims } from "@/db/schema";
 import { eq, and, desc, or, isNull } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -141,12 +141,19 @@ export async function requestReward(rewardId: string) {
       .set({ balance: (player.balance || 0) - reward.cost })
       .where(eq(users.id, playerId));
 
-    // 2. Registrar transacción
+    // 2. Insertar en rewardClaims (pendiente de aprobación)
+    await db.insert(rewardClaims).values({
+      childId: playerId,
+      rewardId: rewardId,
+      status: 'pending',
+    });
+
+    // 3. Registrar transacción
     await db.insert(transactions).values({
       userId: playerId,
       amount: -reward.cost,
-      type: 'reward',
-      description: `Canje de premio: ${reward.title}`,
+      type: 'reward_pending',
+      description: `Canje pendiente: ${reward.title}`,
     });
 
     revalidatePath("/");
@@ -255,4 +262,29 @@ export async function awardSpontaneousTokens(childId: string, amount: number, de
     console.error("Error al otorgar tokens espontáneos:", error);
     return { error: "Error al otorgar el bonus" };
   }
+}
+
+export async function getPendingRewardClaimsForChild() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as AuthUser).role !== 'child') return [];
+
+  const playerId = (session.user as AuthUser).id as string;
+
+  const data = await db
+    .select({
+      id: rewardClaims.id,
+      rewardTitle: rewards.title,
+      rewardCost: rewards.cost,
+      status: rewardClaims.status,
+      createdAt: rewardClaims.createdAt,
+    })
+    .from(rewardClaims)
+    .innerJoin(rewards, eq(rewardClaims.rewardId, rewards.id))
+    .where(and(
+      eq(rewardClaims.childId, playerId),
+      eq(rewardClaims.status, 'pending')
+    ))
+    .orderBy(desc(rewardClaims.createdAt));
+
+  return data;
 }

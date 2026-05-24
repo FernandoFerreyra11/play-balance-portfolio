@@ -21,7 +21,8 @@ import {
   getAvailableQuests, 
   getAvailableRewards, 
   requestQuestCompletion, 
-  requestReward 
+  requestReward,
+  getPendingRewardClaimsForChild
 } from '@/app/actions/player';
 import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
 import { sendMessage, getMessagesForFamily } from '@/app/actions/messages';
@@ -56,11 +57,20 @@ interface DashboardSuggestion {
   createdAt: Date | null;
 }
 
+interface DashboardPendingReward {
+  id: string;
+  rewardTitle: string;
+  rewardCost: number;
+  status: string | null;
+  createdAt: Date | null;
+}
+
 interface DashboardsProps {
   initialData: {
     player: DashboardPlayer;
     quests: DashboardQuest[];
     rewards: DashboardReward[];
+    pendingRewards: DashboardPendingReward[];
     mySuggestions: DashboardSuggestion[];
     messages?: any[];
   };
@@ -70,6 +80,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [player, setPlayer] = useState<DashboardPlayer>(initialData.player);
   const [quests, setQuests] = useState<DashboardQuest[]>(initialData.quests);
   const [rewards, setRewards] = useState<DashboardReward[]>(initialData.rewards);
+  const [pendingRewards, setPendingRewards] = useState<DashboardPendingReward[]>(initialData.pendingRewards);
   const [mySuggestions, setMySuggestions] = useState<DashboardSuggestion[]>(initialData.mySuggestions);
   const [messages, setMessages] = useState<any[]>(initialData.messages || []);
   const [suggestionText, setSuggestionText] = useState('');
@@ -82,11 +93,13 @@ export function Dashboards({ initialData }: DashboardsProps) {
     const stats = await getPlayerStats();
     const q = await getAvailableQuests();
     const r = await getAvailableRewards();
+    const pr = await getPendingRewardClaimsForChild();
     const s = await getMySuggestions();
     const m = await getMessagesForFamily('children');
     setPlayer(stats as DashboardPlayer);
     setQuests(q as DashboardQuest[]);
     setRewards(r as DashboardReward[]);
+    setPendingRewards(pr as DashboardPendingReward[]);
     setMySuggestions(s as DashboardSuggestion[]);
     if (m.success) setMessages(m.data);
   };
@@ -269,6 +282,33 @@ export function Dashboards({ initialData }: DashboardsProps) {
           </div>
         </section>
         
+        <section>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Gift color="#f59e0b" /> Mis Canjes Pendientes
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {pendingRewards?.length === 0 ? (
+              <div className="glass" style={{ padding: '20px', borderRadius: '15px', textAlign: 'center', color: '#94a3b8' }}>
+                No tienes premios pendientes de aprobación.
+              </div>
+            ) : (
+              pendingRewards?.map((pr: DashboardPendingReward) => (
+                <div key={pr.id} className="glass" style={{ padding: '15px', borderRadius: '15px', borderLeft: '4px solid #f59e0b' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: '0 0 5px 0' }}>{pr.rewardTitle}</h3>
+                    <div style={{ padding: '5px 10px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontSize: '0.8rem', fontWeight: 700 }}>
+                      ⏳ En revisión
+                    </div>
+                  </div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                    Costo: {pr.rewardCost} Tokens
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <MessageSquarePlus color="#ec4899" /> Mis Ideas

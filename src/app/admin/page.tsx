@@ -31,7 +31,7 @@ import UpgradeModal from '@/components/UpgradeModal';
 import { getFamilyMembers, createFamilyMember, updateFamilyMember, deleteFamilyMember, getFamilyDetail, deleteOwnFamily } from '../actions/family';
 import { getQuests, createQuest, deleteQuest, updateQuest } from '../actions/quests';
 import { getRewards, createReward, updateReward, deleteReward } from '../actions/rewards';
-import { getPendingApprovals, approveQuest, rejectQuest } from '../actions/approvals';
+import { getPendingApprovals, approveQuest, rejectQuest, getPendingRewardApprovals, approveRewardClaim, rejectRewardClaim } from '../actions/approvals';
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
 import { getFamilyStats, awardSpontaneousTokens } from '../actions/player';
 import { getMessagesForFamily, sendMessage, markMyMessagesAsRead } from '../actions/messages';
@@ -45,12 +45,13 @@ export default function AdminDashboard() {
   const [unreadProMessagesCount, setUnreadProMessagesCount] = useState(0);
 
   const fetchPendingCounts = useCallback(async () => {
-    const [approvalsData, suggestionsData, messagesData] = await Promise.all([
+    const [approvalsData, rewardsData, suggestionsData, messagesData] = await Promise.all([
       getPendingApprovals(),
+      getPendingRewardApprovals(),
       getSuggestions(),
       getMessagesForFamily('all')
     ]);
-    setPendingCount((approvalsData as any[]).length);
+    setPendingCount((approvalsData as any[]).length + (rewardsData as any[]).length);
     setPendingSuggestionsCount((suggestionsData as any[]).filter(s => s.status === 'pending').length);
     if ((messagesData as any).success) {
       setUnreadProMessagesCount((messagesData as any).data.filter((m: any) => m.read === 0 && m.receiverType === 'parents').length);
@@ -961,17 +962,30 @@ interface PendingApprovalItem {
   isTherapy?: number | null;
 }
 
+interface PendingRewardApprovalItem {
+  id: string;
+  childImage: string | null;
+  childName: string;
+  rewardTitle: string;
+  rewardCost: number;
+}
+
 interface ApprovalsManagerProps {
   onUpdate?: () => void;
 }
 
 function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
   const [pending, setPending] = useState<PendingApprovalItem[]>([]);
+  const [pendingRewards, setPendingRewards] = useState<PendingRewardApprovalItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPending = async () => {
-    const data = await getPendingApprovals();
-    setPending(data as PendingApprovalItem[]);
+    const [questsData, rewardsData] = await Promise.all([
+      getPendingApprovals(),
+      getPendingRewardApprovals()
+    ]);
+    setPending(questsData as PendingApprovalItem[]);
+    setPendingRewards(rewardsData as PendingRewardApprovalItem[]);
     setLoading(false);
   };
 
@@ -993,6 +1007,25 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
   const handleReject = async (id: string) => {
     if (confirm('¿Quieres rechazar esta solicitud?')) {
       const res = await rejectQuest(id);
+      if (res.success) {
+        fetchPending();
+        if (onUpdate) onUpdate();
+      }
+    }
+  };
+
+  const handleApproveReward = async (id: string) => {
+    const res = await approveRewardClaim(id);
+    if (res.success) {
+      fetchPending();
+      if (onUpdate) onUpdate();
+    }
+    else alert(res.error);
+  };
+
+  const handleRejectReward = async (id: string) => {
+    if (confirm('¿Quieres rechazar el canje? Los tokens serán devueltos al aventurero.')) {
+      const res = await rejectRewardClaim(id);
       if (res.success) {
         fetchPending();
         if (onUpdate) onUpdate();
@@ -1057,9 +1090,63 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
         ))}
 
         {pending.length === 0 && (
-          <div className="glass card" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-dim)' }}>
-            <CheckCircle size={48} color="var(--success-color)" style={{ marginBottom: '20px', opacity: 0.5 }} />
-            <p style={{ fontSize: '1.1rem' }}>¡Todo al día! No hay misiones pendientes de revisión.</p>
+          <div className="glass card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+            <CheckCircle size={32} color="var(--success-color)" style={{ marginBottom: '10px', opacity: 0.5 }} />
+            <p>No hay misiones pendientes de revisión.</p>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: '30px', marginTop: '40px' }}>
+        <h2>Solicitudes de Premios</h2>
+        <p style={{ color: 'var(--text-dim)' }}>Revisa los premios que tu equipo quiere canjear.</p>
+      </div>
+
+      <div style={{ display: 'grid', gap: '20px' }}>
+        {pendingRewards.map((item) => (
+          <div key={item.id} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', borderLeft: '4px solid #f59e0b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)' }}>
+                {item.childImage || '👤'}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{item.childName}</h3>
+                <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Canjeó: 
+                  <span style={{ color: 'white', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Gift size={14} color="#f59e0b" />
+                    {item.rewardTitle}
+                  </span>
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontSize: '0.9rem', marginTop: '5px', fontWeight: 700 }}>
+                  <Coins size={14} /> Costo: {item.rewardCost} Tokens
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => handleApproveReward(item.id)}
+                className="btn-primary" 
+                style={{ background: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+              >
+                <CheckCircle size={18} /> Aprobar
+              </button>
+              <button 
+                onClick={() => handleRejectReward(item.id)}
+                className="glass" 
+                style={{ color: 'var(--danger-color)', border: '1px solid var(--danger-color)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', cursor: 'pointer' }}
+              >
+                <XCircle size={18} /> Rechazar
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {pendingRewards.length === 0 && (
+          <div className="glass card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+            <CheckCircle size={32} color="var(--success-color)" style={{ marginBottom: '10px', opacity: 0.5 }} />
+            <p>No hay canjes de premios pendientes.</p>
           </div>
         )}
       </div>

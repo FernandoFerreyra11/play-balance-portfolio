@@ -114,6 +114,15 @@ export const activeQuests = pgTable('active_quests', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const rewardClaims = pgTable('reward_claims', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  childId: uuid('child_id').references(() => users.id).notNull(),
+  rewardId: uuid('reward_id').references(() => rewards.id).notNull(),
+  status: statusEnum('status').default('pending'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const transactions = pgTable('transactions', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id).notNull(),

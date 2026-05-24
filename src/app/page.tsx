@@ -5,7 +5,8 @@ import { Dashboards } from "@/components/Dashboards";
 import { 
   getPlayerStats, 
   getAvailableQuests, 
-  getAvailableRewards 
+  getAvailableRewards,
+  getPendingRewardClaimsForChild
 } from "./actions/player";
 import { getMySuggestions } from "./actions/suggestions";
 import { getMessagesForFamily } from "./actions/messages";
@@ -29,11 +30,16 @@ export default async function Home() {
   ]);
 
   let initialMessages: any[] = [];
+  let pendingRewards: any[] = [];
   if (session?.user && (session.user as any).role === 'child') {
-    const msgsRes = await getMessagesForFamily('children');
+    const [msgsRes, pr] = await Promise.all([
+      getMessagesForFamily('children'),
+      getPendingRewardClaimsForChild()
+    ]);
     if (msgsRes.success) {
       initialMessages = msgsRes.data;
     }
+    pendingRewards = pr;
   }
 
   return (
@@ -42,6 +48,7 @@ export default async function Home() {
         player: player as any, 
         quests: quests as any, 
         rewards: rewards as any, 
+        pendingRewards: pendingRewards as any,
         mySuggestions: mySuggestions as any,
         messages: initialMessages
       }} 

@@ -218,11 +218,18 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
   const questsCount = filteredData.filter(t => t.type === 'quest').length;
   const rewardsCount = filteredData.filter(t => ['reward', 'reward_pending'].includes(t.type)).length - filteredData.filter(t => t.type === 'refund').length;
 
+  // 3. Obtener el balance actual (independiente de la fecha)
+  const usersQuery = await db.select({ balance: users.balance })
+    .from(users)
+    .where(childId ? eq(users.id, childId) : eq(users.familyId, familyId));
+  const currentBalance = usersQuery.reduce((acc, u) => acc + (u.balance || 0), 0);
+
   return {
     transactions: filteredData,
     summary: {
       totalEarned,
       totalSpent,
+      currentBalance,
       questsCount,
       rewardsCount
     }

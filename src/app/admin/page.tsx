@@ -1397,6 +1397,13 @@ function StatsManager() {
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>{stats?.summary.rewardsCount} premios</p>
             </div>
+            <div className="glass card" style={{ textAlign: 'center', borderTop: '4px solid var(--gold-color)' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Balance Actual</p>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--gold-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <Coins size={28} /> {stats?.summary.currentBalance}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '5px' }}>Tokens disponibles</p>
+            </div>
           </div>
 
           <div className="glass card">

@@ -43,19 +43,22 @@ export default function AdminDashboard() {
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingSuggestionsCount, setPendingSuggestionsCount] = useState(0);
   const [unreadProMessagesCount, setUnreadProMessagesCount] = useState(0);
+  const [hasPro, setHasPro] = useState(false);
 
   const fetchPendingCounts = useCallback(async () => {
-    const [approvalsData, rewardsData, suggestionsData, messagesData] = await Promise.all([
+    const [approvalsData, rewardsData, suggestionsData, messagesData, familyData] = await Promise.all([
       getPendingApprovals(),
       getPendingRewardApprovals(),
       getSuggestions(),
-      getMessagesForFamily('all')
+      getMessagesForFamily('all'),
+      getFamilyDetail()
     ]);
     setPendingCount((approvalsData as any[]).length + (rewardsData as any[]).length);
     setPendingSuggestionsCount((suggestionsData as any[]).filter(s => s.status === 'pending').length);
     if ((messagesData as any).success) {
       setUnreadProMessagesCount((messagesData as any).data.filter((m: any) => m.read === 0 && m.receiverType === 'parents').length);
     }
+    setHasPro(!!(familyData as any)?.professionalId);
   }, []);
 
   useEffect(() => {
@@ -145,6 +148,7 @@ export default function AdminDashboard() {
           label="Sugerencias"
           badgeCount={pendingSuggestionsCount}
         />
+        {hasPro && (
         <TabButton 
           active={activeTab === 'pro-messages'} 
           onClick={() => { setActiveTab('pro-messages'); fetchPendingCounts(); }}
@@ -152,6 +156,7 @@ export default function AdminDashboard() {
           label="Buzón Profesional"
           badgeCount={unreadProMessagesCount}
         />
+        )}
         <TabButton 
           active={activeTab === 'stats'} 
           onClick={() => setActiveTab('stats')}

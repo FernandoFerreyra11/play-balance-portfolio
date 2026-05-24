@@ -74,6 +74,7 @@ interface DashboardsProps {
     pendingRewards: DashboardPendingReward[];
     mySuggestions: DashboardSuggestion[];
     messages?: any[];
+    hasProfessional?: boolean;
   };
 }
 
@@ -209,6 +210,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
       <div className="dashboard-grid">
         
         {/* Sección de Mensajes del Profesional */}
+        {initialData.hasProfessional && (
         <section style={{ gridColumn: '1 / -1' }}>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#06b6d4' }}>
             <Stethoscope /> Chat con tu Dr/Coach
@@ -247,6 +249,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
             </form>
           </div>
         </section>
+        )}
 
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Trophy color="#06b6d4" /> Misiones</h2>

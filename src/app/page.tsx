@@ -9,7 +9,8 @@ import {
   getPendingRewardClaimsForChild
 } from "./actions/player";
 import { getMySuggestions } from "./actions/suggestions";
-import { getMessagesForFamily } from "./actions/messages";
+import { getMessagesForFamily } from "@/app/actions/messages";
+import { getFamilyDetail } from "@/app/actions/family";
 
 export default async function Home() {
   console.log("SERVER: Rendering Home page");
@@ -31,15 +32,19 @@ export default async function Home() {
 
   let initialMessages: any[] = [];
   let pendingRewards: any[] = [];
+  let hasProfessional = false;
+
   if (session?.user && (session.user as any).role === 'child') {
-    const [msgsRes, pr] = await Promise.all([
+    const [msgsRes, pr, family] = await Promise.all([
       getMessagesForFamily('children'),
-      getPendingRewardClaimsForChild()
+      getPendingRewardClaimsForChild(),
+      getFamilyDetail()
     ]);
     if (msgsRes.success) {
       initialMessages = msgsRes.data;
     }
     pendingRewards = pr;
+    hasProfessional = !!family?.professionalId;
   }
 
   return (
@@ -50,7 +55,8 @@ export default async function Home() {
         rewards: rewards as any, 
         pendingRewards: pendingRewards as any,
         mySuggestions: mySuggestions as any,
-        messages: initialMessages
+        messages: initialMessages,
+        hasProfessional
       }} 
     />
   );

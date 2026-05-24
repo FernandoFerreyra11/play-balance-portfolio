@@ -210,9 +210,13 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
 
   // 2. Agrupar totales
   const totalEarned = filteredData.filter(t => t.type === 'quest').reduce((acc, t) => acc + t.amount, 0);
-  const totalSpent = Math.abs(filteredData.filter(t => t.type === 'reward').reduce((acc, t) => acc + t.amount, 0));
+  
+  const spentAmount = Math.abs(filteredData.filter(t => ['reward', 'reward_pending'].includes(t.type)).reduce((acc, t) => acc + t.amount, 0));
+  const refundAmount = filteredData.filter(t => t.type === 'refund').reduce((acc, t) => acc + t.amount, 0);
+  const totalSpent = spentAmount - refundAmount;
+  
   const questsCount = filteredData.filter(t => t.type === 'quest').length;
-  const rewardsCount = filteredData.filter(t => t.type === 'reward').length;
+  const rewardsCount = filteredData.filter(t => ['reward', 'reward_pending'].includes(t.type)).length - filteredData.filter(t => t.type === 'refund').length;
 
   return {
     transactions: filteredData,
@@ -273,6 +277,7 @@ export async function getPendingRewardClaimsForChild() {
   const data = await db
     .select({
       id: rewardClaims.id,
+      rewardId: rewardClaims.rewardId,
       rewardTitle: rewards.title,
       rewardCost: rewards.cost,
       status: rewardClaims.status,

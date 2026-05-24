@@ -59,6 +59,7 @@ interface DashboardSuggestion {
 
 interface DashboardPendingReward {
   id: string;
+  rewardId: string;
   rewardTitle: string;
   rewardCost: number;
   status: string | null;
@@ -261,7 +262,16 @@ export function Dashboards({ initialData }: DashboardsProps) {
                   </h3>
                   <div style={{ color: '#f59e0b', fontWeight: 700 }}>+{quest.reward} Tokens</div>
                 </div>
-                <button disabled={quest.status === 'pending_approval'} onClick={async () => { await requestQuestCompletion(quest.id); fetchData(); }} className="btn-primary action-btn" style={isTherapy ? { background: '#f43f5e' } : {}}>
+                <button 
+                  disabled={quest.status === 'pending_approval'} 
+                  onClick={async () => { 
+                    const res = await requestQuestCompletion(quest.id); 
+                    if (res.error) alert(res.error); 
+                    fetchData(); 
+                  }} 
+                  className="btn-primary action-btn" 
+                  style={isTherapy ? { background: '#f43f5e' } : {}}
+                >
                   {quest.status === 'pending_approval' ? 'Revisando...' : '¡Hecho!'}
                 </button>
               </div>
@@ -271,14 +281,25 @@ export function Dashboards({ initialData }: DashboardsProps) {
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px' }}><Gift color="#8b5cf6" /> Premios</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {rewards.map((reward: DashboardReward) => (
+            {rewards.map((reward: DashboardReward) => {
+              const isPending = pendingRewards?.some(pr => pr.rewardId === reward.id);
+              return (
               <div key={reward.id} className="glass action-card" style={{ borderLeft: '6px solid #8b5cf6' }}>
                 <div><h3 style={{ margin: '0 0 5px 0' }}>{reward.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>{reward.cost} Tokens</div></div>
-                <button disabled={player?.balance < reward.cost} onClick={async () => { await requestReward(reward.id); fetchData(); }} className="btn-primary action-btn" style={{ background: '#8b5cf6' }}>
-                  Canjear
+                <button 
+                  disabled={player?.balance < reward.cost || isPending} 
+                  onClick={async () => { 
+                    const res = await requestReward(reward.id); 
+                    if (res?.error) alert(res.error); 
+                    fetchData(); 
+                  }} 
+                  className="btn-primary action-btn" 
+                  style={{ background: isPending ? 'rgba(139, 92, 246, 0.5)' : '#8b5cf6', cursor: isPending ? 'not-allowed' : 'pointer' }}
+                >
+                  {isPending ? '⏳ Solicitado' : 'Canjear'}
                 </button>
               </div>
-            ))}
+            )})}
           </div>
         </section>
         

@@ -134,7 +134,7 @@ export async function requestReward(rewardId: string) {
       .limit(1);
 
     if (!reward) return { error: "Premio no encontrado o no pertenece a tu equipo" };
-    if ((player.balance || 0) < reward.cost) return { error: "No tienes suficientes tokens" };
+    if ((player.balance || 0) < reward.cost) return { error: "¡Uy! Aún te faltan tokens. Completa más misiones y desafíos para alcanzar este premio. ¡Tú puedes!" };
 
     // 1. Restar balance
     await db.update(users)

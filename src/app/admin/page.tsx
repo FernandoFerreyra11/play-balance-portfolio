@@ -1414,8 +1414,8 @@ function StatsManager() {
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontWeight: 700, color: t.type === 'quest' ? 'var(--success-color)' : 'var(--danger-color)' }}>
-                      {t.type === 'quest' ? '+' : ''}{t.amount}
+                    <p style={{ fontWeight: 700, color: t.type === 'bonus' ? '#3b82f6' : (t.type === 'quest' || t.type === 'refund') ? 'var(--success-color)' : 'var(--danger-color)' }}>
+                      {t.amount > 0 ? '+' : ''}{t.amount}
                     </p>
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
                       {t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'}

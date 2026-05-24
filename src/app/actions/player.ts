@@ -209,7 +209,7 @@ export async function getFamilyStats(period: '7d' | '30d' | 'all', childId?: str
   const filteredData = data.filter(t => new Date(t.createdAt!) >= startDate);
 
   // 2. Agrupar totales
-  const totalEarned = filteredData.filter(t => t.type === 'quest').reduce((acc, t) => acc + t.amount, 0);
+  const totalEarned = filteredData.filter(t => ['quest', 'bonus'].includes(t.type)).reduce((acc, t) => acc + t.amount, 0);
   
   const spentAmount = Math.abs(filteredData.filter(t => ['reward', 'reward_pending'].includes(t.type)).reduce((acc, t) => acc + t.amount, 0));
   const refundAmount = filteredData.filter(t => t.type === 'refund').reduce((acc, t) => acc + t.amount, 0);

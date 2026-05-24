@@ -290,7 +290,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
               <div key={reward.id} className="glass action-card" style={{ borderLeft: '6px solid #8b5cf6' }}>
                 <div><h3 style={{ margin: '0 0 5px 0' }}>{reward.title}</h3><div style={{ color: '#f59e0b', fontWeight: 700 }}>{reward.cost} Tokens</div></div>
                 <button 
-                  disabled={player?.balance < reward.cost || isPending} 
+                  disabled={isPending} 
                   onClick={async () => { 
                     const res = await requestReward(reward.id); 
                     if (res?.error) alert(res.error); 

@@ -540,11 +540,7 @@ function FamilyManager() {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
-                    {member.role === 'child' && (
-                      <button onClick={() => setBonusId(member.id)} style={{ background: 'none', border: 'none', color: 'var(--gold-color)', cursor: 'pointer', padding: '8px' }} title="Regalar Bonus">
-                        <Gift size={16} />
-                      </button>
-                    )}
+
                     <button onClick={() => { setEditingId(member.id); setEditingRole(member.role); setSelectedAvatar(member.image || '👤'); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '8px' }}>
                       <Pencil size={16} />
                     </button>
@@ -557,6 +553,29 @@ function FamilyManager() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontWeight: 700 }}>
                     <Coins size={16} /> {member.balance} Tokens
                   </div>
+                  {member.role === 'child' && (
+                    <button 
+                      onClick={() => setBonusId(member.id)} 
+                      style={{ 
+                        background: 'rgba(245, 158, 11, 0.1)', 
+                        border: '1px solid var(--gold-color)', 
+                        color: 'var(--gold-color)', 
+                        cursor: 'pointer', 
+                        padding: '6px 12px', 
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        transition: 'all 0.2s'
+                      }} 
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--gold-color)'; e.currentTarget.style.color = '#000'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'; e.currentTarget.style.color = 'var(--gold-color)'; }}
+                    >
+                      <Gift size={14} /> Regalar Bonus
+                    </button>
+                  )}
                 </div>
               </>
             )}

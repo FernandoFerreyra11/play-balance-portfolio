@@ -1297,6 +1297,7 @@ interface FamilyStats {
     questsCount: number;
     totalSpent: number;
     rewardsCount: number;
+    currentBalance: number;
   };
   transactions: TransactionItem[];
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import Image from 'next/image';
 import { 
   Plus, 
   Trash2, 
@@ -1070,8 +1071,12 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
         {pending.map((item) => (
           <div key={item.id} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)' }}>
-                {item.childImage || '👤'}
+              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+                {item.childImage?.startsWith('/avatars/') ? (
+                  <Image src={item.childImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '5px' }} sizes="60px" />
+                ) : (
+                  item.childImage || '👤'
+                )}
               </div>
               <div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{item.childName}</h3>
@@ -1130,8 +1135,12 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
         {pendingRewards.map((item) => (
           <div key={item.id} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', borderLeft: '4px solid #f59e0b' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)' }}>
-                {item.childImage || '👤'}
+              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+                {item.childImage?.startsWith('/avatars/') ? (
+                  <Image src={item.childImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '5px' }} sizes="60px" />
+                ) : (
+                  item.childImage || '👤'
+                )}
               </div>
               <div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{item.childName}</h3>
@@ -1229,8 +1238,12 @@ function SuggestionsManager({ onUpdate }: SuggestionsManagerProps = {}) {
           <div key={item.id} className="glass card" style={{ position: 'relative', borderLeft: item.status === 'approved' ? '4px solid var(--success-color)' : item.status === 'rejected' ? '4px solid var(--danger-color)' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
               <div style={{ display: 'flex', gap: '15px' }}>
-                <div style={{ fontSize: '2rem', width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  {item.childImage || '👤'}
+                <div style={{ fontSize: '2rem', width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+                  {item.childImage?.startsWith('/avatars/') ? (
+                    <Image src={item.childImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '5px' }} sizes="50px" />
+                  ) : (
+                    item.childImage || '👤'
+                  )}
                 </div>
                 <div>
                   <h3 style={{ fontSize: '1.1rem', marginBottom: '5px' }}>{item.childName} sugiere:</h3>
@@ -1418,8 +1431,12 @@ function StatsManager() {
               {stats?.transactions.map((t: TransactionItem) => (
                 <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      {t.userImage || '👤'}
+                    <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+                      {t.userImage?.startsWith('/avatars/') ? (
+                        <Image src={t.userImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '4px' }} sizes="40px" />
+                      ) : (
+                        t.userImage || '👤'
+                      )}
                     </div>
                     <div>
                       <p style={{ fontWeight: 600 }}>{t.userName}</p>

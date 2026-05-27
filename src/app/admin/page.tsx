@@ -493,7 +493,13 @@ function FamilyManager() {
                   <button type="button" onClick={() => setBonusId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ fontSize: '2rem' }}>{member.image || '👤'}</div>
+                  <div style={{ fontSize: '2rem', width: '40px', height: '40px', position: 'relative', overflow: 'hidden', borderRadius: '50%' }}>
+                    {member.image?.startsWith('/avatars/') ? (
+                      <Image src={member.image} alt="Avatar" fill style={{ objectFit: 'cover' }} sizes="40px" />
+                    ) : (
+                      member.image || '👤'
+                    )}
+                  </div>
                   <div style={{ fontWeight: 700 }}>{member.name}</div>
                 </div>
                 <input name="amount" type="number" placeholder="Cantidad de Tokens (ej: 50)" required min="1" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
@@ -510,9 +516,13 @@ function FamilyManager() {
                     background: 'rgba(255,255,255,0.05)', 
                     border: '1px solid var(--border-color)',
                     borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    fontSize: '2rem'
+                    fontSize: '2rem', position: 'relative', overflow: 'hidden'
                   }}>
-                    {member.image || '👤'}
+                    {member.image?.startsWith('/avatars/') ? (
+                      <Image src={member.image} alt="Avatar" fill style={{ objectFit: 'cover', padding: '5px' }} sizes="60px" />
+                    ) : (
+                      member.image || '👤'
+                    )}
                   </div>
                   <div style={{ 
                     flex: 1, 

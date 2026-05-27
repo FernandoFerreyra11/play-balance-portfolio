@@ -300,3 +300,22 @@ export async function getPendingRewardClaimsForChild() {
 
   return data;
 }
+
+export async function updatePlayerAvatar(avatarUrl: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as AuthUser).role !== 'child') return { error: "No autorizado" };
+
+  const playerId = (session.user as AuthUser).id as string;
+
+  try {
+    await db.update(users)
+      .set({ image: avatarUrl })
+      .where(eq(users.id, playerId));
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar avatar:", error);
+    return { error: "Error al actualizar el avatar" };
+  }
+}

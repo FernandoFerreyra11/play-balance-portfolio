@@ -26,6 +26,9 @@ import {
 } from '@/app/actions/player';
 import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
 import { sendMessage, getMessagesForFamily } from '@/app/actions/messages';
+import { AvatarSelector } from '@/components/AvatarSelector';
+import { updatePlayerAvatar } from '@/app/actions/player';
+import Image from 'next/image';
 
 interface DashboardPlayer {
   id: string;
@@ -90,6 +93,19 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [replyText, setReplyText] = useState('');
   const [replying, setReplying] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false);
+
+  const handleAvatarSelect = async (avatarUrl: string) => {
+    // Update local state instantly for better UX
+    setPlayer(prev => prev ? { ...prev, image: avatarUrl } : prev);
+    setIsAvatarSelectorOpen(false);
+    
+    // Update server
+    const res = await updatePlayerAvatar(avatarUrl);
+    if (!res.success) {
+      setNotification({ message: 'Error al guardar tu insignia', type: 'error' });
+    }
+  };
 
   const fetchData = async () => {
     const stats = await getPlayerStats();
@@ -167,7 +183,21 @@ export function Dashboards({ initialData }: DashboardsProps) {
     <div className="container" style={{ minHeight: '100vh', background: '#020617', color: 'white', paddingBottom: '100px' }}>
       <header className="dashboard-header">
         <div className="user-profile">
-          <div className="user-avatar">{player?.image || '👤'}</div>
+          <div 
+            className="user-avatar" 
+            onClick={() => setIsAvatarSelectorOpen(true)}
+            style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+            title="Cambiar Insignia"
+          >
+            {player?.image?.startsWith('/avatars/') ? (
+              <Image src={player.image} alt="Avatar" fill style={{ objectFit: 'cover' }} />
+            ) : (
+              player?.image || '👤'
+            )}
+            <div className="avatar-edit-overlay">
+              <span style={{ fontSize: '12px' }}>✏️</span>
+            </div>
+          </div>
           <div>
             <h1 className="user-name">¡Hola, {player?.name}!</h1>
             <button onClick={() => signOut()} className="logout-btn">
@@ -179,6 +209,16 @@ export function Dashboards({ initialData }: DashboardsProps) {
           <div className="token-display"><Coins size={32} color="#f59e0b" /> {player?.balance || 0}</div>
         </div>
       </header>
+
+      <AnimatePresence>
+        {isAvatarSelectorOpen && (
+          <AvatarSelector 
+            currentAvatar={player?.image || null}
+            onSelect={handleAvatarSelect}
+            onClose={() => setIsAvatarSelectorOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Notificación */}
       <AnimatePresence>
@@ -388,6 +428,22 @@ export function Dashboards({ initialData }: DashboardsProps) {
           justify-content: center;
           align-items: center;
           font-size: 3rem;
+        }
+        .user-avatar:hover .avatar-edit-overlay {
+          opacity: 1;
+        }
+        .avatar-edit-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(0,0,0,0.6);
+          height: 30%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          opacity: 0;
+          transition: opacity 0.2s ease;
         }
         .user-name {
           font-size: 2.2rem;

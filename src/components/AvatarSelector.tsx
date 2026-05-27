@@ -47,14 +47,17 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
                 onClose();
               }}
             >
-              <Image 
-                src={avatar} 
-                alt="Avatar option" 
-                width={80} 
-                height={80} 
-                priority={true}
-                className="avatar-image"
-              />
+              <div style={{ position: 'relative', width: '100%', height: '100%', padding: '5px', boxSizing: 'border-box' }}>
+                <Image 
+                  src={avatar} 
+                  alt="Avatar option" 
+                  fill
+                  sizes="(max-width: 768px) 60px, 80px"
+                  style={{ objectFit: 'contain' }}
+                  priority={true}
+                  className="avatar-image"
+                />
+              </div>
             </button>
           ))}
         </div>
@@ -91,8 +94,8 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
         }
         .avatar-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-          gap: 12px;
+          grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+          gap: 10px;
           justify-items: center;
         }
         .avatar-btn {
@@ -107,6 +110,8 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
           align-items: center;
           width: 100%;
           aspect-ratio: 1;
+          position: relative;
+          overflow: hidden;
         }
         .avatar-btn:hover {
           transform: scale(1.05);

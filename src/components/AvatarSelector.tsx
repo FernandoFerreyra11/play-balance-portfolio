@@ -86,16 +86,16 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
         .avatar-modal-content {
           padding: 20px;
           border-radius: 24px;
-          max-width: 450px;
-          width: 100%;
-          max-height: 85vh;
+          max-width: 350px;
+          width: 90%;
+          max-height: 80vh;
           overflow-y: auto;
           border: 1px solid rgba(255,255,255,0.1);
         }
         .avatar-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-          gap: 10px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
           justify-items: center;
         }
         .avatar-btn {

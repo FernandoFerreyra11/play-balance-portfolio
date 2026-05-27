@@ -1,4 +1,4 @@
-import { db } from './src/db/db';
+import { db } from './src/db';
 import { users, transactions } from './src/db/schema';
 import { eq } from 'drizzle-orm';
 

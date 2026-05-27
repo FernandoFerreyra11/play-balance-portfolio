@@ -77,18 +77,22 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
           justify-content: center;
           align-items: center;
           z-index: 9999;
+          padding: 20px;
+          box-sizing: border-box;
         }
         .avatar-modal-content {
-          padding: 30px;
+          padding: 20px;
           border-radius: 24px;
           max-width: 450px;
-          width: 90%;
+          width: 100%;
+          max-height: 85vh;
+          overflow-y: auto;
           border: 1px solid rgba(255,255,255,0.1);
         }
         .avatar-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-          gap: 15px;
+          grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+          gap: 12px;
           justify-items: center;
         }
         .avatar-btn {
@@ -101,6 +105,8 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
           display: flex;
           justify-content: center;
           align-items: center;
+          width: 100%;
+          aspect-ratio: 1;
         }
         .avatar-btn:hover {
           transform: scale(1.05);
@@ -113,6 +119,8 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
         }
         .avatar-image {
           border-radius: 12px;
+          width: 100%;
+          height: 100%;
           object-fit: contain;
         }
       `}</style>

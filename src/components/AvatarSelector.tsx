@@ -25,7 +25,13 @@ export const AVATARS = [
 
 export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelectorProps) {
   return (
-    <div className="avatar-modal-overlay" onClick={onClose}>
+    <motion.div 
+      className="avatar-modal-overlay" 
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <motion.div 
         className="glass avatar-modal-content"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -129,6 +135,6 @@ export function AvatarSelector({ currentAvatar, onSelect, onClose }: AvatarSelec
           object-fit: contain;
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 }

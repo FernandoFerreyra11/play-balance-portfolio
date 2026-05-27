@@ -17,12 +17,14 @@ export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent'
   const [isAnnual, setIsAnnual] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
 
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
-      <div 
-        style={{
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -195,7 +197,8 @@ export default function UpgradeModal({ isOpen, onClose, message, mode = 'parent'
             )}
           </AnimatePresence>
         </motion.div>
-      </div>
+        </motion.div>
+      )}
       <style jsx>{`
         .upgrade-modal {
           padding: 40px;

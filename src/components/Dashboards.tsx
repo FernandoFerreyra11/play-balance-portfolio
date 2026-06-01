@@ -28,6 +28,7 @@ import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
 import { sendMessage, getMessagesForFamily } from '@/app/actions/messages';
 import { AvatarSelector } from '@/components/AvatarSelector';
 import { updatePlayerAvatar } from '@/app/actions/player';
+import { submitBodyCheckin, getTodayCheckin } from '@/app/actions/checkin';
 import Image from 'next/image';
 
 interface DashboardPlayer {
@@ -43,6 +44,7 @@ interface DashboardQuest {
   id: string;
   title: string;
   reward: number;
+  category?: string | null;
   status?: string | null;
   isTherapy?: number | null;
 }
@@ -69,6 +71,14 @@ interface DashboardPendingReward {
   createdAt: Date | null;
 }
 
+interface BodyCheckin {
+  id: string;
+  eyes: string;
+  neck: string;
+  head: string;
+  createdAt: Date | null;
+}
+
 interface DashboardsProps {
   initialData: {
     player: DashboardPlayer;
@@ -78,6 +88,7 @@ interface DashboardsProps {
     mySuggestions: DashboardSuggestion[];
     messages?: any[];
     hasProfessional?: boolean;
+    todayCheckin?: BodyCheckin | null;
   };
 }
 
@@ -94,6 +105,14 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [replying, setReplying] = useState(false);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false);
+  const [checkinDone, setCheckinDone] = useState<boolean>(!!initialData.todayCheckin);
+  const [checkinStep, setCheckinStep] = useState<'idle' | 'answering' | 'done'>(
+    initialData.todayCheckin ? 'done' : 'idle'
+  );
+  const [checkinAnswers, setCheckinAnswers] = useState<{ eyes: string; neck: string; head: string }>({
+    eyes: '', neck: '', head: ''
+  });
+  const [checkinSending, setCheckinSending] = useState(false);
 
   const handleAvatarSelect = async (avatarUrl: string) => {
     // Update local state instantly for better UX
@@ -296,13 +315,19 @@ export function Dashboards({ initialData }: DashboardsProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {quests.map((quest: DashboardQuest) => {
               const isTherapy = quest.isTherapy === 1;
+              const isJomo = quest.category === 'jomo';
+              const borderColor = isTherapy ? '#f43f5e' : isJomo ? '#22c55e' : '#06b6d4';
               return (
-              <div key={quest.id} className="glass action-card" style={{ borderLeft: isTherapy ? '6px solid #f43f5e' : '6px solid #06b6d4' }}>
+              <div key={quest.id} className="glass action-card" style={{ borderLeft: `6px solid ${borderColor}`, background: isJomo ? 'rgba(34,197,94,0.04)' : undefined }}>
                 <div>
                   <h3 style={{ margin: '0 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {isTherapy && <Stethoscope size={18} color="#f43f5e" />}
+                    {isJomo && <span style={{ fontSize: '1rem' }}>🌿</span>}
                     {quest.title}
                   </h3>
+                  {isJomo && (
+                    <p style={{ fontSize: '0.75rem', color: '#22c55e', margin: '0 0 4px 0', fontWeight: 600 }}>OFFLINE · ¡Sin pantallas, conectás con lo que importa!</p>
+                  )}
                   <div style={{ color: '#f59e0b', fontWeight: 700 }}>+{quest.reward} Tokens</div>
                 </div>
                 <button 
@@ -313,7 +338,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                     fetchData(); 
                   }} 
                   className="btn-primary action-btn" 
-                  style={isTherapy ? { background: '#f43f5e' } : {}}
+                  style={isTherapy ? { background: '#f43f5e' } : isJomo ? { background: '#22c55e' } : {}}
                 >
                   {quest.status === 'pending_approval' ? 'Revisando...' : '¡Hecho!'}
                 </button>
@@ -371,6 +396,99 @@ export function Dashboards({ initialData }: DashboardsProps) {
               ))
             )}
           </div>
+        </section>
+
+        {/* === CHECK-IN CORPORAL === */}
+        <section style={{ gridColumn: '1 / -1' }}>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            🧠 ¿Cómo te sentís hoy?
+          </h2>
+          <p style={{ color: '#94a3b8', marginBottom: '20px', fontSize: '0.95rem' }}>Registrá cómo está tu cuerpo y ganás <span style={{ color: '#f59e0b', fontWeight: 700 }}>10 tokens</span> extra.</p>
+
+          {checkinDone ? (
+            <div className="glass" style={{ padding: '30px', borderRadius: '20px', textAlign: 'center', borderLeft: '6px solid #22c55e' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🌙</div>
+              <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '4px' }}>¡Ya registraste cómo te sentís hoy!</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Volvé mañana para tu próximo check-in.</p>
+            </div>
+          ) : checkinStep === 'idle' ? (
+            <div className="glass" style={{ padding: '30px', borderRadius: '20px', textAlign: 'center', borderLeft: '6px solid #8b5cf6' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '15px' }}>👋</div>
+              <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '20px' }}>¡Tomate un momento para escuchar tu cuerpo!</p>
+              <button
+                onClick={() => setCheckinStep('answering')}
+                className="btn-primary"
+                style={{ background: '#8b5cf6', padding: '12px 40px', fontSize: '1rem' }}
+              >
+                Comenzar Check-in 🌿
+              </button>
+            </div>
+          ) : (
+            <div className="glass" style={{ padding: '25px', borderRadius: '20px', borderLeft: '6px solid #8b5cf6' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+
+                {/* Pregunta 1: Ojos */}
+                <div>
+                  <p style={{ fontWeight: 700, marginBottom: '12px', fontSize: '1rem' }}>👁️ ¿Cómo están tus ojos?</p>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {[{val:'tired',label:'😴 Cansados'},{val:'normal',label:'😐 Normal'},{val:'good',label:'😊 Bien'}].map(opt => (
+                      <button key={opt.val} onClick={() => setCheckinAnswers(p => ({...p, eyes: opt.val}))}
+                        style={{ padding: '10px 18px', borderRadius: '12px', border: `2px solid ${checkinAnswers.eyes === opt.val ? '#8b5cf6' : 'rgba(255,255,255,0.1)'}`, background: checkinAnswers.eyes === opt.val ? 'rgba(139,92,246,0.2)' : 'transparent', color: 'white', cursor: 'pointer', fontWeight: checkinAnswers.eyes === opt.val ? 700 : 400, fontSize: '0.95rem', transition: 'all 0.15s' }}>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pregunta 2: Cuello */}
+                <div>
+                  <p style={{ fontWeight: 700, marginBottom: '12px', fontSize: '1rem' }}>🦒 ¿Cómo está tu cuello/espalda?</p>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {[{val:'tense',label:'😖 Con tensión'},{val:'normal',label:'😐 Normal'},{val:'good',label:'😊 Bien'}].map(opt => (
+                      <button key={opt.val} onClick={() => setCheckinAnswers(p => ({...p, neck: opt.val}))}
+                        style={{ padding: '10px 18px', borderRadius: '12px', border: `2px solid ${checkinAnswers.neck === opt.val ? '#8b5cf6' : 'rgba(255,255,255,0.1)'}`, background: checkinAnswers.neck === opt.val ? 'rgba(139,92,246,0.2)' : 'transparent', color: 'white', cursor: 'pointer', fontWeight: checkinAnswers.neck === opt.val ? 700 : 400, fontSize: '0.95rem', transition: 'all 0.15s' }}>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pregunta 3: Cabeza */}
+                <div>
+                  <p style={{ fontWeight: 700, marginBottom: '12px', fontSize: '1rem' }}>🧠 ¿Cómo está tu cabeza?</p>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {[{val:'dizzy',label:'😵 Mareada'},{val:'normal',label:'😐 Normal'},{val:'clear',label:'😊 Despejada'}].map(opt => (
+                      <button key={opt.val} onClick={() => setCheckinAnswers(p => ({...p, head: opt.val}))}
+                        style={{ padding: '10px 18px', borderRadius: '12px', border: `2px solid ${checkinAnswers.head === opt.val ? '#8b5cf6' : 'rgba(255,255,255,0.1)'}`, background: checkinAnswers.head === opt.val ? 'rgba(139,92,246,0.2)' : 'transparent', color: 'white', cursor: 'pointer', fontWeight: checkinAnswers.head === opt.val ? 700 : 400, fontSize: '0.95rem', transition: 'all 0.15s' }}>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  disabled={!checkinAnswers.eyes || !checkinAnswers.neck || !checkinAnswers.head || checkinSending}
+                  onClick={async () => {
+                    setCheckinSending(true);
+                    const res = await submitBodyCheckin(checkinAnswers.eyes, checkinAnswers.neck, checkinAnswers.head);
+                    setCheckinSending(false);
+                    if (res.success) {
+                      setCheckinDone(true);
+                      setCheckinStep('done');
+                      setNotification({ message: `¡Check-in completado! Ganaste ${res.tokensEarned} tokens 🎉`, type: 'success' });
+                      fetchData();
+                    } else {
+                      setNotification({ message: res.error || 'Error al guardar', type: 'error' });
+                    }
+                  }}
+                  className="btn-primary"
+                  style={{ background: '#8b5cf6', padding: '14px', fontSize: '1rem', opacity: (!checkinAnswers.eyes || !checkinAnswers.neck || !checkinAnswers.head) ? 0.5 : 1 }}
+                >
+                  {checkinSending ? 'Guardando...' : '✅ Enviar Check-in y ganar 10 tokens'}
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         <section>

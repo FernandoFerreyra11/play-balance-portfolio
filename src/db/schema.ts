@@ -151,3 +151,13 @@ export const messages = pgTable('messages', {
   read: integer('read').default(0), // 0 = false, 1 = true
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const bodyCheckins = pgTable('body_checkins', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  childId: uuid('child_id').references(() => users.id).notNull(),
+  eyes: text('eyes').notNull(),  // 'tired' | 'normal' | 'good'
+  neck: text('neck').notNull(),  // 'tense' | 'normal' | 'good'
+  head: text('head').notNull(),  // 'dizzy' | 'normal' | 'clear'
+  createdAt: timestamp('created_at').defaultNow(),
+});
+

@@ -36,6 +36,7 @@ import { getPendingApprovals, approveQuest, rejectQuest, getPendingRewardApprova
 import { getSuggestions, updateSuggestionStatus } from '../actions/suggestions';
 import { getFamilyStats, awardSpontaneousTokens } from '../actions/player';
 import { getMessagesForFamily, sendMessage, markMyMessagesAsRead } from '../actions/messages';
+import { getChildCheckins } from '../actions/checkin';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -737,15 +738,40 @@ function QuestsManager() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <h2>Catálogo de Misiones</h2>
-        <button 
-          onClick={() => setShowForm(!showForm)}
-          className="btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          {showForm ? 'Cancelar' : <><Plus size={18} /> Nueva Misión</>}
-        </button>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={async () => {
+              const jomoMissions = [
+                { title: 'Jugué 1 hora afuera sin pantallas', tokens: 80, category: 'jomo' },
+                { title: 'Leí un libro o revista por 30 minutos', tokens: 60, category: 'jomo' },
+                { title: 'Dibujé o pinté algo creativo', tokens: 50, category: 'jomo' },
+                { title: 'Ayudé en casa sin que me lo pidan', tokens: 70, category: 'jomo' },
+                { title: 'Pasé tiempo en familia sin celulares', tokens: 90, category: 'jomo' },
+              ];
+              for (const mission of jomoMissions) {
+                const fd = new FormData();
+                fd.set('title', mission.title);
+                fd.set('tokens', String(mission.tokens));
+                fd.set('category', mission.category);
+                await createQuest(fd);
+              }
+              fetchQuests();
+            }}
+            className="glass"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '12px', border: '1px solid #22c55e', color: '#22c55e', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+          >
+            🌿 Cargar misiones JOMO
+          </button>
+          <button 
+            onClick={() => setShowForm(!showForm)}
+            className="btn-primary" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            {showForm ? 'Cancelar' : <><Plus size={18} /> Nueva Misión</>}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -771,6 +797,7 @@ function QuestsManager() {
                 <option value="Estudio" style={{ color: 'black' }}>📚 Estudio</option>
                 <option value="Higiene" style={{ color: 'black' }}>🚿 Higiene</option>
                 <option value="Deporte" style={{ color: 'black' }}>⚽ Deporte</option>
+                <option value="jomo" style={{ color: 'black' }}>🌿 JOMO (offline)</option>
               </select>
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
@@ -784,7 +811,7 @@ function QuestsManager() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
         {questsList.map((quest) => (
-          <div key={quest.id} className="glass card" style={{ borderLeft: '4px solid var(--primary-color)' }}>
+          <div key={quest.id} className="glass card" style={{ borderLeft: quest.category === 'jomo' ? '4px solid #22c55e' : '4px solid var(--primary-color)', background: quest.category === 'jomo' ? 'rgba(34,197,94,0.04)' : undefined }}>
             {editingId === quest.id ? (
               <form onSubmit={(e) => handleUpdate(e, quest.id)} style={{ display: 'grid', gap: '15px' }}>
                 <input name="title" defaultValue={quest.title} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
@@ -795,6 +822,7 @@ function QuestsManager() {
                     <option value="Estudio" style={{ color: 'black' }}>📚 Estudio</option>
                     <option value="Higiene" style={{ color: 'black' }}>🚿 Higiene</option>
                     <option value="Deporte" style={{ color: 'black' }}>⚽ Deporte</option>
+                    <option value="jomo" style={{ color: 'black' }}>🌿 JOMO (offline)</option>
                   </select>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -1348,6 +1376,13 @@ function StatsManager() {
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [stats, setStats] = useState<FamilyStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkins, setCheckins] = useState<any[]>([]);
+
+  const fetchCheckins = useCallback(async (childId: string) => {
+    if (childId === 'all') { setCheckins([]); return; }
+    const data = await getChildCheckins(childId);
+    setCheckins(data as any[]);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -1370,8 +1405,9 @@ function StatsManager() {
   useEffect(() => {
     Promise.resolve().then(() => {
       fetchStats();
+      fetchCheckins(selectedChild);
     });
-  }, [fetchStats]);
+  }, [fetchStats, fetchCheckins, selectedChild]);
 
   if (loading && !stats) return <div style={{ textAlign: 'center', padding: '60px' }}>Analizando datos familiares...</div>;
 
@@ -1480,6 +1516,39 @@ function StatsManager() {
               )}
             </div>
           </div>
+
+          {/* === CHECK-IN CORPORAL === */}
+          {selectedChild !== 'all' && (
+            <div className="glass card" style={{ marginTop: '30px', borderLeft: '4px solid #8b5cf6' }}>
+              <h3 style={{ marginBottom: '5px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                🧠 Historial de Check-ins Corporales
+              </h3>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '20px' }}>Últimos 14 registros de bienestar del aventurero.</p>
+              {checkins.length === 0 ? (
+                <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '20px' }}>Aún no hay check-ins registrados.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {checkins.map((c: any) => {
+                    const eyesEmoji = c.eyes === 'tired' ? '😴' : c.eyes === 'normal' ? '😐' : '😊';
+                    const neckEmoji = c.neck === 'tense' ? '😖' : c.neck === 'normal' ? '😐' : '😊';
+                    const headEmoji = c.head === 'dizzy' ? '😵' : c.head === 'normal' ? '😐' : '😊';
+                    return (
+                      <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+                          {c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) : 'N/A'}
+                        </p>
+                        <div style={{ display: 'flex', gap: '20px', fontSize: '1.3rem' }}>
+                          <span title="Ojos">{eyesEmoji}</span>
+                          <span title="Cuello/Espalda">{neckEmoji}</span>
+                          <span title="Cabeza">{headEmoji}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
     </motion.div>

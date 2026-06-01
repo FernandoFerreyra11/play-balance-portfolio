@@ -11,6 +11,7 @@ import {
 import { getMySuggestions } from "./actions/suggestions";
 import { getMessagesForFamily } from "@/app/actions/messages";
 import { getFamilyDetail } from "@/app/actions/family";
+import { getTodayCheckin } from "@/app/actions/checkin";
 
 export default async function Home() {
   console.log("SERVER: Rendering Home page");
@@ -47,6 +48,10 @@ export default async function Home() {
     hasProfessional = !!family?.professionalId;
   }
 
+  const todayCheckin = (session?.user as any)?.role === 'child'
+    ? await getTodayCheckin()
+    : null;
+
   return (
     <Dashboards 
       initialData={{ 
@@ -56,7 +61,8 @@ export default async function Home() {
         pendingRewards: pendingRewards as any,
         mySuggestions: mySuggestions as any,
         messages: initialMessages,
-        hasProfessional
+        hasProfessional,
+        todayCheckin: todayCheckin as any,
       }} 
     />
   );

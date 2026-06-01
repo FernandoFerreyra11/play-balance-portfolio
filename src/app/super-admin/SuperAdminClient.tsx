@@ -106,7 +106,7 @@ export default function SuperAdminClient() {
       minHeight: '100vh', background: '#0a0a0a', color: 'white', 
       padding: '40px', fontFamily: 'system-ui' 
     }}>
-      <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#06b6d4', marginBottom: '5px' }}>
             <ShieldCheck size={20} />
@@ -145,11 +145,11 @@ export default function SuperAdminClient() {
 
       {/* Families Section */}
       <section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
           <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Award size={24} /> Registered Families
           </h2>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
             <input 
               type="text" 
@@ -159,13 +159,13 @@ export default function SuperAdminClient() {
               className="glass"
               style={{ 
                 padding: '10px 15px 10px 40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
-                color: 'white', width: '250px', outline: 'none'
+                color: 'white', width: '100%', outline: 'none'
               }}
             />
           </div>
         </div>
 
-        <div className="glass" style={{ borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="glass" style={{ borderRadius: '20px', overflowX: 'auto', border: '1px solid rgba(255,255,255,0.05)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.02)' }}>

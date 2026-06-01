@@ -995,6 +995,7 @@ interface PendingApprovalItem {
   questTitle: string;
   questReward: number;
   isTherapy?: number | null;
+  createdAt?: Date | null;
 }
 
 interface PendingRewardApprovalItem {
@@ -1003,6 +1004,7 @@ interface PendingRewardApprovalItem {
   childName: string;
   rewardTitle: string;
   rewardCost: number;
+  createdAt?: Date | null;
 }
 
 interface ApprovalsManagerProps {

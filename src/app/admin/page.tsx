@@ -1529,18 +1529,33 @@ function StatsManager() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {checkins.map((c: any) => {
-                    const eyesEmoji = c.eyes === 'tired' ? '😴' : c.eyes === 'normal' ? '😐' : '😊';
-                    const neckEmoji = c.neck === 'tense' ? '😖' : c.neck === 'normal' ? '😐' : '😊';
-                    const headEmoji = c.head === 'dizzy' ? '😵' : c.head === 'normal' ? '😐' : '😊';
+                    const eyesData = c.eyes === 'tired' ? { emoji: '😴', label: 'Cansados' } : c.eyes === 'normal' ? { emoji: '😐', label: 'Normal' } : { emoji: '😊', label: 'Bien' };
+                    const neckData = c.neck === 'tense' ? { emoji: '😖', label: 'Con tensión' } : c.neck === 'normal' ? { emoji: '😐', label: 'Normal' } : { emoji: '😊', label: 'Bien' };
+                    const headData = c.head === 'dizzy' ? { emoji: '😵', label: 'Mareada' } : c.head === 'normal' ? { emoji: '😐', label: 'Normal' } : { emoji: '😊', label: 'Despejada' };
+                    const date = c.createdAt ? new Date(c.createdAt) : null;
                     return (
-                      <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-                          {c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) : 'N/A'}
-                        </p>
-                        <div style={{ display: 'flex', gap: '20px', fontSize: '1.3rem' }}>
-                          <span title="Ojos">{eyesEmoji}</span>
-                          <span title="Cuello/Espalda">{neckEmoji}</span>
-                          <span title="Cabeza">{headEmoji}</span>
+                      <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <p style={{ fontSize: '0.85rem', color: 'white', fontWeight: 600, margin: 0 }}>
+                            {date ? date.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) : 'N/A'}
+                          </p>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', margin: '2px 0 0 0' }}>
+                            🕐 {date ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.4rem' }}>{eyesData.emoji}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', marginTop: '2px' }}>👁️ {eyesData.label}</div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.4rem' }}>{neckData.emoji}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', marginTop: '2px' }}>🦒 {neckData.label}</div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.4rem' }}>{headData.emoji}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', marginTop: '2px' }}>🧠 {headData.label}</div>
+                          </div>
                         </div>
                       </div>
                     );

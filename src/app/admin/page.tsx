@@ -1022,7 +1022,8 @@ interface PendingApprovalItem {
   childName: string;
   questTitle: string;
   questReward: number;
-  isTherapy?: number | null;
+  questId: string;
+  isTherapy?: number;
   createdAt?: Date | null;
 }
 

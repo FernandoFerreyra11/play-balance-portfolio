@@ -423,7 +423,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
           height: 80px;
           background: rgba(255,255,255,0.05);
           border: 2px solid #06b6d4;
-          border-radius: 50%;
+          border-radius: 24px;
           display: flex;
           justify-content: center;
           align-items: center;

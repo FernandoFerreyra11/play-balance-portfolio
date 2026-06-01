@@ -266,7 +266,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                 color: selectedChild === child.id ? 'white' : '#94a3b8'
               }}
             >
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '0.8rem', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '0.8rem', position: 'relative', overflow: 'hidden' }}>
                 {child.image?.startsWith('/avatars/') ? (
                   <Image src={child.image} alt="Avatar" fill style={{ objectFit: 'cover' }} sizes="24px" />
                 ) : (

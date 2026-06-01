@@ -493,7 +493,7 @@ function FamilyManager() {
                   <button type="button" onClick={() => setBonusId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}><X size={18}/></button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ fontSize: '2rem', width: '40px', height: '40px', position: 'relative', overflow: 'hidden', borderRadius: '50%' }}>
+                  <div style={{ fontSize: '2rem', width: '40px', height: '40px', position: 'relative', overflow: 'hidden', borderRadius: '12px' }}>
                     {member.image?.startsWith('/avatars/') ? (
                       <Image src={member.image} alt="Avatar" fill style={{ objectFit: 'cover' }} sizes="40px" />
                     ) : (
@@ -515,7 +515,7 @@ function FamilyManager() {
                     width: '60px', height: '60px', 
                     background: 'rgba(255,255,255,0.05)', 
                     border: '1px solid var(--border-color)',
-                    borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    borderRadius: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center',
                     fontSize: '2rem', position: 'relative', overflow: 'hidden'
                   }}>
                     {member.image?.startsWith('/avatars/') ? (
@@ -1081,7 +1081,7 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
         {pending.map((item) => (
           <div key={item.id} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
                 {item.childImage?.startsWith('/avatars/') ? (
                   <Image src={item.childImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '5px' }} sizes="60px" />
                 ) : (
@@ -1145,7 +1145,7 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
         {pendingRewards.map((item) => (
           <div key={item.id} className="glass card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', borderLeft: '4px solid #f59e0b' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ fontSize: '2.5rem', width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
                 {item.childImage?.startsWith('/avatars/') ? (
                   <Image src={item.childImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '5px' }} sizes="60px" />
                 ) : (
@@ -1248,7 +1248,7 @@ function SuggestionsManager({ onUpdate }: SuggestionsManagerProps = {}) {
           <div key={item.id} className="glass card" style={{ position: 'relative', borderLeft: item.status === 'approved' ? '4px solid var(--success-color)' : item.status === 'rejected' ? '4px solid var(--danger-color)' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
               <div style={{ display: 'flex', gap: '15px' }}>
-                <div style={{ fontSize: '2rem', width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ fontSize: '2rem', width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
                   {item.childImage?.startsWith('/avatars/') ? (
                     <Image src={item.childImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '5px' }} sizes="50px" />
                   ) : (
@@ -1441,7 +1441,7 @@ function StatsManager() {
               {stats?.transactions.map((t: TransactionItem) => (
                 <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
                       {t.userImage?.startsWith('/avatars/') ? (
                         <Image src={t.userImage} alt="Avatar" fill style={{ objectFit: 'contain', padding: '4px' }} sizes="40px" />
                       ) : (

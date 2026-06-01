@@ -153,7 +153,7 @@ export async function requestReward(rewardId: string) {
       userId: playerId,
       amount: -reward.cost,
       type: 'reward_pending',
-      description: `Canje pendiente: ${reward.title}`,
+      description: `Canje solicitado: ${reward.title}`,
     });
 
     revalidatePath("/");

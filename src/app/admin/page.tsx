@@ -742,14 +742,30 @@ function QuestsManager() {
         <h2>Catálogo de Misiones</h2>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
+            disabled={questsList.filter(q => q.category === 'jomo').length >= 10 || loading}
             onClick={async () => {
-              const jomoMissions = [
-                { title: 'Jugué 1 hora afuera sin pantallas', tokens: 80, category: 'jomo' },
-                { title: 'Leí un libro o revista por 30 minutos', tokens: 60, category: 'jomo' },
-                { title: 'Dibujé o pinté algo creativo', tokens: 50, category: 'jomo' },
-                { title: 'Ayudé en casa sin que me lo pidan', tokens: 70, category: 'jomo' },
-                { title: 'Pasé tiempo en familia sin celulares', tokens: 90, category: 'jomo' },
-              ];
+              setLoading(true);
+              const existingJomo = questsList.filter(q => q.category === 'jomo').length;
+              
+              let jomoMissions = [];
+              if (existingJomo < 5) {
+                jomoMissions = [
+                  { title: 'Jugué 1 hora afuera sin pantallas', tokens: 80, category: 'jomo' },
+                  { title: 'Leí un libro o revista por 30 minutos', tokens: 60, category: 'jomo' },
+                  { title: 'Dibujé o pinté algo creativo', tokens: 50, category: 'jomo' },
+                  { title: 'Ayudé en casa sin que me lo pidan', tokens: 70, category: 'jomo' },
+                  { title: 'Pasé tiempo en familia sin celulares', tokens: 90, category: 'jomo' },
+                ];
+              } else {
+                jomoMissions = [
+                  { title: 'Hice manualidades o papiroflexia', tokens: 60, category: 'jomo' },
+                  { title: 'Cociné una receta nueva con mi familia', tokens: 80, category: 'jomo' },
+                  { title: 'Escribí un cuento o en mi diario', tokens: 50, category: 'jomo' },
+                  { title: 'Jugué a un juego de mesa clásico', tokens: 70, category: 'jomo' },
+                  { title: 'Armé un rompecabezas o Lego', tokens: 70, category: 'jomo' },
+                ];
+              }
+
               for (const mission of jomoMissions) {
                 const fd = new FormData();
                 fd.set('title', mission.title);
@@ -758,11 +774,21 @@ function QuestsManager() {
                 await createQuest(fd);
               }
               fetchQuests();
+              setLoading(false);
             }}
             className="glass"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '12px', border: '1px solid #22c55e', color: '#22c55e', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '12px', 
+              border: questsList.filter(q => q.category === 'jomo').length >= 10 ? '1px solid #94a3b8' : '1px solid #22c55e', 
+              color: questsList.filter(q => q.category === 'jomo').length >= 10 ? '#94a3b8' : '#22c55e', 
+              cursor: questsList.filter(q => q.category === 'jomo').length >= 10 || loading ? 'not-allowed' : 'pointer', 
+              fontSize: '0.85rem', fontWeight: 600,
+              opacity: questsList.filter(q => q.category === 'jomo').length >= 10 ? 0.6 : 1
+            }}
           >
-            🌿 Cargar misiones JOMO
+            {questsList.filter(q => q.category === 'jomo').length >= 10 
+              ? '🌿 Misiones JOMO completadas' 
+              : loading ? '⏳ Cargando...' : '🌿 Cargar misiones JOMO'}
           </button>
           <button 
             onClick={() => setShowForm(!showForm)}

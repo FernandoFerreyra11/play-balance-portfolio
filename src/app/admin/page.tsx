@@ -1096,6 +1096,11 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
                     {item.isTherapy === 1 && <Stethoscope size={14} color="#f43f5e" />}
                     {item.questTitle}
                   </span>
+                  {item.createdAt && (
+                    <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                      • {new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                    </span>
+                  )}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontSize: '0.9rem', marginTop: '5px', fontWeight: 700 }}>
                   <Coins size={14} /> Recompensa: {item.questReward} Tokens
@@ -1160,6 +1165,11 @@ function ApprovalsManager({ onUpdate }: ApprovalsManagerProps = {}) {
                     <Gift size={14} color="#f59e0b" />
                     {item.rewardTitle}
                   </span>
+                  {item.createdAt && (
+                    <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                      • {new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                    </span>
+                  )}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--gold-color)', fontSize: '0.9rem', marginTop: '5px', fontWeight: 700 }}>
                   <Coins size={14} /> Costo: {item.rewardCost} Tokens
@@ -1458,7 +1468,7 @@ function StatsManager() {
                       {t.amount > 0 ? '+' : ''}{t.amount}
                     </p>
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                      {t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'}
+                      {t.createdAt ? new Date(t.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                     </p>
                   </div>
                 </div>

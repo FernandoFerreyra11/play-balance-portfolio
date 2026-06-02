@@ -846,32 +846,36 @@ export function Dashboards({ initialData }: DashboardsProps) {
                               initial={isDone ? { opacity: 1 } : { opacity: 0.6 }}
                               animate={{ opacity: isDone || isCurrent ? 1 : 0.4 }}
                               style={{
-                                display: 'flex', alignItems: 'center', gap: '12px',
+                                display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
                                 padding: '10px 15px', borderRadius: '12px',
                                 background: isDone ? 'rgba(34,197,94,0.08)' : isCurrent ? 'rgba(245,158,11,0.08)' : 'transparent',
                                 border: isCurrent ? '1px solid rgba(245,158,11,0.3)' : '1px solid transparent',
                               }}
                             >
-                              <span style={{ fontSize: '1.2rem', width: '30px', textAlign: 'center' }}>
-                                {isDone ? '✅' : isCurrent ? '→' : '○'}
-                              </span>
-                              <span style={{ fontSize: '1.1rem', marginRight: '4px' }}>{step.icon}</span>
-                              <span style={{ flex: 1, fontWeight: isDone ? 400 : isCurrent ? 700 : 400, textDecoration: isDone ? 'line-through' : 'none', color: isDone ? '#94a3b8' : 'white' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '40px' }}>
+                                <span style={{ fontSize: '1.2rem', width: '30px', textAlign: 'center' }}>
+                                  {isDone ? '✅' : isCurrent ? '→' : '○'}
+                                </span>
+                                <span style={{ fontSize: '1.1rem' }}>{step.icon}</span>
+                              </div>
+                              <span style={{ flex: '1 1 150px', fontWeight: isDone ? 400 : isCurrent ? 700 : 400, textDecoration: isDone ? 'line-through' : 'none', color: isDone ? '#94a3b8' : 'white' }}>
                                 {step.title}
                               </span>
-                              <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 600 }}>
-                                +{step.tokens} 🪙
-                              </span>
-                              {isCurrent && todayCompletion && (
-                                <button
-                                  onClick={() => handleCompleteStep(todayCompletion.id)}
-                                  disabled={routineLoading === todayCompletion.id}
-                                  className="btn-primary"
-                                  style={{ padding: '6px 16px', fontSize: '0.85rem', background: '#f59e0b', color: '#000', whiteSpace: 'nowrap' }}
-                                >
-                                  {routineLoading === todayCompletion.id ? '...' : '¡Hecho!'}
-                                </button>
-                              )}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                                <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 600 }}>
+                                  +{step.tokens} 🪙
+                                </span>
+                                {isCurrent && todayCompletion && (
+                                  <button
+                                    onClick={() => handleCompleteStep(todayCompletion.id)}
+                                    disabled={routineLoading === todayCompletion.id}
+                                    className="btn-primary"
+                                    style={{ padding: '6px 16px', fontSize: '0.85rem', background: '#f59e0b', color: '#000', whiteSpace: 'nowrap' }}
+                                  >
+                                    {routineLoading === todayCompletion.id ? '...' : '¡Hecho!'}
+                                  </button>
+                                )}
+                              </div>
                             </motion.div>
                           );
                         })}

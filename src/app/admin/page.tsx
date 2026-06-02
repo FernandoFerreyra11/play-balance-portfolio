@@ -1886,6 +1886,7 @@ function RoutinesManager() {
     { order: 1, title: '', icon: '📱', tokens: 5 },
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingRoutine, setEditingRoutine] = useState<RoutineItem | null>(null);
 
   const fetchRoutines = async () => {
     const data = await getRoutines();
@@ -1930,6 +1931,7 @@ function RoutinesManager() {
     if (res.success) {
       setShowForm(false);
       setEditingId(null);
+      setEditingRoutine(null);
       setSteps([{ order: 1, title: '', icon: '📱', tokens: 5 }]);
       fetchRoutines();
       setNotification({ message: editingId ? '¡Rutina actualizada! ✨' : '¡Rutina creada! 🌅', type: 'success' });
@@ -1953,6 +1955,7 @@ function RoutinesManager() {
 
   const handleEdit = (routine: RoutineItem) => {
     setEditingId(routine.id);
+    setEditingRoutine(routine);
     setSelectedIcon(routine.icon || '🌙');
     setSteps(JSON.parse(routine.steps));
     setShowForm(true);
@@ -2009,7 +2012,7 @@ function RoutinesManager() {
             </button>
           )}
           <button
-            onClick={() => { setShowForm(!showForm); setEditingId(null); setSteps([{ order: 1, title: '', icon: '📱', tokens: 5 }]); }}
+            onClick={() => { setShowForm(!showForm); setEditingId(null); setEditingRoutine(null); setSteps([{ order: 1, title: '', icon: '📱', tokens: 5 }]); }}
             className="btn-primary"
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
@@ -2020,15 +2023,15 @@ function RoutinesManager() {
 
       {showForm && (
         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="glass card" style={{ marginBottom: '30px', overflow: 'hidden' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
+          <form key={editingId || 'new'} onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
               <div style={{ display: 'grid', gap: '8px' }}>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Nombre de la rutina</label>
-                <input name="title" type="text" placeholder="Ej: Rutina Nocturna" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+                <input name="title" type="text" defaultValue={editingRoutine?.title || ''} placeholder="Ej: Rutina Nocturna" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
               </div>
               <div style={{ display: 'grid', gap: '8px' }}>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Descripción (opcional)</label>
-                <input name="description" type="text" placeholder="Ej: Para antes de dormir" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+                <input name="description" type="text" defaultValue={editingRoutine?.description || ''} placeholder="Ej: Para antes de dormir" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
               </div>
             </div>
 
@@ -2050,23 +2053,25 @@ function RoutinesManager() {
                 <button type="button" onClick={addStep} style={{ background: 'none', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', padding: '4px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Agregar paso</button>
               </div>
               {steps.map((step, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
-                  <span style={{ color: 'var(--text-dim)', fontWeight: 700, minWidth: '24px' }}>{idx + 1}.</span>
-                  <input
-                    type="text"
-                    value={step.icon}
-                    onChange={(e) => updateStep(idx, 'icon', e.target.value)}
-                    style={{ width: '40px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px', color: 'white', fontSize: '1.1rem' }}
-                  />
+                <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: 'var(--text-dim)', fontWeight: 700, minWidth: '24px' }}>{idx + 1}.</span>
+                    <input
+                      type="text"
+                      value={step.icon}
+                      onChange={(e) => updateStep(idx, 'icon', e.target.value)}
+                      style={{ width: '40px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px', color: 'white', fontSize: '1.1rem' }}
+                    />
+                  </div>
                   <input
                     type="text"
                     value={step.title}
                     onChange={(e) => updateStep(idx, 'title', e.target.value)}
                     placeholder="¿Qué hacer en este paso?"
                     required
-                    style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}
+                    style={{ flex: '1 1 180px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}
                   />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                     <input
                       type="number"
                       value={step.tokens}
@@ -2075,12 +2080,12 @@ function RoutinesManager() {
                       style={{ width: '50px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px', color: 'var(--gold-color)', textAlign: 'center' }}
                     />
                     <Coins size={14} color="var(--gold-color)" />
+                    {steps.length > 1 && (
+                      <button type="button" onClick={() => removeStep(idx)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '4px', marginLeft: '8px' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
-                  {steps.length > 1 && (
-                    <button type="button" onClick={() => removeStep(idx)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '4px' }}>
-                      <Trash2 size={16} />
-                    </button>
-                  )}
                 </div>
               ))}
               <div style={{ textAlign: 'right', fontSize: '0.85rem', color: 'var(--gold-color)', fontWeight: 700 }}>

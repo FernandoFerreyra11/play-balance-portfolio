@@ -4,6 +4,7 @@ export const roleEnum = pgEnum('role', ['parent', 'child', 'super_admin', 'profe
 export const statusEnum = pgEnum('status', ['pending', 'approved', 'rejected']);
 export const questStatusEnum = pgEnum('quest_status', ['in_progress', 'pending_approval', 'completed']);
 export const receiverTypeEnum = pgEnum('receiver_type', ['parents', 'children', 'professional']);
+export const routineStatusEnum = pgEnum('routine_status', ['active', 'archived']);
 
 export const organizations = pgTable('organizations', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -28,6 +29,9 @@ export const users = pgTable('users', {
   organizationId: uuid('organization_id').references(() => organizations.id), // Vinculado a una clínica/escuela
   balance: integer('balance').default(0),
   subscriptionPlan: text('subscription_plan').default('free'), // 'free', 'growth', 'unlimited'
+  currentStreak: integer('current_streak').default(0),
+  longestStreak: integer('longest_streak').default(0),
+  lastCheckinDate: text('last_checkin_date'), // 'YYYY-MM-DD' para comparación simple de fechas
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -158,6 +162,39 @@ export const bodyCheckins = pgTable('body_checkins', {
   eyes: text('eyes').notNull(),  // 'tired' | 'normal' | 'good'
   neck: text('neck').notNull(),  // 'tense' | 'normal' | 'good'
   head: text('head').notNull(),  // 'dizzy' | 'normal' | 'clear'
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const moodCheckins = pgTable('mood_checkins', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  childId: uuid('child_id').references(() => users.id).notNull(),
+  mood: text('mood').notNull(),       // 'happy' | 'calm' | 'neutral' | 'sad' | 'anxious' | 'angry'
+  energy: text('energy').notNull(),   // 'low' | 'medium' | 'high'
+  note: text('note'),                 // Reflexión opcional
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const routines = pgTable('routines', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  familyId: uuid('family_id').references(() => families.id).notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  icon: text('icon').default('🌙'),
+  totalTokens: integer('total_tokens').notNull(),
+  steps: text('steps').notNull(), // JSON array: [{order, title, icon, tokens}]
+  status: routineStatusEnum('status').default('active'),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const routineCompletions = pgTable('routine_completions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  childId: uuid('child_id').references(() => users.id).notNull(),
+  routineId: uuid('routine_id').references(() => routines.id).notNull(),
+  stepsCompleted: integer('steps_completed').default(0),
+  totalSteps: integer('total_steps').notNull(),
+  completed: integer('completed').default(0), // 0 = en progreso, 1 = completada
+  completedAt: timestamp('completed_at'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

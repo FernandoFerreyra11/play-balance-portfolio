@@ -11,7 +11,8 @@ import {
 import { getMySuggestions } from "./actions/suggestions";
 import { getMessagesForFamily } from "@/app/actions/messages";
 import { getFamilyDetail } from "@/app/actions/family";
-import { getTodayCheckin } from "@/app/actions/checkin";
+import { getTodayCheckin, getTodayMoodCheckin, getStreakInfo } from "@/app/actions/checkin";
+import { getAvailableRoutines, getTodayRoutineProgress } from "@/app/actions/routines";
 
 export default async function Home() {
   console.log("SERVER: Rendering Home page");
@@ -48,9 +49,16 @@ export default async function Home() {
     hasProfessional = !!family?.professionalId;
   }
 
-  const todayCheckin = (session?.user as any)?.role === 'child'
-    ? await getTodayCheckin()
-    : null;
+  const isChild = (session?.user as any)?.role === 'child';
+  const [todayCheckin, todayMoodCheckin, streakInfo, availableRoutines, todayRoutineProgress] = isChild
+    ? await Promise.all([
+        getTodayCheckin(),
+        getTodayMoodCheckin(),
+        getStreakInfo(),
+        getAvailableRoutines(),
+        getTodayRoutineProgress(),
+      ])
+    : [null, null, null, [], []];
 
   return (
     <Dashboards 
@@ -63,6 +71,10 @@ export default async function Home() {
         messages: initialMessages,
         hasProfessional,
         todayCheckin: todayCheckin as any,
+        todayMoodCheckin: todayMoodCheckin as any,
+        streakInfo: streakInfo as any,
+        availableRoutines: availableRoutines as any,
+        todayRoutineProgress: todayRoutineProgress as any,
       }} 
     />
   );

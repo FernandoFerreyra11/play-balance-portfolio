@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
+import { getRoutines, createRoutine, updateRoutine, deleteRoutine } from '../actions/routines';
 import { 
   Plus, 
   Trash2, 
@@ -23,7 +24,8 @@ import {
   AlertTriangle,
   Send,
   Stethoscope,
-  AlertCircle
+  AlertCircle,
+  Sunset
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -160,6 +162,12 @@ export default function AdminDashboard() {
         />
         )}
         <TabButton 
+          active={activeTab === 'routines'} 
+          onClick={() => setActiveTab('routines')}
+          icon={<Sunset size={18} />}
+          label="Rutinas"
+        />
+        <TabButton 
           active={activeTab === 'stats'} 
           onClick={() => setActiveTab('stats')}
           icon={<BarChart3 size={18} />}
@@ -175,6 +183,7 @@ export default function AdminDashboard() {
         {activeTab === 'approvals' && <ApprovalsManager onUpdate={fetchPendingCounts} />}
         {activeTab === 'suggestions' && <SuggestionsManager onUpdate={fetchPendingCounts} />}
         {activeTab === 'pro-messages' && <ProMessagesManager />}
+        {activeTab === 'routines' && <RoutinesManager />}
         {activeTab === 'stats' && <StatsManager />}
       </main>
     </div>
@@ -1819,3 +1828,320 @@ function ProMessagesManager() {
   );
 }
 
+// ============== ROUTINES MANAGER ==============
+
+const ROUTINE_ICONS = ['🌙', '☀️', '📚', '🧘', '🌿', '🎨', '🏃', '🍽️', '🛁', '📱'];
+
+const ROUTINE_TEMPLATES = [
+  {
+    title: 'Rutina Nocturna 🌙',
+    description: 'Para antes de dormir — desconectarse y descansar mejor',
+    icon: '🌙',
+    steps: [
+      { order: 1, title: 'Dejá tu dispositivo en la estación de carga', icon: '📱', tokens: 5 },
+      { order: 2, title: 'Leé 10 minutos o dibujá algo', icon: '📖', tokens: 5 },
+      { order: 3, title: 'Hacé 3 respiraciones profundas', icon: '🧘', tokens: 5 },
+      { order: 4, title: '¡Buenas noches, campeón!', icon: '😴', tokens: 5 },
+    ],
+  },
+  {
+    title: 'Rutina Matutina ☀️',
+    description: 'Empezar el día con energía y sin pantallas',
+    icon: '☀️',
+    steps: [
+      { order: 1, title: 'Estirate y movete 5 minutos', icon: '🏃', tokens: 5 },
+      { order: 2, title: 'Desayuná sin pantallas', icon: '🍽️', tokens: 5 },
+      { order: 3, title: 'Preparate para el día con una meta', icon: '🎯', tokens: 5 },
+    ],
+  },
+  {
+    title: 'Rutina Post-Cole 📚',
+    description: 'Transición saludable entre el cole y el tiempo libre',
+    icon: '📚',
+    steps: [
+      { order: 1, title: 'Merendá tranquilo sin pantallas', icon: '🍪', tokens: 5 },
+      { order: 2, title: 'Contá lo mejor de tu día', icon: '💬', tokens: 5 },
+      { order: 3, title: 'Hacé la tarea o leé 20 minutos', icon: '📖', tokens: 5 },
+    ],
+  },
+];
+
+interface RoutineItem {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  totalTokens: number;
+  steps: string;
+  status: string | null;
+}
+
+function RoutinesManager() {
+  const [routinesList, setRoutinesList] = useState<RoutineItem[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState('🌙');
+  const [steps, setSteps] = useState<Array<{ order: number; title: string; icon: string; tokens: number }>>([
+    { order: 1, title: '', icon: '📱', tokens: 5 },
+  ]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const fetchRoutines = async () => {
+    const data = await getRoutines();
+    setRoutinesList(data as RoutineItem[]);
+  };
+
+  useEffect(() => {
+    Promise.resolve().then(() => fetchRoutines());
+  }, []);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const addStep = () => {
+    setSteps(prev => [...prev, { order: prev.length + 1, title: '', icon: '✨', tokens: 5 }]);
+  };
+
+  const removeStep = (index: number) => {
+    if (steps.length <= 1) return;
+    setSteps(prev => prev.filter((_, i) => i !== index).map((s, i) => ({ ...s, order: i + 1 })));
+  };
+
+  const updateStep = (index: number, field: string, value: string | number) => {
+    setSteps(prev => prev.map((s, i) => i === index ? { ...s, [field]: value } : s));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    formData.set('icon', selectedIcon);
+    formData.set('steps', JSON.stringify(steps));
+
+    const res = editingId
+      ? await updateRoutine(editingId, formData)
+      : await createRoutine(formData);
+
+    if (res.success) {
+      setShowForm(false);
+      setEditingId(null);
+      setSteps([{ order: 1, title: '', icon: '📱', tokens: 5 }]);
+      fetchRoutines();
+      setNotification({ message: editingId ? '¡Rutina actualizada! ✨' : '¡Rutina creada! 🌅', type: 'success' });
+    } else {
+      setNotification({ message: res.error || 'Error', type: 'error' });
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('¿Eliminar esta rutina?')) {
+      const res = await deleteRoutine(id);
+      if (res.success) {
+        fetchRoutines();
+        setNotification({ message: 'Rutina eliminada.', type: 'success' });
+      } else {
+        setNotification({ message: res.error || 'Error', type: 'error' });
+      }
+    }
+  };
+
+  const handleEdit = (routine: RoutineItem) => {
+    setEditingId(routine.id);
+    setSelectedIcon(routine.icon || '🌙');
+    setSteps(JSON.parse(routine.steps));
+    setShowForm(true);
+  };
+
+  const handleLoadTemplates = async () => {
+    setLoading(true);
+    for (const template of ROUTINE_TEMPLATES) {
+      const fd = new FormData();
+      fd.set('title', template.title);
+      fd.set('description', template.description);
+      fd.set('icon', template.icon);
+      fd.set('steps', JSON.stringify(template.steps));
+      await createRoutine(fd);
+    }
+    fetchRoutines();
+    setLoading(false);
+    setNotification({ message: '¡3 rutinas sugeridas cargadas! 🌅', type: 'success' });
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed', top: 0, left: '50%', zIndex: 1000,
+              background: notification.type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+              color: 'white', padding: '12px 25px', borderRadius: '15px',
+              backdropFilter: 'blur(10px)', boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, pointerEvents: 'none'
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+        <h2>🌅 Rutinas de Desconexión</h2>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {routinesList.length === 0 && (
+            <button
+              onClick={handleLoadTemplates}
+              disabled={loading}
+              className="glass"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '12px', border: '1px solid #f59e0b', color: '#f59e0b', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+            >
+              {loading ? '⏳ Cargando...' : '🌅 Cargar rutinas sugeridas'}
+            </button>
+          )}
+          <button
+            onClick={() => { setShowForm(!showForm); setEditingId(null); setSteps([{ order: 1, title: '', icon: '📱', tokens: 5 }]); }}
+            className="btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            {showForm ? 'Cancelar' : <><Plus size={18} /> Nueva Rutina</>}
+          </button>
+        </div>
+      </div>
+
+      {showForm && (
+        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="glass card" style={{ marginBottom: '30px', overflow: 'hidden' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Nombre de la rutina</label>
+                <input name="title" type="text" placeholder="Ej: Rutina Nocturna" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+              </div>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Descripción (opcional)</label>
+                <input name="description" type="text" placeholder="Ej: Para antes de dormir" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Ícono</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {ROUTINE_ICONS.map(ic => (
+                  <button key={ic} type="button" onClick={() => setSelectedIcon(ic)}
+                    style={{ fontSize: '1.3rem', padding: '8px', borderRadius: '10px', background: selectedIcon === ic ? 'var(--primary-color)' : 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>
+                    {ic}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Pasos de la rutina</label>
+                <button type="button" onClick={addStep} style={{ background: 'none', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', padding: '4px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+ Agregar paso</button>
+              </div>
+              {steps.map((step, idx) => (
+                <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '12px' }}>
+                  <span style={{ color: 'var(--text-dim)', fontWeight: 700, minWidth: '24px' }}>{idx + 1}.</span>
+                  <input
+                    type="text"
+                    value={step.icon}
+                    onChange={(e) => updateStep(idx, 'icon', e.target.value)}
+                    style={{ width: '40px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px', color: 'white', fontSize: '1.1rem' }}
+                  />
+                  <input
+                    type="text"
+                    value={step.title}
+                    onChange={(e) => updateStep(idx, 'title', e.target.value)}
+                    placeholder="¿Qué hacer en este paso?"
+                    required
+                    style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <input
+                      type="number"
+                      value={step.tokens}
+                      onChange={(e) => updateStep(idx, 'tokens', parseInt(e.target.value) || 0)}
+                      min={0}
+                      style={{ width: '50px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px', color: 'var(--gold-color)', textAlign: 'center' }}
+                    />
+                    <Coins size={14} color="var(--gold-color)" />
+                  </div>
+                  {steps.length > 1 && (
+                    <button type="button" onClick={() => removeStep(idx)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', padding: '4px' }}>
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <div style={{ textAlign: 'right', fontSize: '0.85rem', color: 'var(--gold-color)', fontWeight: 700 }}>
+                Total: {steps.reduce((acc, s) => acc + s.tokens, 0)} tokens
+              </div>
+            </div>
+
+            <button disabled={loading || steps.some(s => !s.title.trim())} type="submit" className="btn-primary" style={{ padding: '12px' }}>
+              {loading ? 'Guardando...' : editingId ? 'Guardar Cambios' : 'Crear Rutina'}
+            </button>
+          </form>
+        </motion.div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+        {routinesList.map((routine) => {
+          const parsedSteps = JSON.parse(routine.steps) as Array<{ order: number; title: string; icon: string; tokens: number }>;
+          return (
+            <div key={routine.id} className="glass card" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                <div>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 4px 0' }}>
+                    <span style={{ fontSize: '1.3rem' }}>{routine.icon}</span>
+                    {routine.title}
+                  </h3>
+                  {routine.description && <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', margin: 0 }}>{routine.description}</p>}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--gold-color)', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                  <Coins size={16} /> {routine.totalTokens}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '15px' }}>
+                {parsedSteps.map((step, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-dim)' }}>
+                    <span style={{ fontSize: '0.8rem', minWidth: '18px', textAlign: 'center' }}>{step.icon}</span>
+                    <span style={{ flex: 1 }}>{step.title}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--gold-color)' }}>+{step.tokens}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                <button onClick={() => handleEdit(routine)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
+                  <Pencil size={18} />
+                </button>
+                <button onClick={() => handleDelete(routine.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer' }}>
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {routinesList.length === 0 && !showForm && (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🌅</div>
+            <p>No hay rutinas creadas todavía.</p>
+            <p style={{ fontSize: '0.85rem' }}>Usá el botón "Cargar rutinas sugeridas" para empezar rápido.</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}

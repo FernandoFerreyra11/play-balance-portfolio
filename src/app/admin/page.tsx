@@ -462,7 +462,7 @@ function FamilyManager() {
         </motion.div>
       )}
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '20px' }}>
         {members.map((member) => (
           <div key={member.id} className="glass card" style={{ position: 'relative' }}>
             {editingId === member.id ? (
@@ -844,7 +844,7 @@ function QuestsManager() {
         </motion.div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
         {questsList.map((quest) => (
           <div key={quest.id} className="glass card" style={{ borderLeft: quest.category === 'jomo' ? '4px solid #22c55e' : '4px solid var(--primary-color)', background: quest.category === 'jomo' ? 'rgba(34,197,94,0.04)' : undefined }}>
             {editingId === quest.id ? (
@@ -2100,7 +2100,7 @@ function RoutinesManager() {
         </motion.div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
         {routinesList.map((routine) => {
           const parsedSteps = JSON.parse(routine.steps) as Array<{ order: number; title: string; icon: string; tokens: number }>;
           return (

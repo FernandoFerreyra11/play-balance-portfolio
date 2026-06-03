@@ -32,7 +32,7 @@ import { AvatarSelector } from '@/components/AvatarSelector';
 import { updatePlayerAvatar } from '@/app/actions/player';
 import { submitBodyCheckin, submitMoodCheckin, getTodayCheckin, getTodayMoodCheckin, getStreakInfo } from '@/app/actions/checkin';
 import { getAvailableRoutines, getTodayRoutineProgress, startRoutine, completeRoutineStep } from '@/app/actions/routines';
-import { submitJomoProject } from '@/app/actions/jomo';
+import { submitJomoProject, resubmitJomoProject } from '@/app/actions/jomo';
 import Image from 'next/image';
 
 interface DashboardPlayer {
@@ -202,6 +202,9 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [jomoMins, setJomoMins] = useState('');
   const [jomoTokens, setJomoTokens] = useState('');
   const [jomoSending, setJomoSending] = useState(false);
+  const [resubmitJomoId, setResubmitJomoId] = useState<string | null>(null);
+  const [resubmitText, setResubmitText] = useState('');
+  const [resubmitSending, setResubmitSending] = useState(false);
 
   useEffect(() => {
     // Initialization logic
@@ -386,6 +389,20 @@ export function Dashboards({ initialData }: DashboardsProps) {
       setNotification({ message: res.error || 'Error al enviar', type: 'error' });
     }
     setJomoSending(false);
+  };
+
+  const handleJomoResubmit = async (projectId: string) => {
+    setResubmitSending(true);
+    const res = await resubmitJomoProject(projectId, resubmitText);
+    if (res.success) {
+      setNotification({ message: '¡Proyecto re-enviado con mejoras!', type: 'success' });
+      setResubmitJomoId(null);
+      setResubmitText('');
+      fetchData();
+    } else {
+      setNotification({ message: res.error || 'Error al re-enviar', type: 'error' });
+    }
+    setResubmitSending(false);
   };
 
   return (
@@ -999,14 +1016,36 @@ export function Dashboards({ initialData }: DashboardsProps) {
                   {proj.minutesSpent > 0 && <span>⏱️ {proj.minutesSpent} min</span>}
                   {proj.suggestedTokens > 0 && <span>💡 Pidió: {proj.suggestedTokens} 🪙</span>}
                 </div>
-                {proj.parentFeedback && (
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', borderLeft: '2px solid rgba(255,255,255,0.2)' }}>
-                    <strong>Respuesta:</strong> {proj.parentFeedback}
-                    {proj.status === 'approved' && proj.grantedTokens > 0 && (
-                      <div style={{ marginTop: '5px', color: '#22c55e', fontWeight: 600 }}>
-                        ¡Ganaste {proj.grantedTokens} 🪙!
+                {proj.status === 'rejected' && (
+                  <div style={{ marginTop: '10px' }}>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#cbd5e1', fontStyle: 'italic', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px' }}>
+                      💬 "{proj.parentFeedback}"
+                    </p>
+                    {resubmitJomoId === proj.id ? (
+                      <div style={{ display: 'grid', gap: '10px', marginTop: '10px' }}>
+                        <textarea
+                          placeholder="Escribí acá qué le mejoraste al proyecto..."
+                          value={resubmitText}
+                          onChange={e => setResubmitText(e.target.value)}
+                          style={{ padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '60px', resize: 'vertical' }}
+                        />
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button disabled={resubmitSending || !resubmitText.trim()} onClick={() => handleJomoResubmit(proj.id)} className="btn-primary" style={{ background: '#3b82f6', flex: 1, padding: '8px' }}>
+                            {resubmitSending ? '...' : 'Re-enviar'}
+                          </button>
+                          <button disabled={resubmitSending} onClick={() => setResubmitJomoId(null)} className="glass" style={{ padding: '8px 15px', borderRadius: '8px' }}>Cancelar</button>
+                        </div>
                       </div>
+                    ) : (
+                      <button onClick={() => { setResubmitJomoId(proj.id); setResubmitText(''); }} className="btn-primary" style={{ background: '#3b82f6', padding: '6px 15px', fontSize: '0.85rem' }}>
+                        Responder y Re-enviar
+                      </button>
                     )}
+                  </div>
+                )}
+                {proj.status === 'approved' && proj.grantedTokens > 0 && (
+                  <div style={{ marginTop: '5px', color: '#22c55e', fontWeight: 600 }}>
+                    ¡Ganaste {proj.grantedTokens} 🪙!
                   </div>
                 )}
               </div>

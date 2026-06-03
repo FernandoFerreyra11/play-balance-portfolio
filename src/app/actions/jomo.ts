@@ -143,6 +143,11 @@ export async function reviewJomoProject(
         type: 'earn',
         description: `Proyecto JOMO: Recompensa aprobada`,
       });
+      
+      const [child] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, project.childId)).limit(1);
+      await db.update(users)
+        .set({ balance: (child.balance || 0) + grantedTokens })
+        .where(eq(users.id, project.childId));
     }
 
     revalidatePath("/admin");
@@ -150,5 +155,44 @@ export async function reviewJomoProject(
   } catch (e) {
     console.error(e);
     return { error: "Error al evaluar el proyecto" };
+  }
+}
+
+export async function resubmitJomoProject(projectId: string, additionalDetails: string) {
+  const user = await checkChildSession();
+  if (!user) return { error: "No autorizado" };
+
+  if (!additionalDetails) {
+    return { error: "Debes escribir qué mejoras le hiciste al proyecto" };
+  }
+
+  try {
+    const [project] = await db
+      .select({ id: jomoProjects.id, childId: jomoProjects.childId, description: jomoProjects.description, status: jomoProjects.status })
+      .from(jomoProjects)
+      .where(and(
+        eq(jomoProjects.id, projectId),
+        eq(jomoProjects.childId, user.id)
+      ))
+      .limit(1);
+
+    if (!project) return { error: "Proyecto no encontrado" };
+    if (project.status !== 'rejected') return { error: "Solo puedes re-enviar proyectos que necesitan mejoras" };
+
+    const updatedDescription = `${project.description}\n\n--- MEJORAS AÑADIDAS ---\n${additionalDetails}`;
+
+    await db.update(jomoProjects)
+      .set({
+        status: 'pending',
+        description: updatedDescription,
+        parentFeedback: null, // Clear feedback so parent can review anew
+      })
+      .where(eq(jomoProjects.id, projectId));
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (e) {
+    console.error(e);
+    return { error: "Error al re-enviar el proyecto" };
   }
 }

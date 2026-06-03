@@ -66,7 +66,7 @@ export async function markFeedbackReviewed(id: string) {
 
   try {
     await db.update(betaFeedback)
-      .set({ status: 'reviewed' })
+      .set({ status: 'approved' })
       .where(eq(betaFeedback.id, id));
       
     revalidatePath('/super-admin');

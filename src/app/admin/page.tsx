@@ -207,6 +207,7 @@ interface FamilyMember {
   image: string | null;
   email: string | null;
   balance: number;
+  birthDate?: string | null;
 }
 
 interface FamilyDetail {
@@ -454,6 +455,13 @@ function FamilyManager() {
               </select>
             </div>
             
+            {formRole === 'child' && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'grid', gap: '8px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Fecha de Nacimiento</label>
+                <input name="birthDate" type="date" required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', color: 'white', colorScheme: 'dark' }} />
+              </motion.div>
+            )}
+
             {formRole === 'parent' && (
               <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'grid', gap: '8px', gridColumn: '1 / -1' }}>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Email de acceso</label>
@@ -494,6 +502,9 @@ function FamilyManager() {
                   <option value="child" style={{ color: 'black' }}>Jugador</option>
                   <option value="parent" style={{ color: 'black' }}>Admin</option>
                 </select>
+                {(editingRole || member.role) === 'child' && (
+                  <input name="birthDate" type="date" defaultValue={member.birthDate || ''} required style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white', colorScheme: 'dark' }} />
+                )}
                 {(editingRole || member.role) === 'parent' && (
                   <input name="email" type="email" defaultValue={member.email ?? undefined} placeholder="Email de acceso" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px', color: 'white' }} />
                 )}

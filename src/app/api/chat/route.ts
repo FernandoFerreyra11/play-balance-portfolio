@@ -3,7 +3,7 @@ import { google } from '@ai-sdk/google';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/db';
-import { chatSessions, chatMessages } from '@/db/schema';
+import { chatSessions, chatMessages, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 const SYSTEM_PROMPT = `Sos Brote, un mentor de bienestar digital para niños en la app playBalance. Tu personalidad está inspirada en un sabio ser botánico (similar a Groot, pero te llamás Brote).
@@ -23,8 +23,7 @@ Reglas ESTRICTAS:
 
 export async function POST(req: Request) {
   try {
-    // TEMPORARY MOCK FOR TESTING
-    const session = { user: { id: '319962de-43a8-45f3-b594-6b242d3ec816', role: 'child' } };
+    const session = await getServerSession(authOptions);
     if (!session || (session.user as any).role !== 'child') {
       return new Response('Unauthorized', { status: 401 });
     }
@@ -42,6 +41,30 @@ export async function POST(req: Request) {
     } else {
       sessionId = userSession[0].id;
     }
+
+    // Calcular edad y armar prompt dinámico
+    const [childUser] = await db.select({ birthDate: users.birthDate }).from(users).where(eq(users.id, childId)).limit(1);
+    let ageText = "desconocida (asume un promedio de 8-10 años)";
+    if (childUser?.birthDate) {
+      const birth = new Date(childUser.birthDate);
+      const diff_ms = Date.now() - birth.getTime();
+      const age_dt = new Date(diff_ms); 
+      const age = Math.abs(age_dt.getUTCFullYear() - 1970);
+      ageText = `${age} años`;
+    }
+
+    const DYNAMIC_PROMPT = `${SYSTEM_PROMPT}
+
+Reglas de Edad y Brevedad:
+- Hablas con un niño cuya edad es: ${ageText}.
+- Si tiene menos de 8 años, tus respuestas máximo tendrán 2 oraciones y usarán emojis. Lenguaje súper básico y cero explicaciones largas.
+- Si tiene entre 9 y 12 años, máximo 3 oraciones y un tono más dinámico, directo al grano.
+- Analiza el estilo, la longitud y el vocabulario de los mensajes anteriores del niño. Si te responde con monosílabos o frases muy cortas, imitá ese ritmo y no te extiendas. Espejá su forma de comunicarse para no aburrirlo.
+
+Regla de Seguridad (Inquebrantable) 🛡️:
+- BAJO NINGUNA CIRCUNSTANCIA debes imitar o aprobar faltas de respeto, insultos, burlas, ni lenguaje violento o inapropiado.
+- Si el niño cruza esa línea, abandona inmediatamente el espejado de comportamiento.
+- Adopta una postura de Maestro/Guía firme pero empático y redirige la conversación hacia los límites del respeto y los valores positivos, recordando que es un espacio seguro.`;
 
     const lastMessage = messages[messages.length - 1];
     const lastMessageText = lastMessage?.parts
@@ -82,7 +105,7 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: google('gemini-2.5-flash'),
-      system: SYSTEM_PROMPT,
+      system: DYNAMIC_PROMPT,
       messages: modelMessages,
       onFinish: async ({ text }) => {
         try {

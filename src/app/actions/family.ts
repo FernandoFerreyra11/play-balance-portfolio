@@ -34,6 +34,7 @@ export async function createFamilyMember(formData: FormData) {
   const password = formData.get("password") as string;
   const role = formData.get("role") as 'child' | 'parent';
   const image = formData.get("image") as string;
+  const birthDate = formData.get("birthDate") as string | null;
 
   if (!name || !password || !role) {
     return { error: "Nombre, contraseña y rol son obligatorios" };
@@ -87,6 +88,7 @@ export async function createFamilyMember(formData: FormData) {
       image: image || '👤',
       parentId: user.id,
       familyId: user.familyId,
+      birthDate: role === 'child' ? birthDate : null,
     });
 
     revalidatePath("/admin");
@@ -110,6 +112,7 @@ export async function getFamilyMembers() {
       role: users.role,
       balance: users.balance,
       image: users.image,
+      birthDate: users.birthDate,
     })
     .from(users)
     .where(eq(users.familyId, familyId));
@@ -127,8 +130,12 @@ export async function updateFamilyMember(id: string, formData: FormData) {
   const email = emailRaw ? emailRaw.toLowerCase().trim() : null;
   const password = formData.get("password") as string;
   const image = formData.get("image") as string;
+  const birthDate = formData.get("birthDate") as string | null;
 
-  const updateData: { name?: string; role?: 'child' | 'parent'; image?: string; email?: string | null; password?: string } = { name, role, image, email };
+  const updateData: { name?: string; role?: 'child' | 'parent'; image?: string; email?: string | null; password?: string; birthDate?: string | null } = { name, role, image, email };
+  if (role === 'child') {
+    updateData.birthDate = birthDate;
+  }
   if (password) {
     updateData.password = await bcrypt.hash(password, 10);
   }

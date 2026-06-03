@@ -32,6 +32,7 @@ export const users = pgTable('users', {
   currentStreak: integer('current_streak').default(0),
   longestStreak: integer('longest_streak').default(0),
   lastCheckinDate: text('last_checkin_date'), // 'YYYY-MM-DD' para comparación simple de fechas
+  birthDate: text('birth_date'), // 'YYYY-MM-DD' para calcular la edad del niño
   createdAt: timestamp('created_at').defaultNow(),
 });
 

@@ -212,3 +212,21 @@ export const jomoProjects = pgTable('jomo_projects', {
   createdAt: timestamp('created_at').defaultNow(),
   reviewedAt: timestamp('reviewed_at'),
 });
+
+export const chatRoleEnum = pgEnum('chat_role', ['user', 'assistant', 'system']);
+
+export const chatSessions = pgTable('chat_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  childId: uuid('child_id').references(() => users.id).notNull(),
+  title: text('title').default('Nueva Conversación'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const chatMessages = pgTable('chat_messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sessionId: uuid('session_id').references(() => chatSessions.id, { onDelete: 'cascade' }).notNull(),
+  role: chatRoleEnum('role').notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});

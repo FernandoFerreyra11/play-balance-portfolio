@@ -14,7 +14,8 @@ import {
   AlertCircle,
   LogOut,
   Flame,
-  Sparkles
+  Sparkles,
+  Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -34,6 +35,7 @@ import { submitBodyCheckin, submitMoodCheckin, getTodayCheckin, getTodayMoodChec
 import { getAvailableRoutines, getTodayRoutineProgress, startRoutine, completeRoutineStep } from '@/app/actions/routines';
 import { submitJomoProject, resubmitJomoProject } from '@/app/actions/jomo';
 import Image from 'next/image';
+import { useChat } from 'ai/react';
 
 interface DashboardPlayer {
   id: string;
@@ -138,6 +140,7 @@ interface DashboardsProps {
     availableRoutines?: RoutineData[];
     todayRoutineProgress?: RoutineCompletion[];
     jomoProjects?: any[];
+    chatHistory?: any[];
   };
 }
 
@@ -205,6 +208,13 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [resubmitJomoId, setResubmitJomoId] = useState<string | null>(null);
   const [resubmitText, setResubmitText] = useState('');
   const [resubmitSending, setResubmitSending] = useState(false);
+
+  // Chat de IA (Brote)
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const { messages: chatMessages, input: chatInput, handleInputChange: handleChatInputChange, handleSubmit: handleChatSubmit, isLoading: isChatLoading } = useChat({
+    initialMessages: initialData.chatHistory || [],
+    api: '/api/chat',
+  });
 
   useEffect(() => {
     // Initialization logic

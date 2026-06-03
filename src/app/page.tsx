@@ -14,6 +14,7 @@ import { getFamilyDetail } from "@/app/actions/family";
 import { getTodayCheckin, getTodayMoodCheckin, getStreakInfo } from "@/app/actions/checkin";
 import { getAvailableRoutines, getTodayRoutineProgress } from "@/app/actions/routines";
 import { getChildJomoProjects } from "@/app/actions/jomo";
+import { getChildChatHistory } from "@/app/actions/chat";
 
 export default async function Home() {
   console.log("SERVER: Rendering Home page");
@@ -51,7 +52,7 @@ export default async function Home() {
   }
 
   const isChild = (session?.user as any)?.role === 'child';
-  const [todayCheckin, todayMoodCheckin, streakInfo, availableRoutines, todayRoutineProgress, jomoProjects] = isChild
+  const [todayCheckin, todayMoodCheckin, streakInfo, availableRoutines, todayRoutineProgress, jomoProjects, chatHistory] = isChild
     ? await Promise.all([
         getTodayCheckin(),
         getTodayMoodCheckin(),
@@ -59,8 +60,9 @@ export default async function Home() {
         getAvailableRoutines(),
         getTodayRoutineProgress(),
         getChildJomoProjects(),
+        getChildChatHistory(),
       ])
-    : [null, null, null, [], [], []];
+    : [null, null, null, [], [], [], []];
 
   return (
     <Dashboards 
@@ -78,6 +80,7 @@ export default async function Home() {
         availableRoutines: availableRoutines as any,
         todayRoutineProgress: todayRoutineProgress as any,
         jomoProjects: jomoProjects as any,
+        chatHistory: chatHistory as any,
       }} 
     />
   );

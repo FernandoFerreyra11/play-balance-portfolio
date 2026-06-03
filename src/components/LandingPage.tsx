@@ -93,6 +93,40 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Sección IA */}
+      <section style={{ padding: '100px 0', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 50%)' }}>
+        <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '10px 20px', borderRadius: '50px', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Sparkles size={20} />
+            Desarrollado con IA de Última Generación
+          </div>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, marginBottom: '20px', lineHeight: 1.2 }}>
+            Conoce al <span style={{ color: '#22c55e' }}>Mentor Virtual</span> de tu hijo
+          </h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto 50px', lineHeight: 1.6 }}>
+            PlayBalance integra un asistente inteligente diseñado para el bienestar digital. No es un chatbot genérico; es un compañero botánico que <strong>crece, evoluciona y adapta su personalidad</strong> a la edad y madurez de cada aventurero.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', width: '100%', textAlign: 'left' }}>
+            <ValueCard 
+              icon={<span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '10px' }}>🌱 ➡️ 🌳</span>}
+              title="Evolución Dinámica"
+              description="El asistente comienza como un pequeño brote tierno (Ceibito) y evoluciona visual y verbalmente hasta convertirse en un árbol sabio gracias a las interacciones del niño."
+            />
+            <ValueCard 
+              icon={<Brain size={40} color="#22c55e" style={{ marginBottom: '10px' }} />}
+              title="Adaptación en Tiempo Real"
+              description="Nuestra IA calibra su vocabulario, picardía y madurez analizando cómo escribe el niño, ofreciendo charlas que no son ni aburridas ni abrumadoras."
+            />
+            <ValueCard 
+              icon={<HeartHandshake size={40} color="#22c55e" style={{ marginBottom: '10px' }} />}
+              title="Guía Emocional Segura"
+              description="Acompaña al niño en sus chequeos de estado de ánimo y hábitos offline (JOMO), derivando proactivamente cualquier situación delicada al Capitán de la familia."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Sección Científica */}
       <section style={{ padding: '100px 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="container">

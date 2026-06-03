@@ -926,7 +926,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
         </section>
         )}
 
-        <section style={{ marginBottom: '40px' }}>
+        <section style={{ marginBottom: '40px', gridColumn: '1 / -1' }}>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '2rem' }}>🌿</span> Modo JOMO
           </h2>

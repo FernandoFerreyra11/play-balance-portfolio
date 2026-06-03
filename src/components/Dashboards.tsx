@@ -1218,7 +1218,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
               </button>
             </form>
           </motion.div>
-        )})}
+        )})()}
       </AnimatePresence>
 
       <style jsx>{`

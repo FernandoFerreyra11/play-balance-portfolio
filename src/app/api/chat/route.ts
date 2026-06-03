@@ -88,8 +88,8 @@ export async function POST(req: Request) {
     });
 
     return result.toUIMessageStreamResponse();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat error:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response(error?.message || 'Internal Server Error', { status: 500 });
   }
 }

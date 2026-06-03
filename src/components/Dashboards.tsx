@@ -1128,7 +1128,18 @@ export function Dashboards({ initialData }: DashboardsProps) {
 
       {/* Ventana de Chat de Savia */}
       <AnimatePresence>
-        {isChatOpen && (
+        {isChatOpen && (() => {
+          const userMessageCount = chatMessages.filter(m => m.role === 'user').length;
+          const getBotIdentity = (count: number) => {
+            if (count <= 10) return { name: 'Ceibito', icon: '🌱' };
+            if (count <= 50) return { name: 'Aromo', icon: '🌿' };
+            if (count <= 150) return { name: 'Tala', icon: '🪴' };
+            if (count <= 300) return { name: 'Olmo', icon: '🌳' };
+            return { name: 'Sabin', icon: '🌲✨' };
+          };
+          const botIdentity = getBotIdentity(userMessageCount);
+          
+          return (
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1151,7 +1162,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
             }}
           >
             <div style={{ background: '#22c55e', padding: '15px', color: 'white', textAlign: 'center', fontWeight: 700 }}>
-              🌿 Brote
+              {botIdentity.icon} {botIdentity.name}
             </div>
             <div style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.75rem', padding: '8px', textAlign: 'center' }}>
               Recordá que lo que hablamos queda grabado por seguridad.
@@ -1160,8 +1171,8 @@ export function Dashboards({ initialData }: DashboardsProps) {
             <div style={{ flex: 1, overflowY: 'auto', padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {chatMessages.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '50px' }}>
-                  <span style={{ fontSize: '3rem' }}>🌱</span>
-                  <p>¡Hola! Soy Brote. ¿En qué te ayudo hoy?</p>
+                  <span style={{ fontSize: '3rem' }}>{botIdentity.icon}</span>
+                  <p>¡Hola! Soy {botIdentity.name}. ¿En qué te ayudo hoy?</p>
                 </div>
               )}
               {chatMessages.map(m => (
@@ -1195,7 +1206,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                 type="text" 
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                placeholder="Escribile a Brote..."
+                placeholder={`Escribile a ${botIdentity.name}...`}
                 style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', color: 'white' }}
               />
               <button 
@@ -1207,7 +1218,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
               </button>
             </form>
           </motion.div>
-        )}
+        )})}
       </AnimatePresence>
 
       <style jsx>{`

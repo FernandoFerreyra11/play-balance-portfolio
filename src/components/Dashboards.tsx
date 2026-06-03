@@ -964,10 +964,15 @@ export function Dashboards({ initialData }: DashboardsProps) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                       <div style={{ display: 'grid', gap: '5px' }}>
                         <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Minutos invertidos</label>
-                        <input type="number" required value={jomoMins} onChange={e => setJomoMins(e.target.value)} placeholder="Ej: 120" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                        <input type="number" required value={jomoMins} onChange={e => {
+                          setJomoMins(e.target.value);
+                          if (!jomoTokens || jomoTokens === jomoMins) {
+                            setJomoTokens(e.target.value);
+                          }
+                        }} placeholder="Ej: 120" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
                       </div>
                       <div style={{ display: 'grid', gap: '5px' }}>
-                        <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Tokens sugeridos</label>
+                        <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Tokens sugeridos <span style={{ fontSize: '0.7rem', color: '#22c55e' }}>(Sugerencia: 1 x min)</span></label>
                         <input type="number" value={jomoTokens} onChange={e => setJomoTokens(e.target.value)} placeholder="Ej: 200 (Opcional)" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold-color)' }} />
                       </div>
                     </div>

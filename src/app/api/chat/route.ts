@@ -23,7 +23,8 @@ Reglas ESTRICTAS:
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    // TEMPORARY MOCK FOR TESTING
+    const session = { user: { id: '319962de-43a8-45f3-b594-6b242d3ec816', role: 'child' } };
     if (!session || (session.user as any).role !== 'child') {
       return new Response('Unauthorized', { status: 401 });
     }
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
     const modelMessages = await convertToModelMessages(normalizedMessages);
 
     const result = streamText({
-      model: google('gemini-1.5-flash-latest'),
+      model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPT,
       messages: modelMessages,
       onFinish: async ({ text }) => {

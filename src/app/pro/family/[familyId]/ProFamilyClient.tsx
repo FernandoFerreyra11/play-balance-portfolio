@@ -778,7 +778,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
             </div>
           </motion.div>
         ) : null}
-      </div>
+      </AnimatePresence>
 
       {/* VISTA SOLO PARA IMPRESIÓN PDF */}
       <div className="print-only">

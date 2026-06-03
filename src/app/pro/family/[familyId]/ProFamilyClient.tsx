@@ -63,23 +63,29 @@ interface MetricsData {
   avgResponseTimeHrs: number;
 }
 
+interface CheckinsData {
+  body: any[];
+  mood: any[];
+}
+
 interface ProFamilyClientProps {
   familyData: FamilyData;
   activityData: ActivityData;
   initialNotes: Note[];
   initialMessages: any[];
   initialMetrics?: MetricsData | null;
+  initialCheckins?: CheckinsData;
   proId: string;
 }
 
-export default function ProFamilyClient({ familyData, activityData, initialNotes, initialMessages, initialMetrics, proId }: ProFamilyClientProps) {
+export default function ProFamilyClient({ familyData, activityData, initialNotes, initialMessages, initialMetrics, initialCheckins, proId }: ProFamilyClientProps) {
   const [selectedChild, setSelectedChild] = useState<string | 'all'>('all');
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [loading, setLoading] = useState(false);
   const [msgLoading, setMsgLoading] = useState(false);
   const [therapyLoading, setTherapyLoading] = useState(false);
   const [messageTarget, setMessageTarget] = useState<'parents' | 'children'>('parents');
-  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages' | 'therapies'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'messages' | 'therapies' | 'checkins'>('overview');
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [metrics, setMetrics] = useState<MetricsData | null>(initialMetrics || null);
   const router = useRouter();
@@ -238,6 +244,13 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
             </h1>
             <p style={{ color: '#94a3b8' }}>Código de Vinculación: <span style={{ color: 'white', fontWeight: 600 }}>{familyData.family.code}</span></p>
           </div>
+          <button 
+            onClick={() => window.print()} 
+            className="btn-primary no-print" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: '#3b82f6' }}
+          >
+            <FileText size={18} /> Exportar a PDF
+          </button>
         </div>
       </div>
 
@@ -316,6 +329,15 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           }}
         >
           <Stethoscope size={18} /> Terapias Clínicas
+        </button>
+        <button
+          onClick={() => setActiveTab('checkins')}
+          style={{ 
+            padding: '15px 20px', background: 'none', border: 'none', color: activeTab === 'checkins' ? '#10b981' : '#94a3b8', 
+            borderBottom: activeTab === 'checkins' ? '2px solid #10b981' : '2px solid transparent', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px'
+          }}
+        >
+          <Activity size={18} /> Monitor Emocional
         </button>
       </div>
 
@@ -678,6 +700,78 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
             </div>
           </motion.div>
+        ) : activeTab === 'checkins' ? (
+          <motion.div key="checkins" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <div className="pro-family-grid" style={{ gap: '30px' }}>
+              
+              <div className="glass card">
+                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#8b5cf6' }}>
+                  <Activity size={20} /> Check-ins Corporales
+                </h3>
+                {(!initialCheckins?.body || initialCheckins.body.length === 0) ? (
+                  <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No hay registros físicos recientes.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {initialCheckins.body.filter(c => selectedChild === 'all' || c.childId === selectedChild).map((c, i) => (
+                      <div key={c.id || i} style={{ padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', borderLeft: '4px solid #8b5cf6' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                          <span style={{ fontWeight: 600, color: 'white' }}>{c.childName}</span>
+                          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{new Date(c.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '0.85rem' }}>
+                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                            <span style={{ color: '#c4b5fd', display: 'block', marginBottom: '4px' }}>Ojos</span>
+                            {c.eyes}
+                          </div>
+                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                            <span style={{ color: '#c4b5fd', display: 'block', marginBottom: '4px' }}>Cuello</span>
+                            {c.neck}
+                          </div>
+                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                            <span style={{ color: '#c4b5fd', display: 'block', marginBottom: '4px' }}>Cabeza</span>
+                            {c.head}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="glass card">
+                <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#10b981' }}>
+                  <MessageSquare size={20} /> Check-ins Emocionales
+                </h3>
+                {(!initialCheckins?.mood || initialCheckins.mood.length === 0) ? (
+                  <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>No hay registros emocionales recientes.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {initialCheckins.mood.filter(c => selectedChild === 'all' || c.childId === selectedChild).map((c, i) => (
+                      <div key={c.id || i} style={{ padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', borderLeft: '4px solid #10b981' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                          <span style={{ fontWeight: 600, color: 'white' }}>{c.childName}</span>
+                          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{new Date(c.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: c.note ? '10px' : '0' }}>
+                          <div style={{ fontSize: '2rem' }}>{c.mood}</div>
+                          <div>
+                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8' }}>Energía</span>
+                            <span style={{ fontWeight: 600, color: '#10b981' }}>{c.energy}/5</span>
+                          </div>
+                        </div>
+                        {c.note && (
+                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', color: '#e2e8f0', fontStyle: 'italic' }}>
+                            "{c.note}"
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </motion.div>
         ) : null}
       </AnimatePresence>
 
@@ -738,6 +832,25 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
           .tabs-container {
             flex-direction: column;
             gap: 10px;
+          }
+        }
+        @media print {
+          body {
+            background: white !important;
+            color: black !important;
+          }
+          .no-print, .tabs-container, button {
+            display: none !important;
+          }
+          .glass {
+            background: white !important;
+            border: 1px solid #ddd !important;
+            box-shadow: none !important;
+            color: black !important;
+          }
+          * {
+            color: black !important;
+            text-shadow: none !important;
           }
         }
       `}</style>

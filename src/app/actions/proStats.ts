@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { users, families, transactions, activeQuests, quests, professionalNotes } from "@/db/schema";
+import { users, families, transactions, activeQuests, quests, professionalNotes, bodyCheckins, moodCheckins } from "@/db/schema";
 import { eq, and, desc, inArray, or } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -288,3 +288,46 @@ export async function rejectTherapyQuest(activeQuestId: string, familyId: string
   }
 }
 
+export async function getCheckinsForPro(familyId: string) {
+  const pro = await verifyProAccess(familyId);
+  if (!pro) return { body: [], mood: [] };
+
+  const familyChildren = await db.select({ id: users.id, name: users.name })
+    .from(users)
+    .where(and(eq(users.familyId, familyId), eq(users.role, 'child')));
+
+  const childIds = familyChildren.map(c => c.id);
+  if (childIds.length === 0) return { body: [], mood: [] };
+
+  const body = await db.select({
+      id: bodyCheckins.id,
+      childId: bodyCheckins.childId,
+      childName: users.name,
+      eyes: bodyCheckins.eyes,
+      neck: bodyCheckins.neck,
+      head: bodyCheckins.head,
+      createdAt: bodyCheckins.createdAt
+    })
+    .from(bodyCheckins)
+    .innerJoin(users, eq(bodyCheckins.childId, users.id))
+    .where(inArray(bodyCheckins.childId, childIds))
+    .orderBy(desc(bodyCheckins.createdAt))
+    .limit(50);
+
+  const mood = await db.select({
+      id: moodCheckins.id,
+      childId: moodCheckins.childId,
+      childName: users.name,
+      mood: moodCheckins.mood,
+      energy: moodCheckins.energy,
+      note: moodCheckins.note,
+      createdAt: moodCheckins.createdAt
+    })
+    .from(moodCheckins)
+    .innerJoin(users, eq(moodCheckins.childId, users.id))
+    .where(inArray(moodCheckins.childId, childIds))
+    .orderBy(desc(moodCheckins.createdAt))
+    .limit(50);
+
+  return { body, mood };
+}

@@ -18,6 +18,8 @@ import {
   LogOut
 } from 'lucide-react';
 import { getGlobalStats, getAllFamilies, deleteFamily, resetFamilyCode, updateFamilyName } from '../actions/super-admin';
+import { getBetaFeedback, markFeedbackReviewed } from '../actions/feedback';
+import { CheckCircle, MessageSquare } from 'lucide-react';
 
 interface FamilyItem {
   id: string;
@@ -37,16 +39,21 @@ interface GlobalStats {
 export default function SuperAdminClient() {
   const [stats, setStats] = useState<GlobalStats | null>(null);
   const [families, setFamilies] = useState<FamilyItem[]>([]);
+  const [feedback, setFeedback] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async () => {
-    const [statsData, familiesData] = await Promise.all([
+    const [statsData, familiesData, feedbackRes] = await Promise.all([
       getGlobalStats(),
-      getAllFamilies()
+      getAllFamilies(),
+      getBetaFeedback()
     ]);
     setStats(statsData as GlobalStats);
     setFamilies(familiesData as FamilyItem[]);
+    if (feedbackRes.success) {
+      setFeedback(feedbackRes.data as any[]);
+    }
     setLoading(false);
   };
 
@@ -142,6 +149,50 @@ export default function SuperAdminClient() {
         <StatCard title="Quests Created" value={stats?.quests || 0} icon={<Zap />} color="#f59e0b" />
         <StatCard title="Tokens Circulation" value={stats?.tokens || 0} icon={<TrendingUp />} color="#10b981" />
       </div>
+
+      {/* Feedback Beta Inbox */}
+      <section style={{ marginBottom: '50px' }}>
+        <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <MessageSquare size={24} color="#f59e0b" /> Bandeja de Feedback Beta
+        </h2>
+        {feedback.filter(fb => fb.status === 'pending').length === 0 ? (
+          <div className="glass" style={{ padding: '30px', textAlign: 'center', borderRadius: '20px', color: 'rgba(255,255,255,0.4)' }}>
+            No hay mensajes nuevos. ¡Todo en orden! 🎉
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {feedback.filter(fb => fb.status === 'pending').map((fb) => (
+              <div key={fb.id} className="glass" style={{ padding: '20px', borderRadius: '15px', borderLeft: fb.type === 'bug' ? '4px solid #ef4444' : '4px solid #f59e0b', display: 'flex', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '6px' }}>
+                      {fb.type === 'bug' ? '🐛 Error' : fb.type === 'feature' ? '💡 Sugerencia' : '🤔 Otro'}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                      {fb.createdAt ? new Date(fb.createdAt).toLocaleString() : ''}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#06b6d4', fontWeight: 600 }}>
+                      Familia: {fb.familyName || 'N/A'} ({fb.userEmail})
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{fb.content}</p>
+                </div>
+                <div>
+                  <button 
+                    onClick={async () => {
+                      const res = await markFeedbackReviewed(fb.id);
+                      if (res.success) fetchData();
+                    }}
+                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 15px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}
+                  >
+                    <CheckCircle size={18} /> Marcar Revisado
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Families Section */}
       <section>

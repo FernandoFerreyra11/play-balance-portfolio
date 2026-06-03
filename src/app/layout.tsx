@@ -7,17 +7,24 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from "@/components/providers";
+import FeedbackWidget from "@/components/FeedbackWidget";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+  const isParent = session?.user && (session.user as any).role === 'parent';
+
   return (
     <html lang="es">
       <body>
         <Providers>
           <main>{children}</main>
+          {isParent && <FeedbackWidget />}
         </Providers>
       </body>
     </html>

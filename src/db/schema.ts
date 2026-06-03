@@ -5,6 +5,7 @@ export const statusEnum = pgEnum('status', ['pending', 'approved', 'rejected']);
 export const questStatusEnum = pgEnum('quest_status', ['in_progress', 'pending_approval', 'completed']);
 export const receiverTypeEnum = pgEnum('receiver_type', ['parents', 'children', 'professional']);
 export const routineStatusEnum = pgEnum('routine_status', ['active', 'archived']);
+export const feedbackTypeEnum = pgEnum('feedback_type', ['bug', 'feature', 'other']);
 
 export const organizations = pgTable('organizations', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -229,5 +230,16 @@ export const chatMessages = pgTable('chat_messages', {
   sessionId: uuid('session_id').references(() => chatSessions.id, { onDelete: 'cascade' }).notNull(),
   role: chatRoleEnum('role').notNull(),
   content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const betaFeedback = pgTable('beta_feedback', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  familyId: uuid('family_id').references(() => families.id),
+  userId: uuid('user_id').references(() => users.id).notNull(), // El padre que lo envía
+  type: feedbackTypeEnum('type').default('other'),
+  content: text('content').notNull(),
+  status: statusEnum('status').default('pending'), // pending, reviewed
+  adminResponse: text('admin_response'),
   createdAt: timestamp('created_at').defaultNow(),
 });

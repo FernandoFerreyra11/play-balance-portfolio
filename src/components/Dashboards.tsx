@@ -29,6 +29,7 @@ import {
 } from '@/app/actions/player';
 import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
 import { sendMessage, getMessagesForFamily } from '@/app/actions/messages';
+import { clearMyChatHistory } from '@/app/actions/chat';
 import { AvatarSelector } from '@/components/AvatarSelector';
 import { updatePlayerAvatar } from '@/app/actions/player';
 import { submitBodyCheckin, submitMoodCheckin, getTodayCheckin, getTodayMoodCheckin, getStreakInfo } from '@/app/actions/checkin';
@@ -438,7 +439,14 @@ export function Dashboards({ initialData }: DashboardsProps) {
           </div>
           <div>
             <h1 className="user-name">¡Hola, {player?.name}!</h1>
-            <button onClick={() => signOut()} className="logout-btn">
+            <button onClick={async () => {
+              if (player?.role === 'child') {
+                try {
+                  await clearMyChatHistory();
+                } catch (e) {}
+              }
+              signOut();
+            }} className="logout-btn">
               <LogOut size={14} /> Cerrar sesión
             </button>
           </div>
@@ -1118,7 +1126,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
         {isChatOpen ? <XCircle size={30} /> : <Bot size={30} />}
       </button>
 
-      {/* Ventana de Chat de Brote */}
+      {/* Ventana de Chat de Savia */}
       <AnimatePresence>
         {isChatOpen && (
           <motion.div

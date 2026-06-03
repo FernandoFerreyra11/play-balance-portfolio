@@ -60,3 +60,16 @@ export async function getSessionMessages(sessionId: string) {
 
   return messages;
 }
+
+export async function clearMyChatHistory() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== 'child') return { success: false };
+
+  const childId = (session.user as any).id;
+  
+  // This will cascade delete chat_messages if foreign key has onDelete: cascade,
+  // or we might need to delete messages first if not.
+  // Looking at schema.ts, chat_messages has onDelete: cascade.
+  await db.delete(chatSessions).where(eq(chatSessions.childId, childId));
+  return { success: true };
+}

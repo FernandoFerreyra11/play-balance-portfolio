@@ -56,16 +56,26 @@ export async function POST(req: Request) {
     }
 
     // Normalizar mensajes para que todos tengan el formato 'parts' que exige el SDK v6
-    const normalizedMessages = messages.map((m: any, index: number) => {
+    // Y fusionar mensajes consecutivos del mismo rol para que Gemini no falle
+    const normalizedMessages: any[] = [];
+    for (let i = 0; i < messages.length; i++) {
+      let m = messages[i];
       if (!m.parts && m.content) {
-        return {
+        m = {
           ...m,
-          id: m.id || `msg-${index}`,
+          id: m.id || `msg-${i}`,
           parts: [{ type: 'text', text: m.content }]
         };
       }
-      return m;
-    });
+      
+      const lastNorm = normalizedMessages[normalizedMessages.length - 1];
+      if (lastNorm && lastNorm.role === m.role) {
+        // Fusionar los parts si tienen el mismo rol
+        lastNorm.parts = [...(lastNorm.parts || []), ...m.parts];
+      } else {
+        normalizedMessages.push(m);
+      }
+    }
 
     const modelMessages = await convertToModelMessages(normalizedMessages);
 

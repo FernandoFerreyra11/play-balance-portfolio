@@ -42,7 +42,6 @@ export async function POST(req: Request) {
       sessionId = userSession[0].id;
     }
 
-    // Extraer el texto del último mensaje del usuario para guardarlo en la DB
     const lastMessage = messages[messages.length - 1];
     const lastMessageText = lastMessage?.parts
       ? lastMessage.parts.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('\n')
@@ -56,7 +55,19 @@ export async function POST(req: Request) {
       });
     }
 
-    const modelMessages = await convertToModelMessages(messages);
+    // Normalizar mensajes para que todos tengan el formato 'parts' que exige el SDK v6
+    const normalizedMessages = messages.map((m: any, index: number) => {
+      if (!m.parts && m.content) {
+        return {
+          ...m,
+          id: m.id || `msg-${index}`,
+          parts: [{ type: 'text', text: m.content }]
+        };
+      }
+      return m;
+    });
+
+    const modelMessages = await convertToModelMessages(normalizedMessages);
 
     const result = streamText({
       model: google('gemini-1.5-flash'),

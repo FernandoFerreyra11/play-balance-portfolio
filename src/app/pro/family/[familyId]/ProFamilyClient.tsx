@@ -90,6 +90,11 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
   const [metrics, setMetrics] = useState<MetricsData | null>(initialMetrics || null);
   const router = useRouter();
 
+  // Actualizar notas cuando cambia el prop (luego de guardar/borrar)
+  useEffect(() => {
+    setNotes(initialNotes);
+  }, [initialNotes]);
+
   // Fetch metrics when selected child changes
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -232,7 +237,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
         )}
       </AnimatePresence>
 
-      <div style={{ marginBottom: '30px' }}>
+      <div className="no-print-main" style={{ marginBottom: '30px' }}>
         <Link href="/pro" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', textDecoration: 'none', marginBottom: '20px', width: 'fit-content' }}>
           <ArrowLeft size={16} /> Volver al Panel
         </Link>
@@ -293,7 +298,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
       )}
 
       {/* Tabs */}
-      <div className="tabs-container">
+      <div className="tabs-container no-print-main">
         <button
           onClick={() => setActiveTab('overview')}
           style={{ 
@@ -773,7 +778,94 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
             </div>
           </motion.div>
         ) : null}
-      </AnimatePresence>
+      </div>
+
+      {/* VISTA SOLO PARA IMPRESIÓN PDF */}
+      <div className="print-only">
+        <h1 style={{ borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px' }}>
+          Reporte Clínico: {familyData.family.name}
+        </h1>
+        
+        {/* Apuntes Privados */}
+        <div style={{ marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '10px', color: '#333' }}>Registro de Apuntes Privados</h2>
+          {notes.length === 0 ? (
+            <p>No hay apuntes registrados.</p>
+          ) : (
+            notes.map(note => (
+              <div key={note.id} style={{ marginBottom: '15px', borderLeft: '3px solid #ccc', paddingLeft: '10px' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  {note.createdAt ? new Date(note.createdAt).toLocaleString() : ''}
+                  {note.childId && ` - Paciente: ${familyData.children.find(c => c.id === note.childId)?.name}`}
+                </div>
+                <p style={{ whiteSpace: 'pre-wrap', marginTop: '5px' }}>{note.content}</p>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Check-ins Físicos */}
+        <div style={{ marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '10px', color: '#333' }}>Monitor de Check-ins Corporales</h2>
+          {(!initialCheckins?.body || initialCheckins.body.length === 0) ? (
+            <p>No hay registros físicos recientes.</p>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #ccc' }}>
+                  <th style={{ padding: '8px' }}>Fecha</th>
+                  <th style={{ padding: '8px' }}>Aventurero</th>
+                  <th style={{ padding: '8px' }}>Ojos</th>
+                  <th style={{ padding: '8px' }}>Cuello</th>
+                  <th style={{ padding: '8px' }}>Cabeza</th>
+                </tr>
+              </thead>
+              <tbody>
+                {initialCheckins.body.map(c => (
+                  <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '8px' }}>{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td style={{ padding: '8px' }}>{c.childName}</td>
+                    <td style={{ padding: '8px' }}>{c.eyes}</td>
+                    <td style={{ padding: '8px' }}>{c.neck}</td>
+                    <td style={{ padding: '8px' }}>{c.head}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Check-ins Emocionales */}
+        <div style={{ marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '10px', color: '#333' }}>Monitor de Check-ins Emocionales</h2>
+          {(!initialCheckins?.mood || initialCheckins.mood.length === 0) ? (
+            <p>No hay registros emocionales recientes.</p>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #ccc' }}>
+                  <th style={{ padding: '8px' }}>Fecha</th>
+                  <th style={{ padding: '8px' }}>Aventurero</th>
+                  <th style={{ padding: '8px' }}>Estado</th>
+                  <th style={{ padding: '8px' }}>Energía</th>
+                  <th style={{ padding: '8px' }}>Nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                {initialCheckins.mood.map(c => (
+                  <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '8px' }}>{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td style={{ padding: '8px' }}>{c.childName}</td>
+                    <td style={{ padding: '8px', fontSize: '1.2rem' }}>{c.mood}</td>
+                    <td style={{ padding: '8px' }}>{c.energy}/5</td>
+                    <td style={{ padding: '8px', fontStyle: 'italic' }}>{c.note || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
 
       <style jsx>{`
         .glass {
@@ -834,19 +926,19 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
             gap: 10px;
           }
         }
+        .print-only {
+          display: none;
+        }
         @media print {
           body {
             background: white !important;
             color: black !important;
           }
-          .no-print, .tabs-container, button {
+          .no-print, .no-print-main {
             display: none !important;
           }
-          .glass {
-            background: white !important;
-            border: 1px solid #ddd !important;
-            box-shadow: none !important;
-            color: black !important;
+          .print-only {
+            display: block !important;
           }
           * {
             color: black !important;

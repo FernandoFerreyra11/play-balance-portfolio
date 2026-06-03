@@ -35,7 +35,7 @@ import { submitBodyCheckin, submitMoodCheckin, getTodayCheckin, getTodayMoodChec
 import { getAvailableRoutines, getTodayRoutineProgress, startRoutine, completeRoutineStep } from '@/app/actions/routines';
 import { submitJomoProject, resubmitJomoProject } from '@/app/actions/jomo';
 import Image from 'next/image';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 
 interface DashboardPlayer {
   id: string;

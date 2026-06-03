@@ -31,13 +31,10 @@ export async function POST(req: Request) {
 
     const { messages } = await req.json();
 
-    // Guardar el último mensaje del usuario en la DB
-    const lastMessage = messages[messages.length - 1];
-    
-    // Buscar si ya tiene una sesión activa (simplificado: agarramos la primera que haya, o creamos una)
+    // Buscar o crear sesión de chat
     let userSession = await db.select().from(chatSessions).where(eq(chatSessions.childId, childId)).limit(1);
     let sessionId: string;
-    
+
     if (userSession.length === 0) {
       const [newSession] = await db.insert(chatSessions).values({ childId, title: 'Chat con Brote' }).returning({ id: chatSessions.id });
       sessionId = newSession.id;
@@ -45,28 +42,37 @@ export async function POST(req: Request) {
       sessionId = userSession[0].id;
     }
 
-    // Guardar el mensaje del niño
-    await db.insert(chatMessages).values({
-      sessionId,
-      role: 'user',
-      content: lastMessage.content
-    });
+    // Extraer el texto del último mensaje del usuario para guardarlo en la DB
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageText = lastMessage?.content ?? '';
+
+    if (lastMessageText && lastMessage?.role === 'user') {
+      await db.insert(chatMessages).values({
+        sessionId,
+        role: 'user',
+        content: lastMessageText,
+      });
+    }
 
     const result = streamText({
       model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPT,
       messages,
-      async onFinish({ text }) {
-        // Cuando termina de hablar Brote, guardar la respuesta en la base de datos
-        await db.insert(chatMessages).values({
-          sessionId,
-          role: 'assistant',
-          content: text
-        });
+      onFinish: async ({ text }) => {
+        try {
+          // Guardar la respuesta de Brote en la DB cuando termina
+          await db.insert(chatMessages).values({
+            sessionId,
+            role: 'assistant',
+            content: text,
+          });
+        } catch (error) {
+          console.error('Error saving assistant message:', error);
+        }
       },
     });
 
-    return result.toTextStreamResponse();
+    return result.toDataStreamResponse();
   } catch (error) {
     console.error('Chat error:', error);
     return new Response('Internal Server Error', { status: 500 });

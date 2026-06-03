@@ -67,6 +67,23 @@ export default function RegisterPage() {
             />
           </div>
 
+          {role === 'parent' && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🩺 Código de Profesional (Opcional)
+              </label>
+              <input 
+                name="familyCode"
+                type="text" 
+                placeholder="Ej: PRO-XXXXXX (Si un terapeuta te invitó)"
+                style={{
+                  width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
+                  borderRadius: '12px', padding: '12px', color: 'white', outline: 'none'
+                }}
+              />
+            </motion.div>
+          )}
+
           {role === 'org_admin' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>

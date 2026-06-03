@@ -74,6 +74,27 @@ export async function registerUser(formData: FormData) {
     }
 
     // Default: Familia (Parent)
+    const proCode = formData.get("familyCode") as string;
+    
+    if (proCode && proCode.trim() !== '') {
+      const [existingFamily] = await db.select().from(families).where(eq(families.code, proCode.trim()));
+      
+      if (!existingFamily) {
+        return { error: "El código de profesional/familia no es válido" };
+      }
+      
+      await db.insert(users).values({
+        name,
+        email,
+        password: hashedPassword,
+        role: "parent",
+        familyId: existingFamily.id,
+      });
+
+      return { success: true, familyCode: existingFamily.code };
+    }
+
+    // Si no hay código, creamos una nueva familia
     const familyCode = `${name.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const insertedFamilies = await db.insert(families).values({
       name: `Equipo de ${name}`,

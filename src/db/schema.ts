@@ -198,3 +198,17 @@ export const routineCompletions = pgTable('routine_completions', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const jomoProjects = pgTable('jomo_projects', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  childId: uuid('child_id').references(() => users.id).notNull(),
+  title: text('title').notNull(),                 // Ej: "Armé un fuerte"
+  description: text('description').notNull(),     // Detalles de lo que hizo
+  minutesSpent: integer('minutes_spent'),         // Tiempo invertido (opcional)
+  suggestedTokens: integer('suggested_tokens'),   // ¿Cuántos tokens cree que vale?
+  grantedTokens: integer('granted_tokens'),       // Lo que finalmente otorga el padre
+  status: statusEnum('status').default('pending'),// pending, approved, rejected
+  parentFeedback: text('parent_feedback'),        // Comentarios del padre
+  reviewedBy: uuid('reviewed_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+  reviewedAt: timestamp('reviewed_at'),
+});

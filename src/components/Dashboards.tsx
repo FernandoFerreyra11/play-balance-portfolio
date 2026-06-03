@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 import { 
   Coins, 
@@ -32,6 +32,7 @@ import { AvatarSelector } from '@/components/AvatarSelector';
 import { updatePlayerAvatar } from '@/app/actions/player';
 import { submitBodyCheckin, submitMoodCheckin, getTodayCheckin, getTodayMoodCheckin, getStreakInfo } from '@/app/actions/checkin';
 import { getAvailableRoutines, getTodayRoutineProgress, startRoutine, completeRoutineStep } from '@/app/actions/routines';
+import { submitJomoProject } from '@/app/actions/jomo';
 import Image from 'next/image';
 
 interface DashboardPlayer {
@@ -136,6 +137,7 @@ interface DashboardsProps {
     streakInfo?: StreakInfo | null;
     availableRoutines?: RoutineData[];
     todayRoutineProgress?: RoutineCompletion[];
+    jomoProjects?: any[];
   };
 }
 
@@ -192,6 +194,18 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [routines, setRoutinesState] = useState<RoutineData[]>(initialData.availableRoutines || []);
   const [routineProgress, setRoutineProgress] = useState<RoutineCompletion[]>(initialData.todayRoutineProgress || []);
   const [routineLoading, setRoutineLoading] = useState<string | null>(null);
+
+  // Estado para JOMO Creativo
+  const [showJomoForm, setShowJomoForm] = useState(false);
+  const [jomoTitle, setJomoTitle] = useState('');
+  const [jomoDesc, setJomoDesc] = useState('');
+  const [jomoMins, setJomoMins] = useState('');
+  const [jomoTokens, setJomoTokens] = useState('');
+  const [jomoSending, setJomoSending] = useState(false);
+
+  useEffect(() => {
+    // Initialization logic
+  }, []);
 
   const handleAvatarSelect = async (avatarUrl: string) => {
     setPlayer(prev => prev ? { ...prev, image: avatarUrl } : prev);
@@ -350,6 +364,29 @@ export function Dashboards({ initialData }: DashboardsProps) {
       </div>
     );
   }
+
+  const handleJomoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setJomoSending(true);
+    const fd = new FormData();
+    fd.set('title', jomoTitle);
+    fd.set('description', jomoDesc);
+    fd.set('minutesSpent', jomoMins);
+    fd.set('suggestedTokens', jomoTokens);
+
+    const res = await submitJomoProject(fd);
+    if (res.success) {
+      setJomoTitle('');
+      setJomoDesc('');
+      setJomoMins('');
+      setJomoTokens('');
+      setShowJomoForm(false);
+      setNotification({ message: '¡Proyecto JOMO enviado para revisión! 🎉', type: 'success' });
+    } else {
+      setNotification({ message: res.error || 'Error al enviar', type: 'error' });
+    }
+    setJomoSending(false);
+  };
 
   return (
     <div className="container" style={{ minHeight: '100vh', background: '#020617', color: 'white', paddingBottom: '100px' }}>
@@ -888,6 +925,89 @@ export function Dashboards({ initialData }: DashboardsProps) {
           </div>
         </section>
         )}
+
+        <section style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '2rem' }}>🌿</span> Modo JOMO
+          </h2>
+          <div className="glass" style={{ padding: '20px', borderRadius: '20px', borderLeft: '6px solid #22c55e', marginBottom: '20px', background: 'rgba(34,197,94,0.05)' }}>
+            <p style={{ margin: '0 0 15px 0', color: '#e2e8f0', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              <strong>¿Sabías qué es JOMO?</strong> Es <em>"Joy of Missing Out"</em> (La alegría de desconectarse). ¡Es disfrutar tu tiempo y tus talentos lejos de las pantallas!
+            </p>
+            <button 
+              onClick={() => setShowJomoForm(!showJomoForm)}
+              className="btn-primary" 
+              style={{ background: '#22c55e', display: 'flex', alignItems: 'center', gap: '8px', width: 'fit-content' }}
+            >
+              <Sparkles size={18} /> {showJomoForm ? 'Cancelar' : '¡Proponer Proyecto JOMO!'}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showJomoForm && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                style={{ overflow: 'hidden', marginBottom: '20px' }}
+              >
+                <div className="glass card" style={{ border: '1px solid #22c55e', background: 'rgba(0,0,0,0.3)' }}>
+                  <form onSubmit={handleJomoSubmit} style={{ display: 'grid', gap: '15px' }}>
+                    <div style={{ display: 'grid', gap: '5px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>¿Qué hiciste u organizaste offline?</label>
+                      <input required value={jomoTitle} onChange={e => setJomoTitle(e.target.value)} placeholder="Ej: Armé una casa en el árbol" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                    </div>
+                    <div style={{ display: 'grid', gap: '5px' }}>
+                      <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Contanos más detalles...</label>
+                      <textarea required value={jomoDesc} onChange={e => setJomoDesc(e.target.value)} placeholder="Ej: Usé las maderas del garaje y estuve toda la tarde..." style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '80px', resize: 'vertical' }} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                      <div style={{ display: 'grid', gap: '5px' }}>
+                        <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Minutos invertidos</label>
+                        <input type="number" required value={jomoMins} onChange={e => setJomoMins(e.target.value)} placeholder="Ej: 120" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                      </div>
+                      <div style={{ display: 'grid', gap: '5px' }}>
+                        <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Tokens sugeridos</label>
+                        <input type="number" value={jomoTokens} onChange={e => setJomoTokens(e.target.value)} placeholder="Ej: 200 (Opcional)" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold-color)' }} />
+                      </div>
+                    </div>
+                    <button disabled={jomoSending || !jomoTitle.trim() || !jomoDesc.trim()} type="submit" className="btn-primary" style={{ background: '#22c55e', padding: '12px', marginTop: '10px' }}>
+                      {jomoSending ? 'Enviando...' : 'Enviar Pitch a mi Capitán'}
+                    </button>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '15px' }}>
+            {initialData.jomoProjects?.map((proj) => (
+              <div key={proj.id} className="glass" style={{ padding: '15px', borderRadius: '15px', borderLeft: proj.status === 'approved' ? '4px solid #22c55e' : proj.status === 'rejected' ? '4px solid #f43f5e' : '4px solid #f59e0b' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{proj.title}</h4>
+                  <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px' }}>
+                    {proj.status === 'pending' ? '⏳ En revisión' : proj.status === 'approved' ? '✅ Aprobado' : '📝 Necesita mejoras'}
+                  </span>
+                </div>
+                <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#cbd5e1' }}>{proj.description}</p>
+                <div style={{ display: 'flex', gap: '15px', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '10px' }}>
+                  {proj.minutesSpent > 0 && <span>⏱️ {proj.minutesSpent} min</span>}
+                  {proj.suggestedTokens > 0 && <span>💡 Pidió: {proj.suggestedTokens} 🪙</span>}
+                </div>
+                {proj.parentFeedback && (
+                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', borderLeft: '2px solid rgba(255,255,255,0.2)' }}>
+                    <strong>Respuesta:</strong> {proj.parentFeedback}
+                    {proj.status === 'approved' && proj.grantedTokens > 0 && (
+                      <div style={{ marginTop: '5px', color: '#22c55e', fontWeight: 600 }}>
+                        ¡Ganaste {proj.grantedTokens} 🪙!
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>

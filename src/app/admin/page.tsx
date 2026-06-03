@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { getRoutines, createRoutine, updateRoutine, deleteRoutine } from '../actions/routines';
+import { getFamilyJomoProjects, reviewJomoProject } from '../actions/jomo';
 import { 
   Plus, 
   Trash2, 
@@ -168,6 +169,12 @@ export default function AdminDashboard() {
           label="Rutinas"
         />
         <TabButton 
+          active={activeTab === 'jomo'} 
+          onClick={() => setActiveTab('jomo')}
+          icon={<span style={{ fontSize: '1rem' }}>🌿</span>}
+          label="Proyectos JOMO"
+        />
+        <TabButton 
           active={activeTab === 'stats'} 
           onClick={() => setActiveTab('stats')}
           icon={<BarChart3 size={18} />}
@@ -184,6 +191,7 @@ export default function AdminDashboard() {
         {activeTab === 'suggestions' && <SuggestionsManager onUpdate={fetchPendingCounts} />}
         {activeTab === 'pro-messages' && <ProMessagesManager />}
         {activeTab === 'routines' && <RoutinesManager />}
+        {activeTab === 'jomo' && <JomoManager />}
         {activeTab === 'stats' && <StatsManager />}
       </main>
     </div>
@@ -2146,6 +2154,184 @@ function RoutinesManager() {
             <p style={{ fontSize: '0.85rem' }}>Usá el botón "Cargar rutinas sugeridas" para empezar rápido.</p>
           </div>
         )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ============== JOMO MANAGER ==============
+
+function JomoManager() {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [evaluatingId, setEvaluatingId] = useState<string | null>(null);
+  const [grantedTokens, setGrantedTokens] = useState<string>('');
+  const [feedback, setFeedback] = useState<string>('');
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  const fetchProjects = async () => {
+    const data = await getFamilyJomoProjects();
+    setProjects(data);
+  };
+
+  useEffect(() => {
+    Promise.resolve().then(() => fetchProjects());
+  }, []);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const handleReview = async (id: string, status: 'approved' | 'rejected') => {
+    setLoading(true);
+    const tokens = parseInt(grantedTokens) || 0;
+    
+    if (status === 'approved' && tokens <= 0) {
+      setNotification({ message: 'Debes otorgar al menos 1 token para aprobar el proyecto', type: 'error' });
+      setLoading(false);
+      return;
+    }
+
+    if (status === 'rejected' && !feedback.trim()) {
+      setNotification({ message: 'Escribe qué debe mejorar para volver a presentarlo', type: 'error' });
+      setLoading(false);
+      return;
+    }
+
+    const res = await reviewJomoProject(id, status, tokens, feedback);
+    if (res.success) {
+      setNotification({ message: status === 'approved' ? 'Proyecto aprobado y tokens enviados' : 'Proyecto devuelto con feedback', type: 'success' });
+      setEvaluatingId(null);
+      setGrantedTokens('');
+      setFeedback('');
+      fetchProjects();
+    } else {
+      setNotification({ message: res.error || 'Error al evaluar', type: 'error' });
+    }
+    setLoading(false);
+  };
+
+  const openEvaluator = (proj: any) => {
+    setEvaluatingId(proj.id);
+    setGrantedTokens(proj.suggestedTokens > 0 ? proj.suggestedTokens.toString() : '');
+    setFeedback('');
+  };
+
+  const pendingProjects = projects.filter(p => p.status === 'pending');
+  const pastProjects = projects.filter(p => p.status !== 'pending');
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            style={{
+              position: 'fixed', top: 0, left: '50%', zIndex: 1000,
+              background: notification.type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+              color: 'white', padding: '12px 25px', borderRadius: '15px',
+              backdropFilter: 'blur(10px)', boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+              display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, pointerEvents: 'none'
+            }}
+          >
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="glass" style={{ padding: '20px', borderRadius: '15px', marginBottom: '30px', borderLeft: '6px solid #22c55e' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>🌿 Modo JOMO Creativo</h2>
+        <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', margin: 0 }}>
+          JOMO (Joy of Missing Out) es "La Alegría de Desconectarse". Evaluá los proyectos offline que arman tus hijos, dalos por aprobados transfiriendo los tokens, o devolvelos con consejos para que mejoren su esfuerzo.
+        </p>
+      </div>
+
+      <h3 style={{ marginBottom: '15px' }}>⏳ Proyectos Pendientes ({pendingProjects.length})</h3>
+      {pendingProjects.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', color: 'var(--text-dim)', marginBottom: '40px' }}>
+          No hay proyectos pendientes.
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '40px' }}>
+          {pendingProjects.map(proj => (
+            <div key={proj.id} className="glass card" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                {proj.childImage ? (
+                  <img src={proj.childImage} alt="avatar" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>👦</div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 5px 0', fontSize: '1.2rem' }}>{proj.title} <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 400 }}>por {proj.childName}</span></h4>
+                  <p style={{ margin: '0 0 15px 0', color: '#cbd5e1' }}>{proj.description}</p>
+                  
+                  <div style={{ display: 'flex', gap: '15px', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '15px' }}>
+                    {proj.minutesSpent > 0 && <span>⏱️ {proj.minutesSpent} minutos</span>}
+                    {proj.suggestedTokens > 0 && <span>💡 Pidió: {proj.suggestedTokens} 🪙</span>}
+                  </div>
+
+                  {evaluatingId === proj.id ? (
+                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '12px', display: 'grid', gap: '15px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                        <div style={{ display: 'grid', gap: '5px' }}>
+                          <label style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Tokens a otorgar</label>
+                          <input type="number" value={grantedTokens} onChange={e => setGrantedTokens(e.target.value)} placeholder="Ej: 100" style={{ padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold-color)' }} />
+                        </div>
+                        <div style={{ display: 'grid', gap: '5px' }}>
+                          <label style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Feedback o condición</label>
+                          <input type="text" value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Ej: ¡Excelente trabajo! / Te doy 50 si ordenás primero" style={{ padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <button disabled={loading} onClick={() => handleReview(proj.id, 'approved')} className="btn-primary" style={{ background: '#22c55e', padding: '10px 20px' }}>
+                          ✅ Aprobar y Entregar Tokens
+                        </button>
+                        <button disabled={loading} onClick={() => handleReview(proj.id, 'rejected')} className="btn-primary" style={{ background: '#f43f5e', padding: '10px 20px' }}>
+                          📝 Devolver para Mejorar
+                        </button>
+                        <button disabled={loading} onClick={() => setEvaluatingId(null)} className="glass" style={{ padding: '10px 20px' }}>Cancelar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => openEvaluator(proj)} className="btn-primary" style={{ background: '#3b82f6', padding: '8px 20px', borderRadius: '8px' }}>
+                      Evaluar Proyecto
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h3 style={{ marginBottom: '15px' }}>📚 Historial de Proyectos</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))', gap: '20px' }}>
+        {pastProjects.map(proj => (
+          <div key={proj.id} className="glass" style={{ padding: '15px', borderRadius: '15px', borderLeft: proj.status === 'approved' ? '4px solid #22c55e' : '4px solid #f43f5e' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <h4 style={{ margin: 0 }}>{proj.title} <span style={{ fontWeight: 400, color: 'var(--text-dim)', fontSize: '0.8rem' }}>({proj.childName})</span></h4>
+              <span style={{ fontSize: '0.8rem' }}>
+                {proj.status === 'approved' ? '✅ Aprobado' : '📝 Devuelto'}
+              </span>
+            </div>
+            {proj.parentFeedback && (
+              <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#cbd5e1', fontStyle: 'italic' }}>
+                "{proj.parentFeedback}"
+              </p>
+            )}
+            {proj.status === 'approved' && proj.grantedTokens > 0 && (
+              <div style={{ color: '#22c55e', fontSize: '0.9rem', fontWeight: 600 }}>
+                Otorgaste {proj.grantedTokens} 🪙
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </motion.div>
   );

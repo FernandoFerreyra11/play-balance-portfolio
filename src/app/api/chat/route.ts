@@ -1,4 +1,4 @@
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 import { google } from '@ai-sdk/google';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -44,7 +44,9 @@ export async function POST(req: Request) {
 
     // Extraer el texto del último mensaje del usuario para guardarlo en la DB
     const lastMessage = messages[messages.length - 1];
-    const lastMessageText = lastMessage?.content ?? '';
+    const lastMessageText = lastMessage?.parts
+      ? lastMessage.parts.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('\n')
+      : (typeof lastMessage?.content === 'string' ? lastMessage.content : '');
 
     if (lastMessageText && lastMessage?.role === 'user') {
       await db.insert(chatMessages).values({
@@ -54,10 +56,12 @@ export async function POST(req: Request) {
       });
     }
 
+    const modelMessages = await convertToModelMessages(messages);
+
     const result = streamText({
       model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPT,
-      messages,
+      messages: modelMessages,
       onFinish: async ({ text }) => {
         try {
           // Guardar la respuesta de Brote en la DB cuando termina

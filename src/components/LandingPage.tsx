@@ -111,17 +111,12 @@ export function LandingPage() {
             <ValueCard 
               icon={<span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '10px' }}>🌱 ➡️ 🌳</span>}
               title="Evolución Dinámica"
-              description="El asistente comienza como un pequeño brote tierno (Ceibito) y evoluciona visual y verbalmente hasta convertirse en un árbol sabio gracias a las interacciones del niño."
+              description="El asistente comienza como un pequeño brote (Ceibito) y evoluciona hasta convertirse en un árbol sabio gracias a las interacciones del niño."
             />
             <ValueCard 
               icon={<Brain size={40} color="#22c55e" style={{ marginBottom: '10px' }} />}
               title="Adaptación en Tiempo Real"
-              description="Nuestra IA calibra su vocabulario, picardía y madurez analizando cómo escribe el niño, ofreciendo charlas que no son ni aburridas ni abrumadoras."
-            />
-            <ValueCard 
-              icon={<HeartHandshake size={40} color="#22c55e" style={{ marginBottom: '10px' }} />}
-              title="Guía Emocional Segura"
-              description="Acompaña al niño en sus chequeos de estado de ánimo y hábitos offline (JOMO), derivando proactivamente cualquier situación delicada al Capitán de la familia."
+              description="Nuestra IA calibra su vocabulario, analiza la comunicación con el niño, ofreciendo charlas interesantes y motivadoras. Cultivando valores y respeto."
             />
           </div>
         </div>

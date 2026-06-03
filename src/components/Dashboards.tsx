@@ -36,6 +36,7 @@ import { getAvailableRoutines, getTodayRoutineProgress, startRoutine, completeRo
 import { submitJomoProject, resubmitJomoProject } from '@/app/actions/jomo';
 import Image from 'next/image';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 
 interface DashboardPlayer {
   id: string;
@@ -211,9 +212,10 @@ export function Dashboards({ initialData }: DashboardsProps) {
 
   // Chat de IA (Brote)
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { messages: chatMessages, input: chatInput, handleInputChange: handleChatInputChange, handleSubmit: handleChatSubmit, isLoading: isChatLoading } = useChat({
-    initialMessages: initialData.chatHistory || [],
-    api: '/api/chat',
+  const [chatInput, setChatInput] = useState('');
+  const { messages: chatMessages, sendMessage: sendChatMessage } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/chat' }),
+    messages: initialData.chatHistory || [],
   });
 
   useEffect(() => {
@@ -1092,6 +1094,114 @@ export function Dashboards({ initialData }: DashboardsProps) {
           </div>
         </section>
       </div>
+      {/* Botón Flotante de Brote */}
+      <button 
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        style={{
+          position: 'fixed',
+          bottom: '30px',
+          right: '30px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '30px',
+          background: '#22c55e',
+          color: 'white',
+          border: 'none',
+          boxShadow: '0 10px 25px rgba(34,197,94,0.4)',
+          cursor: 'pointer',
+          zIndex: 1000,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
+        {isChatOpen ? <XCircle size={30} /> : <Bot size={30} />}
+      </button>
+
+      {/* Ventana de Chat de Brote */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '100px',
+              right: '30px',
+              width: '350px',
+              height: '500px',
+              background: 'rgba(2, 6, 23, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '20px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+              zIndex: 999,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ background: '#22c55e', padding: '15px', color: 'white', textAlign: 'center', fontWeight: 700 }}>
+              🌿 Brote
+            </div>
+            <div style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.75rem', padding: '8px', textAlign: 'center' }}>
+              Recordá que lo que hablamos queda grabado por seguridad.
+            </div>
+            
+            <div style={{ flex: 1, overflowY: 'auto', padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {chatMessages.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '50px' }}>
+                  <span style={{ fontSize: '3rem' }}>🌱</span>
+                  <p>¡Hola! Soy Brote. ¿En qué te ayudo hoy?</p>
+                </div>
+              )}
+              {chatMessages.map(m => (
+                <div 
+                  key={m.id} 
+                  style={{
+                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                    background: m.role === 'user' ? '#06b6d4' : 'rgba(255,255,255,0.1)',
+                    padding: '10px 15px',
+                    borderRadius: '15px',
+                    maxWidth: '85%',
+                    borderBottomRightRadius: m.role === 'user' ? '0px' : '15px',
+                    borderBottomLeftRadius: m.role === 'user' ? '15px' : '0px'
+                  }}
+                >
+                  {m.parts ? m.parts.filter(p => p.type === 'text').map(p => p.text).join('\n') : (m as any).content}
+                </div>
+              ))}
+            </div>
+
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!chatInput.trim()) return;
+                sendChatMessage({ role: 'user', parts: [{ type: 'text', text: chatInput }] });
+                setChatInput('');
+              }}
+              style={{ padding: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', gap: '10px' }}
+            >
+              <input 
+                type="text" 
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                placeholder="Escribile a Brote..."
+                style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', color: 'white' }}
+              />
+              <button 
+                type="submit"
+                disabled={!chatInput.trim()}
+                style={{ background: '#22c55e', color: 'white', border: 'none', borderRadius: '10px', padding: '0 15px', cursor: 'pointer', opacity: chatInput.trim() ? 1 : 0.5 }}
+              >
+                Enviar
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <style jsx>{`
         .btn-primary { background: #06b6d4; color: white; border: none; font-weight: 700; padding: 10px 20px; border-radius: 50px; cursor: pointer; }
         .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); }

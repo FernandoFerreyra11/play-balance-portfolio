@@ -319,3 +319,22 @@ export async function updatePlayerAvatar(avatarUrl: string) {
     return { error: "Error al actualizar el avatar" };
   }
 }
+
+export async function updateBotTheme(theme: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as AuthUser).role !== 'child') return { error: "No autorizado" };
+
+  const playerId = (session.user as AuthUser).id as string;
+
+  try {
+    await db.update(users)
+      .set({ botTheme: theme })
+      .where(eq(users.id, playerId));
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar el tema del bot:", error);
+    return { error: "Error al actualizar el tema del bot" };
+  }
+}

@@ -15,7 +15,8 @@ import {
   LogOut,
   Flame,
   Sparkles,
-  Bot
+  Bot,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -31,7 +32,7 @@ import { createSuggestion, getMySuggestions } from '@/app/actions/suggestions';
 import { sendMessage, getMessagesForFamily } from '@/app/actions/messages';
 import { clearMyChatHistory } from '@/app/actions/chat';
 import { AvatarSelector } from '@/components/AvatarSelector';
-import { updatePlayerAvatar } from '@/app/actions/player';
+import { updatePlayerAvatar, updateBotTheme } from '@/app/actions/player';
 import { submitBodyCheckin, submitMoodCheckin, getTodayCheckin, getTodayMoodCheckin, getStreakInfo } from '@/app/actions/checkin';
 import { getAvailableRoutines, getTodayRoutineProgress, startRoutine, completeRoutineStep } from '@/app/actions/routines';
 import { submitJomoProject, resubmitJomoProject } from '@/app/actions/jomo';
@@ -98,6 +99,7 @@ interface MoodCheckin {
 interface StreakInfo {
   currentStreak: number;
   longestStreak: number;
+  botTheme?: string;
   lastCheckinDate: string | null;
   isActive: boolean;
 }
@@ -213,6 +215,9 @@ export function Dashboards({ initialData }: DashboardsProps) {
 
   // Chat de IA (Brote)
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [botTheme, setBotTheme] = useState<string>((initialData.player as any).botTheme || 'botanical');
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [updatingTheme, setUpdatingTheme] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const { messages: chatMessages, sendMessage: sendChatMessage } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
@@ -1138,14 +1143,33 @@ export function Dashboards({ initialData }: DashboardsProps) {
       <AnimatePresence>
         {isChatOpen && (() => {
           const userMessageCount = chatMessages.filter(m => m.role === 'user').length;
-          const getBotIdentity = (count: number) => {
+          const getBotIdentity = (count: number, theme: string) => {
+            if (theme === 'space') {
+              if (count <= 10) return { name: 'Sputnik', icon: '🛰️' };
+              if (count <= 50) return { name: 'Apollo', icon: '🚀' };
+              if (count <= 150) return { name: 'Orion', icon: '🌠' };
+              if (count <= 300) return { name: 'Nova', icon: '🌌' };
+              return { name: 'Galaxia', icon: '🌌✨' };
+            } else if (theme === 'sports') {
+              if (count <= 10) return { name: 'Rookie', icon: '⚽' };
+              if (count <= 50) return { name: 'Atleta', icon: '🏃' };
+              if (count <= 150) return { name: 'Capitán', icon: '🏅' };
+              if (count <= 300) return { name: 'Campeón', icon: '🏆' };
+              return { name: 'Leyenda', icon: '👑' };
+            } else if (theme === 'fantasy') {
+              if (count <= 10) return { name: 'Aprendiz', icon: '📜' };
+              if (count <= 50) return { name: 'Hechicero', icon: '🔮' };
+              if (count <= 150) return { name: 'Sabio', icon: '🧙‍♂️' };
+              if (count <= 300) return { name: 'Gran Mago', icon: '🏰' };
+              return { name: 'Archimalgo', icon: '🐉' };
+            }
             if (count <= 10) return { name: 'Ceibito', icon: '🌱' };
             if (count <= 50) return { name: 'Aromo', icon: '🌿' };
             if (count <= 150) return { name: 'Tala', icon: '🪴' };
             if (count <= 300) return { name: 'Olmo', icon: '🌳' };
             return { name: 'Sabin', icon: '🌲✨' };
           };
-          const botIdentity = getBotIdentity(userMessageCount);
+          const botIdentity = getBotIdentity(userMessageCount, botTheme);
           
           return (
           <motion.div
@@ -1169,12 +1193,65 @@ export function Dashboards({ initialData }: DashboardsProps) {
               overflow: 'hidden'
             }}
           >
-            <div style={{ background: '#22c55e', padding: '15px', color: 'white', textAlign: 'center', fontWeight: 700 }}>
+            <div style={{ background: '#22c55e', padding: '15px', color: 'white', textAlign: 'center', fontWeight: 700, position: 'relative' }}>
               {botIdentity.icon} {botIdentity.name}
+              <button 
+                onClick={() => setShowThemeSelector(!showThemeSelector)}
+                style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}
+              >
+                <Settings size={20} />
+              </button>
             </div>
-            <div style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.75rem', padding: '8px', textAlign: 'center' }}>
-              Recordá que lo que hablamos queda grabado por seguridad.
-            </div>
+            
+            {showThemeSelector || (chatMessages.length === 0 && !(initialData.player as any).botTheme) ? (
+              <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', textAlign: 'center' }}>
+                <h3 style={{ color: 'white', margin: '0' }}>¡Elegí a tu Mentor!</h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: '0' }}>¿Qué temática te gusta más?</p>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {[
+                    { id: 'botanical', name: 'Botánica', icon: '🌱' },
+                    { id: 'space', name: 'Espacio', icon: '🚀' },
+                    { id: 'sports', name: 'Deportes', icon: '⚽' },
+                    { id: 'fantasy', name: 'Fantasía', icon: '🧙‍♂️' }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={async () => {
+                        setUpdatingTheme(true);
+                        setBotTheme(t.id);
+                        await updateBotTheme(t.id);
+                        setShowThemeSelector(false);
+                        setUpdatingTheme(false);
+                      }}
+                      disabled={updatingTheme}
+                      style={{
+                        padding: '15px', borderRadius: '15px',
+                        background: botTheme === t.id ? '#06b6d4' : 'rgba(255,255,255,0.05)',
+                        border: botTheme === t.id ? '2px solid white' : '1px solid rgba(255,255,255,0.1)',
+                        color: 'white', cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'
+                      }}
+                    >
+                      <span style={{ fontSize: '2rem' }}>{t.icon}</span>
+                      <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t.name}</span>
+                    </button>
+                  ))}
+                </div>
+                {chatMessages.length > 0 && (
+                  <button 
+                    onClick={() => setShowThemeSelector(false)}
+                    style={{ background: 'transparent', border: 'none', color: '#94a3b8', marginTop: '10px', cursor: 'pointer' }}
+                  >
+                    Volver al chat
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.75rem', padding: '8px', textAlign: 'center' }}>
+                  Recordá que lo que hablamos queda grabado por seguridad.
+                </div>
             
             <div style={{ flex: 1, overflowY: 'auto', padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {chatMessages.length === 0 && (
@@ -1226,6 +1303,8 @@ export function Dashboards({ initialData }: DashboardsProps) {
                 Enviar
               </button>
             </form>
+            </>
+            )}
           </motion.div>
         )})()}
       </AnimatePresence>

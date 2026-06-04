@@ -219,7 +219,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [updatingTheme, setUpdatingTheme] = useState(false);
   const [chatInput, setChatInput] = useState('');
-  const { messages: chatMessages, sendMessage: sendChatMessage } = useChat({
+  const { messages: chatMessages, sendMessage: sendChatMessage, setMessages: setChatMessages } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
     messages: initialData.chatHistory || [],
   });
@@ -1218,9 +1218,17 @@ export function Dashboards({ initialData }: DashboardsProps) {
                     <button
                       key={t.id}
                       onClick={async () => {
+                        if (chatMessages.length > 0 && botTheme !== t.id) {
+                          const confirmChange = window.confirm("Al cambiar de mentor se borrará tu conversación actual. ¿Estás seguro?");
+                          if (!confirmChange) return;
+                        }
                         setUpdatingTheme(true);
                         setBotTheme(t.id);
                         await updateBotTheme(t.id);
+                        if (chatMessages.length > 0 && botTheme !== t.id) {
+                          await clearMyChatHistory();
+                          setChatMessages([]);
+                        }
                         setShowThemeSelector(false);
                         setUpdatingTheme(false);
                       }}

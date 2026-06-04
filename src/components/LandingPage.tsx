@@ -105,11 +105,11 @@ export function LandingPage() {
             title="Para Profesionales"
             description="Sigue el progreso de tus pacientes fuera de consulta. Asigna tareas o rutinas, recibe datos precisos y entrega feedback."
           />
-          <ValueCard 
+          {/* <ValueCard 
             icon={<Building2 size={40} color="#ec4899" />}
             title="Para Instituciones"
             description="Gestiona tu equipo de profesionales y escala tu impacto clínico con una plataforma marca blanca."
-          />
+          /> */}
         </div>
       </section>
 

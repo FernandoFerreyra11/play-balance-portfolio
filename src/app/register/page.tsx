@@ -47,7 +47,7 @@ export default function RegisterPage() {
         <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', background: 'rgba(0,0,0,0.2)', padding: '5px', borderRadius: '15px' }}>
           <RoleButton active={role === 'parent'} onClick={() => setRole('parent')} label="Familia" />
           <RoleButton active={role === 'professional'} onClick={() => setRole('professional')} label="Profesional" />
-          <RoleButton active={role === 'org_admin'} onClick={() => setRole('org_admin')} label="Institución" />
+          {/* <RoleButton active={role === 'org_admin'} onClick={() => setRole('org_admin')} label="Institución" /> */}
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>

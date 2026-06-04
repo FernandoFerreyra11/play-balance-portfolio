@@ -61,14 +61,34 @@ export function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            transition={{ delay: 0.4, duration: 1 }}
-            style={{ marginTop: '80px', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
-          >
-            <img src="/play_balance_hero.png" alt="Play Balance App" style={{ width: '100%', height: 'auto', display: 'block' }} />
-          </motion.div>
+          <div style={{ marginTop: '80px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', width: '100%' }}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ delay: 0.4, duration: 1 }}
+              style={{ aspectRatio: '1 / 1', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <img src="/argentine_family.png" alt="Familia Argentina" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ delay: 0.6, duration: 1 }}
+              style={{ aspectRatio: '1 / 1', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <img src="/professional_patient.png" alt="Profesional y Paciente" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ delay: 0.8, duration: 1 }}
+              style={{ aspectRatio: '1 / 1', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <img src="/large_diverse_family.png" alt="Familia Diversa" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </motion.div>
+          </div>
         </div>
       </section>
 

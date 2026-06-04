@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import { 
   Coins, 
@@ -219,9 +219,17 @@ export function Dashboards({ initialData }: DashboardsProps) {
     messages: initialData.chatHistory || [],
   });
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     // Initialization logic
   }, []);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, isChatOpen]);
 
   const handleAvatarSelect = async (avatarUrl: string) => {
     setPlayer(prev => prev ? { ...prev, image: avatarUrl } : prev);
@@ -1191,6 +1199,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                   {m.parts ? m.parts.filter(p => p.type === 'text').map(p => p.text).join('\n') : (m as any).content}
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
             <form 

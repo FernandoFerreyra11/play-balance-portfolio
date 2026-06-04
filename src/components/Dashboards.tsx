@@ -1145,29 +1145,35 @@ export function Dashboards({ initialData }: DashboardsProps) {
           const userMessageCount = chatMessages.filter(m => m.role === 'user').length;
           const getBotIdentity = (count: number, theme: string) => {
             if (theme === 'space') {
-              if (count <= 10) return { name: 'Sputnik', icon: '🛰️' };
-              if (count <= 50) return { name: 'Apollo', icon: '🚀' };
-              if (count <= 150) return { name: 'Orion', icon: '🌠' };
-              if (count <= 300) return { name: 'Nova', icon: '🌌' };
-              return { name: 'Galaxia', icon: '🌌✨' };
-            } else if (theme === 'sports') {
-              if (count <= 10) return { name: 'Rookie', icon: '⚽' };
-              if (count <= 50) return { name: 'Atleta', icon: '🏃' };
-              if (count <= 150) return { name: 'Capitán', icon: '🏅' };
-              if (count <= 300) return { name: 'Campeón', icon: '🏆' };
-              return { name: 'Leyenda', icon: '👑' };
+              if (count <= 10) return { name: 'Sputnik', icon: '🛰️', imageUrl: '/avatars/bots/space_1.png' };
+              if (count <= 50) return { name: 'Apollo', icon: '🚀', imageUrl: '/avatars/bots/space_2.png' };
+              if (count <= 150) return { name: 'Orion', icon: '🌠', imageUrl: '/avatars/bots/space_3.png' };
+              if (count <= 300) return { name: 'Nova', icon: '🌌', imageUrl: '/avatars/bots/space_4.png' };
+              return { name: 'Galaxia', icon: '🌌✨', imageUrl: '/avatars/bots/space_5.png' };
+            } else if (theme === 'sports' || theme === 'sports-boy') {
+              if (count <= 10) return { name: 'Rookie', icon: '⚽', imageUrl: '/avatars/bots/sports-boy_1.png' };
+              if (count <= 50) return { name: 'Atleta', icon: '🏃', imageUrl: '/avatars/bots/sports-boy_2.png' };
+              if (count <= 150) return { name: 'Capitán', icon: '🏅', imageUrl: '/avatars/bots/sports-boy_3.png' };
+              if (count <= 300) return { name: 'Campeón', icon: '🏆', imageUrl: '/avatars/bots/sports-boy_4.png' };
+              return { name: 'Leyenda', icon: '👑', imageUrl: '/avatars/bots/sports-boy_5.png' };
+            } else if (theme === 'sports-girl') {
+              if (count <= 10) return { name: 'Novata', icon: '⚽', imageUrl: '/avatars/bots/sports-girl_1.png' };
+              if (count <= 50) return { name: 'Atleta', icon: '🏃‍♀️', imageUrl: '/avatars/bots/sports-girl_2.png' };
+              if (count <= 150) return { name: 'Capitana', icon: '🏅', imageUrl: '/avatars/bots/sports-girl_3.png' };
+              if (count <= 300) return { name: 'Campeona', icon: '🏆', imageUrl: '/avatars/bots/sports-girl_4.png' };
+              return { name: 'Leyenda', icon: '👑', imageUrl: '/avatars/bots/sports-girl_5.png' };
             } else if (theme === 'fantasy') {
-              if (count <= 10) return { name: 'Aprendiz', icon: '📜' };
-              if (count <= 50) return { name: 'Hechicero', icon: '🔮' };
-              if (count <= 150) return { name: 'Sabio', icon: '🧙‍♂️' };
-              if (count <= 300) return { name: 'Gran Mago', icon: '🏰' };
-              return { name: 'Archimalgo', icon: '🐉' };
+              if (count <= 10) return { name: 'Aprendiz', icon: '📜', imageUrl: '/avatars/bots/fantasy_1.png' };
+              if (count <= 50) return { name: 'Hechicero', icon: '🔮', imageUrl: '/avatars/bots/fantasy_2.png' };
+              if (count <= 150) return { name: 'Sabio', icon: '🧙‍♂️', imageUrl: '/avatars/bots/fantasy_3.png' };
+              if (count <= 300) return { name: 'Gran Mago', icon: '🏰', imageUrl: '/avatars/bots/fantasy_4.png' };
+              return { name: 'Archimalgo', icon: '🐉', imageUrl: '/avatars/bots/fantasy_5.png' };
             }
-            if (count <= 10) return { name: 'Ceibito', icon: '🌱' };
-            if (count <= 50) return { name: 'Aromo', icon: '🌿' };
-            if (count <= 150) return { name: 'Tala', icon: '🪴' };
-            if (count <= 300) return { name: 'Olmo', icon: '🌳' };
-            return { name: 'Sabin', icon: '🌲✨' };
+            if (count <= 10) return { name: 'Ceibito', icon: '🌱', imageUrl: '/avatars/bots/botanical_1.png' };
+            if (count <= 50) return { name: 'Aromo', icon: '🌿', imageUrl: '/avatars/bots/botanical_2.png' };
+            if (count <= 150) return { name: 'Tala', icon: '🪴', imageUrl: '/avatars/bots/botanical_3.png' };
+            if (count <= 300) return { name: 'Olmo', icon: '🌳', imageUrl: '/avatars/bots/botanical_4.png' };
+            return { name: 'Sabin', icon: '🌲✨', imageUrl: '/avatars/bots/botanical_5.png' };
           };
           const botIdentity = getBotIdentity(userMessageCount, botTheme);
           
@@ -1193,8 +1199,13 @@ export function Dashboards({ initialData }: DashboardsProps) {
               overflow: 'hidden'
             }}
           >
-            <div style={{ background: '#22c55e', padding: '15px', color: 'white', textAlign: 'center', fontWeight: 700, position: 'relative' }}>
-              {botIdentity.icon} {botIdentity.name}
+            <div style={{ background: '#22c55e', padding: '15px', color: 'white', textAlign: 'center', fontWeight: 700, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              {botIdentity.imageUrl ? (
+                <img src={botIdentity.imageUrl} alt={botIdentity.name} style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
+              ) : (
+                <span>{botIdentity.icon}</span>
+              )}
+              <span>{botIdentity.name}</span>
               <button 
                 onClick={() => setShowThemeSelector(!showThemeSelector)}
                 style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}
@@ -1212,7 +1223,8 @@ export function Dashboards({ initialData }: DashboardsProps) {
                   {[
                     { id: 'botanical', name: 'Botánica', icon: '🌱' },
                     { id: 'space', name: 'Espacio', icon: '🚀' },
-                    { id: 'sports', name: 'Deportes', icon: '⚽' },
+                    { id: 'sports-boy', name: 'Deporte (Niño)', icon: '⚽' },
+                    { id: 'sports-girl', name: 'Deporte (Niña)', icon: '⚽' },
                     { id: 'fantasy', name: 'Fantasía', icon: '🧙‍♂️' }
                   ].map(t => (
                     <button
@@ -1264,7 +1276,11 @@ export function Dashboards({ initialData }: DashboardsProps) {
             <div style={{ flex: 1, overflowY: 'auto', padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {chatMessages.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '50px' }}>
-                  <span style={{ fontSize: '3rem' }}>{botIdentity.icon}</span>
+                  {botIdentity.imageUrl ? (
+                    <img src={botIdentity.imageUrl} alt={botIdentity.name} style={{ width: '120px', height: '120px', objectFit: 'contain', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', marginBottom: '15px' }} />
+                  ) : (
+                    <span style={{ fontSize: '3rem' }}>{botIdentity.icon}</span>
+                  )}
                   <p>¡Hola! Soy {botIdentity.name}. ¿En qué te ayudo hoy?</p>
                 </div>
               )}

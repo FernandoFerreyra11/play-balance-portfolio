@@ -97,7 +97,7 @@ export function LandingPage() {
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
           <ValueCard 
             icon={<Trophy size={40} color="#06b6d4" />}
-            title="Para Equipos"
+            title="Para Familias"
             description="Misiones personalizadas, recompensas reales y una convivencia más armoniosa. Motiva a los aventureros sin conflictos."
           />
           <ValueCard 
@@ -124,14 +124,14 @@ export function LandingPage() {
             Conoce al <span style={{ color: '#22c55e' }}>Mentor Virtual</span> de tu hijo
           </h2>
           <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto 50px', lineHeight: 1.6 }}>
-            PlayBalance integra un asistente inteligente diseñado para el bienestar digital. No es un chatbot genérico; es un compañero botánico que <strong>crece, evoluciona y adapta su personalidad</strong> a la edad y madurez de cada aventurero.
+            PlayBalance integra un asistente inteligente diseñado para colaborar alentando al bienestar digital. No es un chatbot genérico; es un compañero que <strong>evoluciona y adapta su personalidad</strong> a la edad y madurez de cada aventurero.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', width: '100%', textAlign: 'left' }}>
             <ValueCard 
-              icon={<span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '10px' }}>🌱 ➡️ 🌳</span>}
+              icon={<span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '10px' }}>🌱 🚀 ⚽ 🔮 ➡️ 🌟</span>}
               title="Evolución Dinámica"
-              description="El asistente comienza como un pequeño brote (Ceibito) y evoluciona hasta convertirse en un árbol sabio gracias a las interacciones del niño."
+              description="Elige entre 4 compañeros iniciales (Botánico, Espacial, Deportivo o Fantasía). Cada personaje comienza su aventura y evoluciona transformándose gracias al progreso y las interacciones diarias."
             />
             <ValueCard 
               icon={<Brain size={40} color="#22c55e" style={{ marginBottom: '10px' }} />}

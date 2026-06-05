@@ -1162,12 +1162,12 @@ export function Dashboards({ initialData }: DashboardsProps) {
               if (count <= 150) return { name: 'Capitana', icon: '🏅', imageUrl: '/avatars/bots/sports-girl_3.png' };
               if (count <= 300) return { name: 'Campeona', icon: '🏆', imageUrl: '/avatars/bots/sports-girl_4.png' };
               return { name: 'Leyenda', icon: '👑', imageUrl: '/avatars/bots/sports-girl_5.png' };
-            } else if (theme === 'fantasy') {
-              if (count <= 10) return { name: 'Aprendiz', icon: '📜', imageUrl: '/avatars/bots/fantasy_1.png' };
-              if (count <= 50) return { name: 'Hechicero', icon: '🔮', imageUrl: '/avatars/bots/fantasy_2.png' };
-              if (count <= 150) return { name: 'Sabio', icon: '🧙‍♂️', imageUrl: '/avatars/bots/fantasy_3.png' };
-              if (count <= 300) return { name: 'Gran Mago', icon: '🏰', imageUrl: '/avatars/bots/fantasy_4.png' };
-              return { name: 'Archimalgo', icon: '🐉', imageUrl: '/avatars/bots/fantasy_5.png' };
+            } else if (theme === 'mystery') {
+              if (count <= 10) return { name: 'Curioso', icon: '🔎', imageUrl: '/avatars/bots/mystery_1.png' };
+              if (count <= 50) return { name: 'Explorador', icon: '🗺️', imageUrl: '/avatars/bots/mystery_2.png' };
+              if (count <= 150) return { name: 'Rastreador', icon: '🔦', imageUrl: '/avatars/bots/mystery_3.png' };
+              if (count <= 300) return { name: 'Descubridor', icon: '⚙️', imageUrl: '/avatars/bots/mystery_4.png' };
+              return { name: 'Mente Maestra', icon: '🧠✨', imageUrl: '/avatars/bots/mystery_5.png' };
             }
             if (count <= 10) return { name: 'Ceibito', icon: '🌱', imageUrl: '/avatars/bots/botanical_1.png' };
             if (count <= 50) return { name: 'Aromo', icon: '🌿', imageUrl: '/avatars/bots/botanical_2.png' };
@@ -1225,7 +1225,7 @@ export function Dashboards({ initialData }: DashboardsProps) {
                     { id: 'space', name: 'Espacio', icon: '🚀' },
                     { id: 'sports-boy', name: 'Deporte (Niño)', icon: '⚽' },
                     { id: 'sports-girl', name: 'Deporte (Niña)', icon: '⚽' },
-                    { id: 'fantasy', name: 'Fantasía', icon: '🧙‍♂️' }
+                    { id: 'mystery', name: 'Misterio', icon: '🔎' }
                   ].map(t => (
                     <button
                       key={t.id}

@@ -19,6 +19,25 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered');
 
+  const handleMagicLink = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!email) { setError('Por favor ingresa tu email primero para enviarte el enlace.'); return; }
+    setLoading(true);
+    setError('');
+    
+    const res = await signIn('email', {
+      email,
+      redirect: false,
+    });
+    
+    if (res?.error) {
+      setError('Error al enviar el enlace. Verifica tu correo.');
+    } else {
+      setError('¡Enlace mágico enviado! Revisa tu bandeja de entrada para entrar sin contraseña.');
+    }
+    setLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -206,8 +225,27 @@ function LoginForm() {
               className="btn-primary" 
               style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
             >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : <>Entrar <ArrowRight size={20} /></>}
+              {loading ? <Loader2 className="animate-spin" size={20} /> : <>Entrar con Contraseña <ArrowRight size={20} /></>}
             </button>
+
+            {role === 'parent' && (
+              <>
+                <div style={{ textAlign: 'center', margin: '10px 0', color: 'var(--text-dim)', fontSize: '0.9rem' }}>— o —</div>
+                <button 
+                  type="button" 
+                  onClick={handleMagicLink}
+                  disabled={loading}
+                  className="glass" 
+                  style={{ 
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
+                    padding: '12px', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', 
+                    borderRadius: '12px', cursor: 'pointer', background: 'rgba(16, 185, 129, 0.1)', fontWeight: 600
+                  }}
+                >
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : 'Enviar Enlace Mágico (Sin contraseña) 🪄'}
+                </button>
+              </>
+            )}
           </motion.form>
         )}
       </AnimatePresence>

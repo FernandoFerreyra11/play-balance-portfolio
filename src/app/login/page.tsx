@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, getSession, useSession } from 'next-auth/react';
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +9,7 @@ import { User, ShieldCheck, ArrowRight, Loader2, CheckCircle2 } from 'lucide-rea
 import Link from 'next/link';
 
 function LoginForm() {
+  const { data: session, status } = useSession();
   const [role, setRole] = useState<'parent' | 'child' | null>(null);
   const [email, setEmail] = useState('');
   const [familyCode, setFamilyCode] = useState('');
@@ -19,6 +20,24 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered');
 
+  useEffect(() => {
+    if (status === 'authenticated') {
+      const userRole = (session?.user as any)?.role;
+      if (userRole === 'super_admin') {
+        router.push('/super-admin');
+      } else if (userRole === 'professional') {
+        router.push('/pro');
+      } else if (userRole === 'org_admin') {
+        router.push('/institucion');
+      } else if (userRole === 'parent') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [status, session, router]);
+
+
   const handleMagicLink = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!email) { setError('Por favor ingresa tu email primero para enviarte el enlace.'); return; }
@@ -28,6 +47,7 @@ function LoginForm() {
     const res = await signIn('email', {
       email,
       redirect: false,
+      callbackUrl: `${window.location.origin}/login`, // Redirigir a login, donde el useEffect hará el enrutamiento correcto
     });
     
     if (res?.error) {

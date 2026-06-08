@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { users, families } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { hardDeleteFamilyById } from "./family";
 
 import { organizations } from "@/db/schema";
 
@@ -27,10 +28,13 @@ export async function registerUser(formData: FormData) {
     .limit(1);
 
   if (existingUser) {
-    if (existingUser.deletedAt) {
-      return { error: "Esta cuenta está en pausa. Por favor, ve a INICIAR SESIÓN para restaurar tu equipo o empezar de cero." };
+    if (existingUser.deletedAt && existingUser.familyId) {
+      // Borrado silencioso de la familia antigua pausada
+      await hardDeleteFamilyById(existingUser.familyId);
+      // Continuar con el flujo normal para crear una cuenta nueva...
+    } else {
+      return { error: "El correo electrónico ya está registrado" };
     }
-    return { error: "El correo electrónico ya está registrado" };
   }
 
   // Encriptar contraseña

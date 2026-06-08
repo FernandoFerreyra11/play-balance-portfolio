@@ -231,15 +231,9 @@ export async function restoreFamily() {
   }
 }
 
-export async function hardDeleteOwnFamily() {
-  const user = await checkParentSession();
-  if (!user || !user.familyId) {
-    return { error: "No autorizado" };
-  }
-
+export async function hardDeleteFamilyById(familyId: string) {
   try {
-    // 1. Obtener IDs de todos los usuarios de la familia para limpiar sus datos
-    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
+    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, familyId));
     const userIds = familyUsers.map(u => u.id);
 
     if (userIds.length > 0) {
@@ -256,22 +250,35 @@ export async function hardDeleteOwnFamily() {
     }
 
     // 3. Limpiar datos vinculados a la familia
-    await db.delete(betaFeedback).where(eq(betaFeedback.familyId, user.familyId));
-    await db.delete(messages).where(eq(messages.familyId, user.familyId));
-    await db.delete(professionalNotes).where(eq(professionalNotes.familyId, user.familyId));
-    await db.delete(routines).where(eq(routines.familyId, user.familyId));
-    await db.delete(rewards).where(eq(rewards.familyId, user.familyId));
-    await db.delete(quests).where(eq(quests.familyId, user.familyId));
+    await db.delete(betaFeedback).where(eq(betaFeedback.familyId, familyId));
+    await db.delete(messages).where(eq(messages.familyId, familyId));
+    await db.delete(professionalNotes).where(eq(professionalNotes.familyId, familyId));
+    await db.delete(routines).where(eq(routines.familyId, familyId));
+    await db.delete(rewards).where(eq(rewards.familyId, familyId));
+    await db.delete(quests).where(eq(quests.familyId, familyId));
     
     // 4. Borrar todos los usuarios de la familia
-    await db.delete(users).where(eq(users.familyId, user.familyId));
+    await db.delete(users).where(eq(users.familyId, familyId));
     
     // 5. Borrar la familia
-    await db.delete(families).where(eq(families.id, user.familyId));
+    await db.delete(families).where(eq(families.id, familyId));
     
     return { success: true };
   } catch (error) {
-    console.error("Error al eliminar permanentemente propia familia:", error);
+    console.error("Error al eliminar permanentemente la familia por ID:", error);
+    return { error: "Error interno al limpiar datos antiguos" };
+  }
+}
+
+export async function hardDeleteOwnFamily() {
+  const user = await checkParentSession();
+  if (!user || !user.familyId) {
+    return { error: "No autorizado" };
+  }
+
+  const result = await hardDeleteFamilyById(user.familyId);
+  if (result.error) {
     return { error: "Error al eliminar permanentemente la cuenta familiar" };
   }
+  return { success: true };
 }

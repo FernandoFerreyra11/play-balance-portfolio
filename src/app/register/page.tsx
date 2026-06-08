@@ -153,6 +153,10 @@ export default function RegisterPage() {
           <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-dim)', marginTop: '10px' }}>
             ¿Ya tienes cuenta? <Link href="/login" style={{ color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 600 }}>Inicia sesión</Link>
           </p>
+
+          <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '5px' }}>
+            ¿Tuviste un equipo antes y quieres recuperarlo? <Link href="/login" style={{ color: 'var(--primary-color)', textDecoration: 'underline' }}>Entra aquí</Link>
+          </p>
         </form>
       </motion.div>
 

@@ -205,9 +205,9 @@ export async function deleteOwnFamily() {
     });
     
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al pausar la familia:", error);
-    return { error: "Error al pausar la cuenta familiar" };
+    return { error: `Error al pausar: ${error?.message || String(error)}` };
   }
 }
 

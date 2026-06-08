@@ -77,19 +77,18 @@ function LoginForm() {
       setLoading(false);
     } else {
       // Obtenemos la sesión para ver el rol real
-      const session = await getSession();
-      const userRole = (session?.user as { role?: string })?.role;
+      const currentSession = await getSession();
+      const userRole = (currentSession?.user as { role?: string })?.role;
 
       if (userRole === 'super_admin') {
-        router.push('/super-admin');
+        window.location.href = '/super-admin';
       } else if (userRole === 'professional') {
-        router.push('/pro');
+        window.location.href = '/pro';
       } else if (userRole === 'org_admin') {
-        router.push('/institucion');
+        window.location.href = '/institucion';
       } else {
-        router.push(role === 'parent' ? '/admin' : '/');
+        window.location.href = role === 'parent' ? '/admin' : '/';
       }
-      router.refresh();
     }
   };
 

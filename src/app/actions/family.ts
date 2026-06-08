@@ -1,7 +1,11 @@
 'use server';
 
 import { db } from "@/db";
-import { users, families, quests, rewards, suggestions, activeQuests, transactions } from "@/db/schema";
+import { 
+  users, families, quests, rewards, suggestions, activeQuests, transactions,
+  rewardClaims, professionalNotes, messages, bodyCheckins, moodCheckins,
+  routines, routineCompletions, jomoProjects, chatSessions, betaFeedback
+} from "@/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
@@ -198,10 +202,20 @@ export async function deleteOwnFamily() {
         // 2. Limpiar datos vinculados a usuarios
         await tx.delete(transactions).where(inArray(transactions.userId, userIds));
         await tx.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
+        await tx.delete(rewardClaims).where(inArray(rewardClaims.childId, userIds));
         await tx.delete(suggestions).where(inArray(suggestions.childId, userIds));
+        await tx.delete(bodyCheckins).where(inArray(bodyCheckins.childId, userIds));
+        await tx.delete(moodCheckins).where(inArray(moodCheckins.childId, userIds));
+        await tx.delete(routineCompletions).where(inArray(routineCompletions.childId, userIds));
+        await tx.delete(jomoProjects).where(inArray(jomoProjects.childId, userIds));
+        await tx.delete(chatSessions).where(inArray(chatSessions.childId, userIds));
       }
 
       // 3. Limpiar datos vinculados a la familia
+      await tx.delete(betaFeedback).where(eq(betaFeedback.familyId, user.familyId));
+      await tx.delete(messages).where(eq(messages.familyId, user.familyId));
+      await tx.delete(professionalNotes).where(eq(professionalNotes.familyId, user.familyId));
+      await tx.delete(routines).where(eq(routines.familyId, user.familyId));
       await tx.delete(rewards).where(eq(rewards.familyId, user.familyId));
       await tx.delete(quests).where(eq(quests.familyId, user.familyId));
       

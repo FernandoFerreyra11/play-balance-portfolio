@@ -213,8 +213,14 @@ export function LandingPage() {
             </ul>
           </div>
         </div>
-        <div style={{ textAlign: 'center', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <p>© 2026 Play Balance. Diseñado para equipos del futuro. Todos los derechos reservados. | <Link href="/terminos" style={{ color: '#94a3b8', textDecoration: 'underline' }}>Términos y Condiciones</Link> | <Link href="/privacidad" style={{ color: '#94a3b8', textDecoration: 'underline' }}>Política de Privacidad</Link></p>
+        <div className="footer-bottom">
+          <p className="footer-copyright">
+            <span>© 2026 Play Balance. Diseñado para equipos del futuro. Todos los derechos reservados.</span>
+            <span className="footer-separator">|</span>
+            <Link href="/terminos" className="footer-link">Términos y Condiciones</Link>
+            <span className="footer-separator">|</span>
+            <Link href="/privacidad" className="footer-link">Política de Privacidad</Link>
+          </p>
         </div>
       </footer>
 
@@ -331,6 +337,23 @@ export function LandingPage() {
           display: inline-block;
         }
 
+        .footer-bottom {
+          text-align: center;
+          padding-top: 20px;
+          border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .footer-copyright {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .footer-link {
+          color: #94a3b8;
+          text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
           .navbar {
             padding: 15px 20px;
@@ -388,6 +411,20 @@ export function LandingPage() {
             font-size: 1.1rem;
             width: 100%;
             box-sizing: border-box;
+          }
+
+          footer .container {
+            text-align: center;
+          }
+          footer ul {
+            align-items: center;
+          }
+          .footer-copyright {
+            flex-direction: column;
+            gap: 15px;
+          }
+          .footer-separator {
+            display: none;
           }
         }
       `}</style>

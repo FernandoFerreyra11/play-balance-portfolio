@@ -27,6 +27,9 @@ export async function registerUser(formData: FormData) {
     .limit(1);
 
   if (existingUser) {
+    if (existingUser.deletedAt) {
+      return { error: "Esta cuenta está en pausa. Por favor, ve a INICIAR SESIÓN para restaurar tu equipo o empezar de cero." };
+    }
     return { error: "El correo electrónico ya está registrado" };
   }
 

@@ -14,17 +14,17 @@ export function getBotIdentity(count: number, theme: string = 'botanical') {
     if (count <= 300) return { name: 'Nova', icon: '🌌', imageUrl: '/avatars/bots/space_4.png', desc: 'una nebulosa en expansión. Hablás sobre el inmenso potencial interior y dar refugio a nuevas estrellas.' };
     return { name: 'Galaxia', icon: '🌌✨', imageUrl: '/avatars/bots/space_5.png', desc: 'un universo sabio. Sos un guía mayor, hablas sobre la gravedad, el equilibrio cósmico y la resiliencia infinita.' };
   } else if (theme === 'sports' || theme === 'sports-boy') {
-    if (count <= 10) return { name: 'Rookie', icon: '⚽', imageUrl: '/avatars/bots/sports-boy_1.png', desc: 'un jugador novato recién fichado. Pedís paciencia y mencionás que charlar con el niño es tu mejor entrenamiento.' };
-    if (count <= 50) return { name: 'Atleta', icon: '🏃', imageUrl: '/avatars/bots/sports-boy_2.png', desc: 'un deportista en ascenso. Sos enérgico y hablás de superación y romper récords.' };
-    if (count <= 150) return { name: 'Capitán', icon: '🏅', imageUrl: '/avatars/bots/sports-boy_3.png', desc: 'el líder del equipo. Enseñás sobre trabajo en equipo, constancia y no rendirse ante una derrota.' };
-    if (count <= 300) return { name: 'Campeón', icon: '🏆', imageUrl: '/avatars/bots/sports-boy_4.png', desc: 'un ganador de ligas mayores. Hablás sobre la fortaleza mental y apoyar a los compañeros.' };
-    return { name: 'Leyenda', icon: '👑', imageUrl: '/avatars/bots/sports-boy_5.png', desc: 'un DT histórico e invicto. Sos un guía mayor, hablas sobre la estrategia de vida, el fair play y la sabiduría del deporte.' };
+    if (count <= 10) return { name: 'Rookie', icon: '⚽', imageUrl: '/avatars/bots/sports-boy_1.png', desc: 'un atleta novato que acaba de empezar su entrenamiento. Pedís paciencia y mencionás que charlar con el niño es tu mejor entrenamiento.' };
+    if (count <= 50) return { name: 'Atleta', icon: '🏀', imageUrl: '/avatars/bots/sports-boy_2.png', desc: 'un deportista en ascenso. Sos enérgico y hablás de superación y romper récords.' };
+    if (count <= 150) return { name: 'Capitán', icon: '🎾', imageUrl: '/avatars/bots/sports-boy_3.png', desc: 'el líder del equipo. Enseñás sobre trabajo en equipo, constancia y no rendirse ante una derrota.' };
+    if (count <= 300) return { name: 'Campeón', icon: '🏃', imageUrl: '/avatars/bots/sports-boy_4.png', desc: 'un campeón nacional. Hablás sobre la fortaleza mental y apoyar a los compañeros.' };
+    return { name: 'Leyenda', icon: '🏅', imageUrl: '/avatars/bots/sports-boy_5.png', desc: 'un Atleta Olímpico y Entrenador Multideporte histórico. Sos un guía mayor, hablas sobre la estrategia de vida, el fair play y la sabiduría del deporte.' };
   } else if (theme === 'sports-girl') {
-    if (count <= 10) return { name: 'Novata', icon: '⚽', imageUrl: '/avatars/bots/sports-girl_1.png', desc: 'una jugadora novata recién fichada. Pedís paciencia y mencionás que charlar con el niño es tu mejor entrenamiento.' };
-    if (count <= 50) return { name: 'Atleta', icon: '🏃‍♀️', imageUrl: '/avatars/bots/sports-girl_2.png', desc: 'una deportista en ascenso. Sos enérgica y hablás de superación y romper récords.' };
-    if (count <= 150) return { name: 'Capitana', icon: '🏅', imageUrl: '/avatars/bots/sports-girl_3.png', desc: 'la líder del equipo. Enseñás sobre trabajo en equipo, constancia y no rendirte ante una derrota.' };
-    if (count <= 300) return { name: 'Campeona', icon: '🏆', imageUrl: '/avatars/bots/sports-girl_4.png', desc: 'una ganadora de ligas mayores. Hablás sobre la fortaleza mental y apoyar a las compañeras.' };
-    return { name: 'Leyenda', icon: '👑', imageUrl: '/avatars/bots/sports-girl_5.png', desc: 'una DT histórica e invicta. Sos una guía mayor, hablas sobre la estrategia de vida, el fair play y la sabiduría del deporte.' };
+    if (count <= 10) return { name: 'Novata', icon: '⚽', imageUrl: '/avatars/bots/sports-girl_1.png', desc: 'una atleta novata que acaba de empezar su entrenamiento. Pedís paciencia y mencionás que charlar con el niño es tu mejor entrenamiento.' };
+    if (count <= 50) return { name: 'Atleta', icon: '🏀', imageUrl: '/avatars/bots/sports-girl_2.png', desc: 'una deportista en ascenso. Sos enérgica y hablás de superación y romper récords.' };
+    if (count <= 150) return { name: 'Capitana', icon: '🎾', imageUrl: '/avatars/bots/sports-girl_3.png', desc: 'la líder del equipo. Enseñás sobre trabajo en equipo, constancia y no rendirte ante una derrota.' };
+    if (count <= 300) return { name: 'Campeona', icon: '🏃‍♀️', imageUrl: '/avatars/bots/sports-girl_4.png', desc: 'una campeona nacional. Hablás sobre la fortaleza mental y apoyar a las compañeras.' };
+    return { name: 'Leyenda', icon: '🏅', imageUrl: '/avatars/bots/sports-girl_5.png', desc: 'una Atleta Olímpica y Entrenadora Multideporte histórica. Sos una guía mayor, hablas sobre la estrategia de vida, el fair play y la sabiduría del deporte.' };
   } else if (theme === 'mystery') {
     if (count <= 10) return { name: 'Curioso', icon: '🔎', imageUrl: '/avatars/bots/mystery_1.png', desc: 'un cíborg detective novato con una pequeña lupa óptica. Pedís paciencia y mencionás que charlar con el niño te ayuda a procesar tus primeras pistas.' };
     if (count <= 50) return { name: 'Explorador', icon: '🗺️', imageUrl: '/avatars/bots/mystery_2.png', desc: 'un cíborg con escáneres mejorados y un mapa digital. Sos curioso y hablás de analizar datos y descubrir misterios ocultos.' };

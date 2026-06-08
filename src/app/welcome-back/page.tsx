@@ -28,7 +28,7 @@ export default function WelcomeBackPage() {
     setLoading('restore');
     const res = await restoreFamily();
     if (res.success) {
-      await update(); // Refrescar la sesión para limpiar isArchived
+      await update({ isArchived: false }); // Refrescar la sesión para limpiar isArchived
       window.location.href = '/'; // Recargar la página principal
     } else {
       alert(res.error || 'Hubo un problema al restaurar tu cuenta.');

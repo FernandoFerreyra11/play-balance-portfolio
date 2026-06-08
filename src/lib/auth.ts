@@ -108,7 +108,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         const customUser = user as any;
         token.id = customUser.id;
@@ -117,6 +117,10 @@ export const authOptions: NextAuthOptions = {
         token.familyId = customUser.familyId;
         token.organizationId = customUser.organizationId;
         token.isArchived = !!customUser.deletedAt;
+      }
+
+      if (trigger === "update" && session?.isArchived !== undefined) {
+        token.isArchived = session.isArchived;
       }
       return token;
     },

@@ -15,6 +15,7 @@ interface CustomUser {
   parentId?: string | null;
   familyId?: string | null;
   organizationId?: string | null;
+  deletedAt?: Date | null;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -101,6 +102,7 @@ export const authOptions: NextAuthOptions = {
           parentId: user.parentId,
           familyId: user.familyId,
           organizationId: user.organizationId,
+          deletedAt: user.deletedAt,
         };
       },
     }),

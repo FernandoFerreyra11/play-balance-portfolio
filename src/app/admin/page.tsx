@@ -70,13 +70,17 @@ export default function AdminDashboard() {
     if (status === 'unauthenticated' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent')) {
       router.push('/');
     } else if (status === 'authenticated') {
+      if ((session?.user as any)?.isArchived) {
+        router.push('/welcome-back');
+        return;
+      }
       fetchPendingCounts();
       const interval = setInterval(fetchPendingCounts, 30000);
       return () => clearInterval(interval);
     }
   }, [status, session, router, fetchPendingCounts]);
 
-  if (status === 'loading' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent')) {
+  if (status === 'loading' || (status === 'authenticated' && (session?.user as { role?: string }).role !== 'parent') || (session?.user as any)?.isArchived) {
     return <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Cargando...</div>;
   }
 

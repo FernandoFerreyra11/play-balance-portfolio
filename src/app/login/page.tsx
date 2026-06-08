@@ -22,6 +22,12 @@ function LoginForm() {
 
   useEffect(() => {
     if (status === 'authenticated') {
+      const isArchived = (session?.user as any)?.isArchived;
+      if (isArchived) {
+        router.push('/welcome-back');
+        return;
+      }
+
       const userRole = (session?.user as any)?.role;
       if (userRole === 'super_admin') {
         router.push('/super-admin');
@@ -78,6 +84,13 @@ function LoginForm() {
     } else {
       // Obtenemos la sesión para ver el rol real
       const currentSession = await getSession();
+      const isArchived = (currentSession?.user as any)?.isArchived;
+
+      if (isArchived) {
+        window.location.href = '/welcome-back';
+        return;
+      }
+
       const userRole = (currentSession?.user as { role?: string })?.role;
 
       if (userRole === 'super_admin') {

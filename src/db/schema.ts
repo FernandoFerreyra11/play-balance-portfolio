@@ -36,6 +36,7 @@ export const users = pgTable('users', {
   birthDate: text('birth_date'), // 'YYYY-MM-DD' para calcular la edad del niño
   botTheme: text('bot_theme').default('botanical'),
   createdAt: timestamp('created_at').defaultNow(),
+  deletedAt: timestamp('deleted_at'),
 });
 
 export const families = pgTable('families', {
@@ -46,6 +47,7 @@ export const families = pgTable('families', {
   organizationId: uuid('organization_id').references(() => organizations.id), // Familia bajo una organización
   professionalId: uuid('professional_id').references((): AnyPgColumn => users.id), // Terapeuta asignado
   createdAt: timestamp('created_at').defaultNow(),
+  deletedAt: timestamp('deleted_at'),
 });
 
 export const accounts = pgTable('accounts', {

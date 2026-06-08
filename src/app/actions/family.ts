@@ -193,6 +193,55 @@ export async function deleteOwnFamily() {
   }
 
   try {
+    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
+    const userIds = familyUsers.map(u => u.id);
+
+    await db.transaction(async (tx) => {
+      const now = new Date();
+      if (userIds.length > 0) {
+        await tx.update(users).set({ deletedAt: now }).where(inArray(users.id, userIds));
+      }
+      await tx.update(families).set({ deletedAt: now }).where(eq(families.id, user.familyId));
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error al pausar la familia:", error);
+    return { error: "Error al pausar la cuenta familiar" };
+  }
+}
+
+export async function restoreFamily() {
+  const user = await checkParentSession();
+  if (!user || !user.familyId) {
+    return { error: "No autorizado" };
+  }
+
+  try {
+    const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
+    const userIds = familyUsers.map(u => u.id);
+
+    await db.transaction(async (tx) => {
+      if (userIds.length > 0) {
+        await tx.update(users).set({ deletedAt: null }).where(inArray(users.id, userIds));
+      }
+      await tx.update(families).set({ deletedAt: null }).where(eq(families.id, user.familyId));
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error al restaurar la familia:", error);
+    return { error: "Error al restaurar la cuenta familiar" };
+  }
+}
+
+export async function hardDeleteOwnFamily() {
+  const user = await checkParentSession();
+  if (!user || !user.familyId) {
+    return { error: "No autorizado" };
+  }
+
+  try {
     // 1. Obtener IDs de todos los usuarios de la familia para limpiar sus datos
     const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
     const userIds = familyUsers.map(u => u.id);
@@ -228,7 +277,7 @@ export async function deleteOwnFamily() {
     
     return { success: true };
   } catch (error) {
-    console.error("Error al eliminar propia familia:", error);
-    return { error: "Error al eliminar la cuenta familiar" };
+    console.error("Error al eliminar permanentemente propia familia:", error);
+    return { error: "Error al eliminar permanentemente la cuenta familiar" };
   }
 }

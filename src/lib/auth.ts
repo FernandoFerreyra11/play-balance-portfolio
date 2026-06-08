@@ -108,29 +108,25 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const customUser = user as CustomUser;
+        const customUser = user as any;
         token.id = customUser.id;
         token.role = customUser.role;
         token.parentId = customUser.parentId;
         token.familyId = customUser.familyId;
         token.organizationId = customUser.organizationId;
+        token.isArchived = !!customUser.deletedAt;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        const sessionUser = session.user as {
-          id?: string;
-          role?: string | null;
-          parentId?: string | null;
-          familyId?: string | null;
-          organizationId?: string | null;
-        };
+        const sessionUser = session.user as any;
         sessionUser.id = token.id as string;
         sessionUser.role = token.role as string | null;
         sessionUser.parentId = token.parentId as string | null;
         sessionUser.familyId = token.familyId as string | null;
         sessionUser.organizationId = token.organizationId as string | null;
+        sessionUser.isArchived = token.isArchived as boolean | undefined;
       }
       return session;
     },

@@ -26,6 +26,11 @@ export default async function Home() {
     return <LandingPage />;
   }
 
+  if ((session.user as any).isArchived) {
+    const { redirect } = await import("next/navigation");
+    redirect('/welcome-back');
+  }
+
   // Si hay sesión, cargamos los datos iniciales para el dashboard
   const [player, quests, rewards, mySuggestions] = await Promise.all([
     getPlayerStats(),

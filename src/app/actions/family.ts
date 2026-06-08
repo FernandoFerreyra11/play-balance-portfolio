@@ -196,13 +196,11 @@ export async function deleteOwnFamily() {
     const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
     const userIds = familyUsers.map(u => u.id);
 
-    await db.transaction(async (tx) => {
-      const now = new Date();
-      if (userIds.length > 0) {
-        await tx.update(users).set({ deletedAt: now }).where(inArray(users.id, userIds));
-      }
-      await tx.update(families).set({ deletedAt: now }).where(eq(families.id, user.familyId));
-    });
+    const now = new Date();
+    if (userIds.length > 0) {
+      await db.update(users).set({ deletedAt: now }).where(inArray(users.id, userIds));
+    }
+    await db.update(families).set({ deletedAt: now }).where(eq(families.id, user.familyId));
     
     return { success: true };
   } catch (error: any) {
@@ -221,12 +219,10 @@ export async function restoreFamily() {
     const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
     const userIds = familyUsers.map(u => u.id);
 
-    await db.transaction(async (tx) => {
-      if (userIds.length > 0) {
-        await tx.update(users).set({ deletedAt: null }).where(inArray(users.id, userIds));
-      }
-      await tx.update(families).set({ deletedAt: null }).where(eq(families.id, user.familyId));
-    });
+    if (userIds.length > 0) {
+      await db.update(users).set({ deletedAt: null }).where(inArray(users.id, userIds));
+    }
+    await db.update(families).set({ deletedAt: null }).where(eq(families.id, user.familyId));
     
     return { success: true };
   } catch (error) {
@@ -246,34 +242,32 @@ export async function hardDeleteOwnFamily() {
     const familyUsers = await db.select({ id: users.id }).from(users).where(eq(users.familyId, user.familyId));
     const userIds = familyUsers.map(u => u.id);
 
-    await db.transaction(async (tx) => {
-      if (userIds.length > 0) {
-        // 2. Limpiar datos vinculados a usuarios
-        await tx.delete(transactions).where(inArray(transactions.userId, userIds));
-        await tx.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
-        await tx.delete(rewardClaims).where(inArray(rewardClaims.childId, userIds));
-        await tx.delete(suggestions).where(inArray(suggestions.childId, userIds));
-        await tx.delete(bodyCheckins).where(inArray(bodyCheckins.childId, userIds));
-        await tx.delete(moodCheckins).where(inArray(moodCheckins.childId, userIds));
-        await tx.delete(routineCompletions).where(inArray(routineCompletions.childId, userIds));
-        await tx.delete(jomoProjects).where(inArray(jomoProjects.childId, userIds));
-        await tx.delete(chatSessions).where(inArray(chatSessions.childId, userIds));
-      }
+    if (userIds.length > 0) {
+      // 2. Limpiar datos vinculados a usuarios
+      await db.delete(transactions).where(inArray(transactions.userId, userIds));
+      await db.delete(activeQuests).where(inArray(activeQuests.childId, userIds));
+      await db.delete(rewardClaims).where(inArray(rewardClaims.childId, userIds));
+      await db.delete(suggestions).where(inArray(suggestions.childId, userIds));
+      await db.delete(bodyCheckins).where(inArray(bodyCheckins.childId, userIds));
+      await db.delete(moodCheckins).where(inArray(moodCheckins.childId, userIds));
+      await db.delete(routineCompletions).where(inArray(routineCompletions.childId, userIds));
+      await db.delete(jomoProjects).where(inArray(jomoProjects.childId, userIds));
+      await db.delete(chatSessions).where(inArray(chatSessions.childId, userIds));
+    }
 
-      // 3. Limpiar datos vinculados a la familia
-      await tx.delete(betaFeedback).where(eq(betaFeedback.familyId, user.familyId));
-      await tx.delete(messages).where(eq(messages.familyId, user.familyId));
-      await tx.delete(professionalNotes).where(eq(professionalNotes.familyId, user.familyId));
-      await tx.delete(routines).where(eq(routines.familyId, user.familyId));
-      await tx.delete(rewards).where(eq(rewards.familyId, user.familyId));
-      await tx.delete(quests).where(eq(quests.familyId, user.familyId));
-      
-      // 4. Borrar todos los usuarios de la familia
-      await tx.delete(users).where(eq(users.familyId, user.familyId));
-      
-      // 5. Borrar la familia
-      await tx.delete(families).where(eq(families.id, user.familyId));
-    });
+    // 3. Limpiar datos vinculados a la familia
+    await db.delete(betaFeedback).where(eq(betaFeedback.familyId, user.familyId));
+    await db.delete(messages).where(eq(messages.familyId, user.familyId));
+    await db.delete(professionalNotes).where(eq(professionalNotes.familyId, user.familyId));
+    await db.delete(routines).where(eq(routines.familyId, user.familyId));
+    await db.delete(rewards).where(eq(rewards.familyId, user.familyId));
+    await db.delete(quests).where(eq(quests.familyId, user.familyId));
+    
+    // 4. Borrar todos los usuarios de la familia
+    await db.delete(users).where(eq(users.familyId, user.familyId));
+    
+    // 5. Borrar la familia
+    await db.delete(families).where(eq(families.id, user.familyId));
     
     return { success: true };
   } catch (error) {

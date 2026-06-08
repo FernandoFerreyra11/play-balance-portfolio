@@ -210,6 +210,7 @@ export function LandingPage() {
               <li><a href="mailto:hola@play-balance.com" style={{ color: '#06b6d4', textDecoration: 'none' }}>hola@play-balance.com</a> (General)</li>
               <li><a href="mailto:soporte@play-balance.com" style={{ color: '#06b6d4', textDecoration: 'none' }}>soporte@play-balance.com</a> (Soporte Técnico)</li>
               <li><a href="mailto:contacto@play-balance.com" style={{ color: '#06b6d4', textDecoration: 'none' }}>contacto@play-balance.com</a> (Comercial/Institucional)</li>
+              <li style={{ marginTop: '10px' }}><Link href="/terminos" style={{ color: '#8b5cf6', textDecoration: 'none', fontWeight: 'bold' }}>Términos y Privacidad (Ley 25.326)</Link></li>
             </ul>
           </div>
         </div>

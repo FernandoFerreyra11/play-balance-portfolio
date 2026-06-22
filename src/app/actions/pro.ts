@@ -87,7 +87,7 @@ export async function getManagedFamilies() {
       .where(eq(families.professionalId, proId))
       .orderBy(families.createdAt);
   } catch (_error) {
-    console.error(error);
+    console.error(_error);
     return [];
   }
 }

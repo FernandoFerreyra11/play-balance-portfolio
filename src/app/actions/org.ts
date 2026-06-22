@@ -64,7 +64,7 @@ export async function getOrgProfessionals() {
       .where(and(eq(users.organizationId, orgId), eq(users.role, 'professional')))
       .orderBy(users.createdAt);
   } catch (_error) {
-    console.error(error);
+    console.error(_error);
     return [];
   }
 }

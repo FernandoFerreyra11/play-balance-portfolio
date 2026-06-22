@@ -245,7 +245,7 @@ export default function ProDashboardClient({ initialStats, initialFamilies, hasO
               {/* Opción B: Vincular Existente */}
               <div className="glass" style={{ padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>Opción B: Vincular Existente</h3>
-                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '15px' }}>Si la familia ya usa la app, pídeles su "Código de Equipo" para supervisarlos.</p>
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '15px' }}>Si la familia ya usa la app, pídeles su &quot;Código de Equipo&quot; para supervisarlos.</p>
                 <form onSubmit={handleLinkFamily} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <input name="code" required placeholder="Ej: F-ABCDEF" style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
                   <button disabled={loading} type="submit" className="glass" style={{ padding: '12px', border: '1px solid #06b6d4', color: '#06b6d4', cursor: 'pointer', borderRadius: '12px', fontWeight: 600 }}>

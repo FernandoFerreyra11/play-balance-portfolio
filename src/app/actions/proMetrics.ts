@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from "@/db";
-import { activeQuests, quests, transactions, messages, users } from "@/db/schema";
-import { eq, and, desc, asc, gte, inArray } from "drizzle-orm";
+import { activeQuests, transactions, messages, users } from "@/db/schema";
+import { eq, and, asc, gte, inArray } from "drizzle-orm";
 import { getProSession } from "./pro";
 
 export async function getFamilyMetrics(familyId: string, childId?: string) {
@@ -97,7 +97,7 @@ export async function getFamilyMetrics(familyId: string, childId?: string) {
       .where(eq(messages.familyId, familyId))
       .orderBy(asc(messages.createdAt));
 
-    let responseTimes: number[] = [];
+    const responseTimes: number[] = [];
     for (let i = 0; i < familyMsgs.length; i++) {
       const msg = familyMsgs[i];
       // Si es un mensaje de la familia (o admin pro) hacia los niños

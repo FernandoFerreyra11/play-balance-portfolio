@@ -33,7 +33,7 @@ test.describe('Flujo de Registro - Rol Profesional', () => {
 
   // --- Pruebas Negativas ---
 
-  test('[TEST-07] Intento de registro sin aceptar términos y condiciones (Profesional)', async ({ page }) => {
+  test('[TEST-07] Intento de registro sin aceptar términos y condiciones (Profesional)', async () => {
     await registerPage.fillBasicInfo('Dra. Sánchez', 'dra.sanchez@test.com', 'PassFuerte99!');
     await registerPage.setRole('Profesional');
     // No aceptamos los términos
@@ -43,7 +43,7 @@ test.describe('Flujo de Registro - Rol Profesional', () => {
     await expect(registerPage.errorMsg).toContainText('Debe aceptar los términos y condiciones');
   });
 
-  test('[TEST-08] Intento de registro con contraseña demasiado corta (Profesional)', async ({ page }) => {
+  test('[TEST-08] Intento de registro con contraseña demasiado corta (Profesional)', async () => {
     await registerPage.fillBasicInfo('Lic. Pérez', 'lic.perez@test.com', '123', '123');
     await registerPage.setRole('Profesional');
     await registerPage.acceptTerms();

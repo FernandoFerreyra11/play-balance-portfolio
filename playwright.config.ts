@@ -6,7 +6,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  outputDir: 'E:/stoptec-playwright-output/test-results',
+  reporter: [
+    ['html', { outputFolder: 'E:/stoptec-playwright-output/playwright-report' }]
+  ],
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',

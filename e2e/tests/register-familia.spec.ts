@@ -32,7 +32,7 @@ test.describe('Flujo de Registro - Rol Familia', () => {
 
   // --- Pruebas Negativas ---
 
-  test('[TEST-03] Intento de registro con contraseñas que no coinciden (Familia)', async ({ page }) => {
+  test('[TEST-03] Intento de registro con contraseñas que no coinciden (Familia)', async () => {
     await registerPage.fillBasicInfo('Carlos Ruiz', 'carlos@test.com', 'Pass123', 'Pass456');
     await registerPage.setRole('Familia');
     await registerPage.submit();
@@ -41,7 +41,7 @@ test.describe('Flujo de Registro - Rol Familia', () => {
     await expect(registerPage.errorMsg).toContainText('Las contraseñas no coinciden');
   });
 
-  test('[TEST-04] Intento de registro con un correo electrónico ya existente (Familia)', async ({ page }) => {
+  test('[TEST-04] Intento de registro con un correo electrónico ya existente (Familia)', async () => {
     // Asumimos que 'existe@test.com' ya está en la DB
     await registerPage.fillBasicInfo('Usuario Existente', 'existe@test.com', 'Segura123!');
     await registerPage.setRole('Familia');

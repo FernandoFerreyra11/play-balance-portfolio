@@ -74,7 +74,9 @@ export default function AdminDashboard() {
         router.push('/welcome-back');
         return;
       }
-      fetchPendingCounts();
+        (async () => {
+          await fetchPendingCounts();
+        })();
       const interval = setInterval(fetchPendingCounts, 30000);
       return () => clearInterval(interval);
     }
@@ -1656,7 +1658,9 @@ function ProMessagesManager() {
   };
 
   useEffect(() => {
-    fetchMessages();
+    (async () => {
+      await fetchMessages();
+    })();
   }, []);
 
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -2166,7 +2170,7 @@ function RoutinesManager() {
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
             <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🌅</div>
             <p>No hay rutinas creadas todavía.</p>
-            <p style={{ fontSize: '0.85rem' }}>Usá el botón "Cargar rutinas sugeridas" para empezar rápido.</p>
+            <p style={{ fontSize: '0.85rem' }}>Usá el botón &quot;Cargar rutinas sugeridas&quot; para empezar rápido.</p>
           </div>
         )}
       </div>
@@ -2263,7 +2267,7 @@ function JomoManager() {
       <div className="glass" style={{ padding: '20px', borderRadius: '15px', marginBottom: '30px', borderLeft: '6px solid #22c55e' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>🌿 Modo JOMO Creativo</h2>
         <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', margin: 0 }}>
-          JOMO (Joy of Missing Out) es "La Alegría de Desconectarse". Evaluá los proyectos offline que arman tus hijos, dalos por aprobados transfiriendo los tokens, o devolvelos con consejos para que mejoren su esfuerzo.
+          JOMO (Joy of Missing Out) es &quot;La Alegría de Desconectarse&quot;. Evaluá los proyectos offline que arman tus hijos, dalos por aprobados transfiriendo los tokens, o devolvelos con consejos para que mejoren su esfuerzo.
         </p>
       </div>
 
@@ -2337,7 +2341,7 @@ function JomoManager() {
             </div>
             {proj.parentFeedback && (
               <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#cbd5e1', fontStyle: 'italic' }}>
-                "{proj.parentFeedback}"
+                &quot;{proj.parentFeedback}&quot;
               </p>
             )}
             {proj.status === 'approved' && proj.grantedTokens > 0 && (

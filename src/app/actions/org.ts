@@ -45,7 +45,7 @@ export async function getOrgStats() {
       professionalsCount: prosCount.value,
       totalPatients: familiesCount.value,
     };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al cargar estadísticas" };
   }
 }
@@ -63,7 +63,7 @@ export async function getOrgProfessionals() {
       .from(users)
       .where(and(eq(users.organizationId, orgId), eq(users.role, 'professional')))
       .orderBy(users.createdAt);
-  } catch (error) {
+  } catch (_error) {
     console.error(error);
     return [];
   }
@@ -91,7 +91,7 @@ export async function createProfessional(formData: FormData) {
 
     revalidatePath("/institucion");
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al crear profesional. ¿El email ya existe?" };
   }
 }

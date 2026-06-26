@@ -12,7 +12,8 @@ test.describe('Flujo de Registro - Rol Familia', () => {
   // --- Pruebas Positivas ---
   
   test('[TEST-01] Registro exitoso con datos válidos (Familia)', async ({ page }) => {
-    await registerPage.fillBasicInfo('Juan Perez', 'juan.familia@test.com', 'Segura123!');
+    const uniqueEmail = `juan_${Date.now()}@test.com`;
+    await registerPage.fillBasicInfo('Juan Perez', uniqueEmail, 'Segura123!');
     await registerPage.setRole('Familia');
     await registerPage.submit();
 
@@ -21,7 +22,8 @@ test.describe('Flujo de Registro - Rol Familia', () => {
   });
 
   test('[TEST-02] Registro exitoso con código opcional (Familia)', async ({ page }) => {
-    await registerPage.fillBasicInfo('Ana Gómez', 'ana.familia@test.com', 'Segura123!');
+    const uniqueEmail = `ana_${Date.now()}@test.com`;
+    await registerPage.fillBasicInfo('Ana Gómez', uniqueEmail, 'Segura123!');
     await registerPage.setRole('Familia');
     // Llenar campo opcional que SÍ existe para padres
     await registerPage.inputFamilyCode.fill('PRO-123456');

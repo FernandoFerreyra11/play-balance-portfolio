@@ -12,7 +12,8 @@ test.describe('Flujo de Registro - Rol Profesional', () => {
   // --- Pruebas Positivas ---
 
   test('[TEST-05] Registro exitoso con datos básicos (Profesional)', async ({ page }) => {
-    await registerPage.fillBasicInfo('Dr. López', 'dr.lopez@test.com', 'PassFuerte99!');
+    const uniqueEmail = `dr.lopez_${Date.now()}@test.com`;
+    await registerPage.fillBasicInfo('Dr. López', uniqueEmail, 'PassFuerte99!');
     await registerPage.setRole('Profesional');
     await registerPage.submit();
 

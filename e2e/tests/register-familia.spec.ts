@@ -25,8 +25,8 @@ test.describe('Flujo de Registro - Rol Familia', () => {
     const uniqueEmail = `ana_${Date.now()}@test.com`;
     await registerPage.fillBasicInfo('Ana Gómez', uniqueEmail, 'Segura123!');
     await registerPage.setRole('Familia');
-    // Llenar campo opcional que SÍ existe para padres
-    await registerPage.inputFamilyCode.fill('PRO-123456');
+    // Llenar campo opcional con un código válido existente en la DB (creado por seed-test-data.ts)
+    await registerPage.inputFamilyCode.fill('TEST-001');
     await registerPage.submit();
 
     await expect(page).toHaveURL(/.*login.*/);

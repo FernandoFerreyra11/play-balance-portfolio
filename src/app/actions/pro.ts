@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users, families, organizations, activeQuests } from "@/db/schema";
-import { eq, and, sql, count, inArray } from "drizzle-orm";
+import { eq, and, count, inArray } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -69,7 +69,7 @@ export async function getProfessionalStats() {
       globalComplianceRate,
       activeMissions
     };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al cargar estadísticas" };
   }
 }
@@ -86,8 +86,8 @@ export async function getManagedFamilies() {
       .from(families)
       .where(eq(families.professionalId, proId))
       .orderBy(families.createdAt);
-  } catch (error) {
-    console.error(error);
+  } catch (_error) {
+    console.error(_error);
     return [];
   }
 }
@@ -113,7 +113,7 @@ export async function createOrganization(name: string, slug: string) {
 
     revalidatePath("/pro");
     return { success: true, organization: newOrg };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al crear la organización. El slug podría estar duplicado." };
   }
 }
@@ -155,7 +155,7 @@ export async function createPatientFamily(familyName: string) {
 
     revalidatePath("/pro");
     return { success: true, family: newFamily };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al crear la familia del paciente" };
   }
 }
@@ -205,7 +205,7 @@ export async function linkExistingFamily(familyCode: string) {
 
     revalidatePath("/pro");
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al vincular familia" };
   }
 }
@@ -220,7 +220,7 @@ export async function upgradeProPlan(plan: 'growth' | 'unlimited') {
     await db.update(users).set({ subscriptionPlan: plan }).where(eq(users.id, proId));
     revalidatePath("/pro");
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al actualizar el plan" };
   }
 }

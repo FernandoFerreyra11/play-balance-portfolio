@@ -111,7 +111,7 @@ export async function POST(req: Request) {
     const botIdentity = getBotIdentity(userMessageCount, botTheme);
 
     // Buscar o crear sesión de chat
-    let userSession = await db.select().from(chatSessions).where(eq(chatSessions.childId, childId)).limit(1);
+    const userSession = await db.select().from(chatSessions).where(eq(chatSessions.childId, childId)).limit(1);
     let sessionId: string;
 
     if (userSession.length === 0) {

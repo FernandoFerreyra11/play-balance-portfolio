@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+
 import bcrypt from 'bcryptjs';
 import * as dotenv from 'dotenv';
 
@@ -10,7 +10,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 const sql = neon(process.env.DATABASE_URL);
-const db = drizzle(sql);
+
 
 async function seed() {
   const name = "Admin Papá";

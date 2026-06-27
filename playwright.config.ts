@@ -1,0 +1,37 @@
+import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Forzar la carga de .env.local para que la base de datos funcione en los tests locales
+dotenv.config({ path: path.resolve(__dirname, '.env.local') });
+
+export default defineConfig({
+  testDir: './e2e/tests',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  outputDir: process.env.CI ? 'test-results' : 'E:/stoptec-playwright-output/test-results',
+  reporter: [
+    ['html', { outputFolder: process.env.CI ? 'playwright-report' : 'E:/stoptec-playwright-output/playwright-report' }]
+  ],
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+});

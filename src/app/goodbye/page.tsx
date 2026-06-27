@@ -60,7 +60,7 @@ export default function GoodbyePage() {
           color: 'rgba(255, 255, 255, 0.8)', 
           marginBottom: '40px' 
         }}>
-          "Gracias por haber compartido este tiempo juntos, te esperamos cuando quieras regresar a esta aventura o a otras de nuestra colección. Para seguir encontrando bienestar digital."
+          &quot;Gracias por haber compartido este tiempo juntos, te esperamos cuando quieras regresar a esta aventura o a otras de nuestra colección. Para seguir encontrando bienestar digital.&quot;
         </p>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px' }}>

@@ -92,7 +92,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
 
   // Actualizar notas cuando cambia el prop (luego de guardar/borrar)
   useEffect(() => {
-    setNotes(initialNotes);
+    Promise.resolve().then(() => setNotes(initialNotes));
   }, [initialNotes]);
 
   // Fetch metrics when selected child changes
@@ -766,7 +766,7 @@ export default function ProFamilyClient({ familyData, activityData, initialNotes
                         </div>
                         {c.note && (
                           <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', color: '#e2e8f0', fontStyle: 'italic' }}>
-                            "{c.note}"
+                            &quot;{c.note}&quot;
                           </div>
                         )}
                       </div>

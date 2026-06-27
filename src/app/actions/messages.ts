@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { users, families, messages } from "@/db/schema";
+import { users, messages } from "@/db/schema";
 import { eq, and, desc, or } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -36,7 +36,7 @@ export async function getMessagesForPro(familyId: string) {
       .orderBy(desc(messages.createdAt));
 
     return { success: true, data: familyMsgs, proId };
-  } catch (error) {
+  } catch (_error) {
     return { error: 'Error al obtener mensajes', data: [] };
   }
 }
@@ -93,7 +93,7 @@ export async function getMessagesForFamily(receiverTypeFilter: 'parents' | 'chil
       .orderBy(desc(messages.createdAt));
 
     return { success: true, data: familyMsgs, currentUserId: user.id };
-  } catch (error) {
+  } catch (_error) {
     return { error: 'Error al obtener mensajes', data: [] };
   }
 }
@@ -123,7 +123,7 @@ export async function sendMessage(familyId: string, content: string, receiverTyp
     }
     
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: 'Error al enviar el mensaje' };
   }
 }
@@ -146,7 +146,7 @@ export async function markMyMessagesAsRead(receiverType: 'parents' | 'children')
         )
       );
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: 'Error al marcar como leídos' };
   }
 }

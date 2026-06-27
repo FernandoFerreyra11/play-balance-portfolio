@@ -99,7 +99,7 @@ export async function resetFamilyCode(id: string, familyName: string) {
     
     revalidatePath("/super-admin");
     return { success: true, newCode };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al resetear código" };
   }
 }
@@ -114,7 +114,7 @@ export async function updateFamilyName(id: string, newName: string) {
     
     revalidatePath("/super-admin");
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al actualizar nombre" };
   }
 }

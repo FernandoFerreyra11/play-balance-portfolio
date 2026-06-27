@@ -167,7 +167,7 @@ export async function addProfessionalNote(familyId: string, content: string, chi
     
     revalidatePath(`/pro/family/${familyId}`);
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al guardar el apunte" };
   }
 }
@@ -186,7 +186,7 @@ export async function deleteProfessionalNote(noteId: string, familyId: string) {
     
     revalidatePath(`/pro/family/${familyId}`);
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { error: "Error al eliminar el apunte" };
   }
 }

@@ -70,12 +70,19 @@ export async function registerUser(formData: FormData) {
     } 
     
     if (role === "professional") {
+      // PASO 2 (Backend): Capturamos el dato del formulario HTML y lo validamos.
+      const licenseNumber = formData.get("licenseNumber") as string;
+      if (!licenseNumber) {
+        return { error: "La matrícula es obligatoria para registrarse como Profesional" };
+      }
+
       // Crear Profesional independiente
       await db.insert(users).values({
         name,
         email,
         password: hashedPassword,
         role: "professional",
+        licenseNumber, // Guardamos el dato en nuestra nueva columna de la BD
       });
       return { success: true };
     }

@@ -11,7 +11,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed:test": "npx tsx scripts/seed-test-data.ts",
     "test:staging": "playwright test --config=playwright.staging.config.ts",
-    "test:perf": "k6 run performance/load-test.ts"
+    "test:perf": "k6 run performance/load-test.ts",
+    "test:perf:api": "k6 run performance/api-test.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",

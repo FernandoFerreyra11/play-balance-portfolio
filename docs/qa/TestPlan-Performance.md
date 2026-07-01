@@ -30,10 +30,17 @@ Simula la cantidad esperada de usuarios concurrentes navegando por el sistema en
   - 30s de *Hold* (manteniendo 50 VUs).
   - 15s de *Ramp-down* (50 a 0 VUs).
 
-### 4.2 Stress Testing (Prueba de Estrés) - *Fase 2*
-Simula una carga por encima del máximo esperado para encontrar el punto de ruptura del sistema.
-- **VUs:** 200+
-- **Duración:** 2 minutos.
+### 4.2 Stress Testing (Prueba de Estrés - Backend & Database)
+Simula una carga ultra agresiva contra la infraestructura de base de datos para medir el límite del *Connection Pool* de Neon DB y el rendimiento del Backend de Next.js.
+- **Ruta objetivo:** `/api/health` (Ejecuta un `SELECT` con Drizzle ORM).
+- **VUs:** 100
+- **Duración:** 1 minuto y 20 segundos.
+- **Comportamiento:**
+  - 10s de *Ramp-up* rápido a 50 VUs.
+  - 30s de *Hold* en 50 VUs.
+  - 10s de *Ramp-up* agresivo (Stress) a 100 VUs.
+  - 30s de *Hold* en 100 VUs.
+  - 10s de *Ramp-down*.
 
 ## 5. Métricas de Éxito (SLAs / Criterios de Aceptación)
 Las pruebas se considerarán exitosas si cumplen con las siguientes métricas en el reporte final de K6:

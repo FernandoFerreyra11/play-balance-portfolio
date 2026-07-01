@@ -11,10 +11,11 @@ test.describe('Flujo de Registro - Rol Profesional', () => {
 
   // --- Pruebas Positivas ---
 
-  test('[TEST-05] Registro exitoso con datos básicos (Profesional)', async ({ page }) => {
+  test('[TEST-05] Registro exitoso con datos básicos y matrícula (Profesional)', async ({ page }) => {
     const uniqueEmail = `dr.lopez_${Date.now()}@test.com`;
     await registerPage.fillBasicInfo('Dr. López', uniqueEmail, 'PassFuerte99!');
     await registerPage.setRole('Profesional');
+    await registerPage.inputLicenseNumber.fill('MN-88442'); // PASO 5 (Testing): El robot tipea la matrícula obligatoria
     await registerPage.submit();
 
     await expect(page).toHaveURL(/.*login.*/);
@@ -38,6 +39,17 @@ test.describe('Flujo de Registro - Rol Profesional', () => {
     await registerPage.submit();
 
     // Validación HTML5 de required
+    await expect(registerPage.btnSubmit).toBeVisible();
+  });
+
+  test('[TEST-08] Intento de registro sin matrícula (Profesional)', async () => {
+    const uniqueEmail = `dr.sinmatricula_${Date.now()}@test.com`;
+    await registerPage.fillBasicInfo('Dr. SinMatricula', uniqueEmail, 'PassFuerte99!');
+    await registerPage.setRole('Profesional');
+    // NO llenamos la matrícula
+    await registerPage.submit();
+
+    // Como usamos validación HTML5 (required), el form no se envía.
     await expect(registerPage.btnSubmit).toBeVisible();
   });
 });

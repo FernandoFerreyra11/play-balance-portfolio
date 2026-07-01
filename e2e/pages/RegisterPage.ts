@@ -7,6 +7,7 @@ export class RegisterPage extends BasePage {
   readonly inputEmail: Locator;
   readonly inputPassword: Locator;
   readonly inputFamilyCode: Locator;
+  readonly inputLicenseNumber: Locator; // PASO 5 (Testing): Le enseñamos al robot dónde encontrar el nuevo input
   readonly btnRoleParent: Locator;
   readonly btnRoleProfessional: Locator;
   readonly btnSubmit: Locator;
@@ -18,6 +19,7 @@ export class RegisterPage extends BasePage {
     this.inputEmail = page.locator('input[name="email"]');
     this.inputPassword = page.locator('input[name="password"]');
     this.inputFamilyCode = page.locator('input[name="familyCode"]');
+    this.inputLicenseNumber = page.locator('input[name="licenseNumber"]'); // Instanciamos el locator
     this.btnRoleParent = page.getByRole('button', { name: 'Familia' });
     this.btnRoleProfessional = page.getByRole('button', { name: 'Profesional' });
     this.btnSubmit = page.locator('button[type="submit"]');

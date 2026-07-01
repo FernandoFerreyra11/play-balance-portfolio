@@ -84,6 +84,25 @@ export default function RegisterPage() {
             </motion.div>
           )}
 
+          {/* PASO 3 (Frontend): Mostramos este bloque en pantalla únicamente si el usuario elige el botón Profesional */}
+          {role === 'professional' && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'grid', gap: '8px' }}>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🎓 Matrícula Profesional
+              </label>
+              <input 
+                name="licenseNumber"
+                type="text" 
+                placeholder="Ej: MN-12345"
+                required
+                style={{
+                  width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', 
+                  borderRadius: '12px', padding: '12px', color: 'white', outline: 'none'
+                }}
+              />
+            </motion.div>
+          )}
+
           {role === 'org_admin' && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'grid', gap: '8px' }}>
               <label style={{ fontSize: '0.9rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '8px' }}>

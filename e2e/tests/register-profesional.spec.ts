@@ -41,4 +41,15 @@ test.describe('Flujo de Registro - Rol Profesional', () => {
     // Validación HTML5 de required
     await expect(registerPage.btnSubmit).toBeVisible();
   });
+
+  test('[TEST-08] Intento de registro sin matrícula (Profesional)', async () => {
+    const uniqueEmail = `dr.sinmatricula_${Date.now()}@test.com`;
+    await registerPage.fillBasicInfo('Dr. SinMatricula', uniqueEmail, 'PassFuerte99!');
+    await registerPage.setRole('Profesional');
+    // NO llenamos la matrícula
+    await registerPage.submit();
+
+    // Como usamos validación HTML5 (required), el form no se envía.
+    await expect(registerPage.btnSubmit).toBeVisible();
+  });
 });
